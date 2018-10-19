@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>	  <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>		 <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>		 <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+	<head>
+		<meta charset="utf-8" />
+		<meta name="robots" content="nofollow, noindex, noarchive" />
+		<title>Ultimate URLs</title>
+		<meta name="description" content="Ultimate URLs allows store owners to use alternate URLs including &quot;human friendly&quot; names" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<style>
+			.no-js #not-extracted { font-size: 2em; color: #F00; width: 90%; margin: 0 auto; }
+			.no-js #tabs { display: none; }
+		</style>
+		<link rel="stylesheet" href="css/normalize.css" />
+		<link rel="stylesheet" href="css/main.css" />
+		<link rel="stylesheet" href="css/smoothness/jquery-ui-1.10.4.tabs.min.css" />
+		<link rel="stylesheet" href="css/syntaxhighlighter/shCoreDefault.css" />
+		<link rel="stylesheet" href="css/syntaxhighlighter/shThemeDefault.css" />
+		<script src="js/vendor/modernizr-2.6.2.min.js"></script>
+	</head>
+	<body>
+		<!--[if lt IE 7]>
+			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+		<![endif]-->
+		<div id="body">
+			<h1>Ultimate URLs 2.15</h1>
+			<div id="top-links">
+				<a href="http://www.zen-cart.com" target="_blank">​Zen Cart</a>
+				<a href="http://www.zen-cart.com/showthread.php?199064" target="_blank">Support thread</a>
+				<a href="http://www.zen-cart.com/downloads.php?do=file&amp;id=132" target="_blank">Download link</a>
+				<a href="http://projects.lhungil.com/zencart/url" target="_blank">Upcoming Changes / Bug Fixes</a>
+			</div>
+			<div id="description">
+				Ultimate URLs allows store owners to use alternate URLs. The
+				URLs generated will include &quot;human friendly&quot; names
+				in the current browser's requested language and contain
+				shortened versions of certain parameters.
+			</div>
+			<div id="not-extracted">
+				<p>In order to view this readme you must first extract the contents
+					of the readme folder in the distribution zip archive to
+					a location on your computer. Once the contents have
+					been extracted, browse to the location you extracted the
+					readme folder and open &quot;index.html&quot;.
+				</p>
+				<p>If you have already followed the above instructions and are
+					still receiving this message, ensure your browser is
+					configured to allow javascript.
+				</p>
+			</div>
+			<div id="tabs">
+				<ul>
+					<li><a href="#features">Features</a></li>
+					<li><a href="#config">Configuration</a></li>
+					<li><a href="#patches">Recommended Patches</a></li>
+					<li><a href="#install">Installation</a></li>
+					<li><a href="#changelog">Changelog / History</a></li>
+					<li><a href="#license">License</a></li>
+				</ul>
+				<div id="features">
+					<h2>Features</h2>
+					<ul>
+						<li>Both the stock Zen Cart and alternative URLs can
+							be used to access the pages.
+						</li>
+						<li>One can enable automatic 301 redirects from older
+							URLs (both stock and alternative) to the new URLs
+							(both updated stock and alternative).
+						</li>
+						<li>Support is included for generating URLs in the
+							native language requested by the browser / customer.
+						</li>
+						<li>For category, product, and review pages: one can
+							choose to show just the product / category name or
+							optionally prepend the name with the parent
+							category's name (original or parent).
+						</li>
+						<li>For category pages: one can choose to display the
+							categories as directories (off, short, or full).
+						</li>
+						<li>For EZ-Pages: the title of the EZ-Page will be used.</li>
+						<li>For all other pages: the page type will be used as
+							the name (replaces &quot;main_page=xyz&quot; with
+							&quot;xyz&quot;).
+						</li>
+						<li>One can optionally chose to have all alternate
+							URLS end with a specific extension (.html, .htm).
+						</li>
+						<li>One can configure sitewide string replacements using
+							PCRE rules (regular expressions / preg_replace).
+						</li>
+						<li>One can choose to strip all non-alphanumerical
+							characters or just "special" characters (dash is
+							excluded).
+						</li>
+						<li>One can choose to "filter" out short words.</li>
+						<li>One can select which page types (main_page=xyz)
+							will have rewritten URLs.
+						</li>
+						<li>One can choose to have generated URLs cached. Caching
+							is supported at multiple levels including the use of
+							memory and database storage.
+						</li>
+						<li>If one chooses to remove Ultimate URLs and switch
+							back to the stock Zen Cart URLs in the future,
+							leaving the .htaccess rules in place will allow both
+							stock and alternative URLs to continue functioning.
+						</li>
+					</ul>
+					<h2>Requirements</h2>
+					<ul>
+						<li>Working installation of Zen Cart 1.3.9h or 1.5.x</li>
+						<li>Secure FTP access to the Zen Cart installation (while you can use plain FTP it is not recommended)</li>
+						<li>An account to access Zen Cart's administrative interface</li>
+						<li>Knowledge of regular expressions if filtering names in URLs</li>
+						<li>For Zen Cart 1.3.9h, disable SQL Caching</li>
+						<li>Read and agree to the <a href="#license">License</a></li>
+					</ul>
+				</div>
+				<div id="config">
+					<h2>Configuration</h2>
+					<div class="example clearfix">
+						<h3>How do I bring up the configuration page?</h3>
+						<img class="float-left" src="img/admin_menu.png" alt="Zen Cart administrative menu for USU" />
+						<p>When this module is installed it provides an administrative
+							page for configuring <abbr title="Ultimate URLs">USU</abbr>.
+							After a successful login to the Zen Cart administrative
+							interface, users granted permission can access the
+							configuration page can select <span class="admin-menu"><span class="item">Configuration</span><span class="item">Ultimate URLs</span></span>.
+						</p>
+					</div>
+					<h3>Cache Notes</h3>
+					<p>If any of the cache settings for Ultimate URLs have been
+						enabled, until the cache is reset existing URLs in the
+						cache will be used. <span class="alert">This means one
+						may not see the effect of changing configuration options
+						immediately.</span>
+					</p>
+					<p>By default cached URLs will be saved for 30 days. The
+						cache can be reset by changing the &quot;Reset URL cache&quot;
+						configuration option to &quot;true&quot;.
+					</p>
+					<h3>Numinex Users</h3>
+					<p>Users of various Numinex modifications for Zen Cart may
+						run into some issues configuring this module. This is
+						not a bug with Ultimate URLs. The errant behavior is
+						caused by alterations made by Numinex to the Zen Cart
+						&quot;configuration.php&quot; file.
+					</p>
+					<p>Basically, Numinex made the assumption it was safe to
+						ignore one of the Zen Cart database fields related to
+						displaying configuration values. This field is used
+						by the Zen Cart configuration management page to display
+						the current value configured for a configuration option.
+					</p>
+					<p>Ultimate URLs makes use of this core Zen Cart database
+						field to display the values, to determine when a
+						selectable option has been changed (did the admin change
+						how category URLs should appear?), verifies the settings
+						are valid and compatible, correct any invalid settings,
+						and to reset the URL Cache. All this is done on behalf
+						of the admin user without requiring any manual
+						intervention through the use of the core Zen Cart
+						database field Numinex has decided to ignore.
+					</p>
+					<p>So the end result is: The alterations made by Numinex
+						break the additional functionality utilized by this
+						module. Until the following (or similar code) is added
+						back into &quot;configuration.php&quot;, Numinex users
+						with the modified file will experience issues configuring
+						Ultimate URLs.
+					</p>
+					<p>Numinex users who have installed the Numinex modifications
+						to Zen Cart's &quot;/admin/configuration.php&quot; and
+						are experiencing the above issues should apply the
+						workaround listed in <a href="#patches">Recommended Patches</a>.
+					</p>
+				</div>
+				<div id="patches">
+					<h2>Recommended Patches</h2>
+					<p>The following bugs / issues in other code (not Ultimate
+						URLs) have been identified: during the <abbr title="Quality Assurance">QA</abbr>
+						testing of Ultimate URLs, feedback in the Ultimate URLs
+						support thread, and by the Zen Cart community. If any
+						of these apply to your Zen Cart installation, we
+						recommend you apply and test the recommended fixes on
+						your site before installing Ultimate URLs.
+					</p>
+					<p>Many of these patches and workarounds affect all Zen Cart 
+						stores, not just stores using Ultimate URLs. Please
+						take the time to review all of the patches and workarounds.
+						<span class="alert">Failure to install applicable patches
+						and workarounds will result in undesired behavior.</span>
+					</p>
+					<h3>Known Zen Cart Bugs</h3>
+					<p>Keeping your version of Zen Cart up to date is extermely
+						important to protect your business and customers.
+						Whenever possible using the latest release of Zen Cart
+						is recommended. Zen Cart's official
+						<a href="http://www.zen-cart.com/showthread.php?72868" target="_blank">End of Life policy</a>
+						is to stop providing security and other patches six
+						months after a new version is released.
+					</p>
+					<p>Here is an example to help understand Zen Cart&apos;s
+						End of Life policy. Zen Cart 1.5.3 was released on 5
+						June 2014. So according to the official policy, Zen Cart
+						1.5.1 went End of Life on 5 Jan 2015.
+					</p>
+					<ul>
+						<li><a href="http://www.zen-cart.com/showthread.php?215694" target="_blank">Known Bugs (and fixes) for Zen Cart 1.5.4</a></li>
+						<li><a href="http://www.zen-cart.com/showthread.php?213868" target="_blank">Known Bugs (and fixes) for Zen Cart 1.5.3</a></li>
+						<li><a href="http://www.zen-cart.com/showthread.php?200688" target="_blank">Known Bugs (and fixes) for Zen Cart 1.5.1</a></li>
+						<li><a href="http://www.zen-cart.com/showthread.php?197182" target="_blank">Known Bugs (and fixes) for Zen Cart 1.5.0</a></li>
+					</ul>
+					<h3>Product Listing (add to cart) Bug</h3>
+					<p>This is a known issue in Zen Cart 1.3.9 and newer
+						(verified to exist through Zen Cart 1.5.4).<br />
+						The Zen Cart module handling product listings can
+						incorrectly add the &quot;products_id&quot; twice to a URL.
+						This bug can cause problems with the &quot;Add to Cart&quot;
+						behavior on product listing pages.
+					</p>
+					<p><a href="http://www.zen-cart.com/showthread.php?195446-Problem-with-my-quot-buy-now-quot&amp;p=1222517#post1222517" target="_blank">Here is the proposed fix (by lhungil)</a>.</p>
+					<h3>Page Not Found (zen_href_back) Bug</h3>
+					<p>This is a known issue in Zen Cart 1.3.9 and newer
+						(verified to exist through Zen Cart 1.5.4).<br />
+						The Zen Cart &quot;Page Not Found&quot; page is added to
+						the navigation history. This can cause the &quot;back
+						button&quot; (link generated by the zen_href_back
+						function) to point to &quot;Page Not Found&quot;.
+					</p>
+					<p><a href="http://www.zen-cart.com/showthread.php?200899-page_not_found-should-remove-itself-from-the-navigation-history&amp;p=1155540#post1155540" target="_blank">Here is the proposed fix (by lat9)</a>.</p>
+					<h3>Ajax.php (zen_href_back) Bug</h3>
+					<p>This is a known issue in Zen Cart 1.5.4.<br />
+						The Zen Cart &quot;/ajax.php&quot; calls are added to
+						the navigation history. This can cause the &quot;back
+						button&quot; (link generated by the zen_href_back
+						function) to point to non-existent pages.
+					</p>
+					<p><a href="http://www.zen-cart.com/showthread.php?215823-quot-ajax-php-quot-adds-itself-to-the-navigation-history&amp;p=1269499#post1269499" target="_blank">Here is the proposed fix (by DrByte)</a>.</p>
+					<h3>Query Factory (sql cache) Bug</h3>
+					<p>This is a known issue in Zen Cart 1.3.9 - 1.5.1 (fixed
+						in Zen Cart 1.5.2 and newer).<br />
+						When SQL caching is enabled in the Zen Cart
+						<a href="http://www.zen-cart.com/content.php?307" target="_blank">configuration file</a>
+						queryFactory (database calls) do not always return a
+						database result object (queryFactoryResult). When a
+						database result has been cached, functions such as
+						&quot;RecordCount()&quot; and &quot;Move&quot; do not
+						return correct information and may generate errors.
+					</p>
+					<p><a href="http://www.zen-cart.com/showthread.php?200484-Fixed-1-6-0-Query-Factory&amp;p=1152668#post1152668" target="_blank">Here is the proposed fix (by lhungil)</a>.</p>
+					<h3>Multilingual Stores</h3>
+					<p>Zen Cart already includes support for serving pages in
+						multiple languages. Zen Cart is setup and configured
+						for multiple languages, Ultimate URLs reads the language
+						information from Zen Cart when generating URLs.
+					</p>
+					<p class="alert">Ultimate URLs already supports multiple
+						languages and multilingual stores. No modifications are
+						needed to support multiple languages!
+					</p>
+					<p><b>Optional:</b>b> If one wishes to also add alternative language links to
+						their pages, they can add the following snippet to
+						&quot;html_header.php&quot; in their template:</p>
+						<pre class="brush: php;">&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=&lt;?php echo CHARSET; ?&gt;&quot; /&gt;
+&lt;?php
+// START add links specific to a &quot;language&quot; to the header
+// See http://support.google.com/webmasters/answer/189077
+
+// Recommend disabling the individual caches to reduce the memory
+// footprint of using this code. The global cache can be left enabled.
+$tmp_lng = new language();
+foreach($tmp_lng-&gt;catalog_languages as $lng) {
+	// Initialize a new generator for a specific language (by language_id).
+	${'usu_' . $lng['code']} = new usu($lng['id']);
+
+	// Create a link using the generator for a specific language.
+	${'link_' . $lng['code']} = ${'usu_' . $lng['code']}-&gt;href_link(
+		$current_page,
+		'language=' . $lng['code'] . '&amp;' . zen_get_all_get_params('language'),
+		$request_type,
+		false
+	);
+
+	// Fallback to Zen Cart generated.
+	if(${'link_' . $lng['code']} === null) {
+		${'link_' . $lng['code']} = zen_href_link(
+			$current_page,
+			'language=' . $lng['code'] . '&amp;' . zen_get_all_get_params('language'),
+			$request_type,
+			false
+		);
+	} ?&gt;
+	&lt;link rel=&quot;alternate&quot; hreflang=&quot;&lt;?php
+		echo $lng['code']; ?&gt;&quot; href=&quot;&lt;?php
+		echo ${'link_' . $lng['code']};
+	?&gt;&quot;/&gt;&lt;?php
+	unset(${'usu_' . $lng['code']}, ${'link_' . $lng['code']});
+}
+unset($tml_lng, $lng);
+// END add links specific to a &quot;language&quot; to the header ?&gt;
+&lt;meta name=&quot;keywords&quot; content=&quot;&lt;?php echo META_TAG_KEYWORDS; ?&gt;&quot; /&gt;</pre>
+					<h3>Numinex configuration (cannot change settings) Workaround</h3>
+					<p>The alterations made by Numinex to Zen Cart&apos;s
+						administrative configuration page break the additional
+						functionality utilized when configuring this module.
+						See <a href="#config">Configuration</a> for more information.
+					</p>
+					<p>Starting around line 215 in the Numinex
+						&quot;configuration.php&quot; find the following code:
+					</p>
+					<pre class="brush: php;">&lt;div class="mod-header"&gt;
+	&lt;h1&gt;&lt;?php echo $cfg_group-&gt;fields['configuration_group_title']; ?&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;div class="mod-content"&gt;</pre>
+					<p>Replace with the following code:</p>
+					<pre class="brush: php;">&lt;div class="mod-header"&gt;
+	&lt;h1&gt;&lt;?php echo $cfg_group-&gt;fields['configuration_group_title']; ?&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;?php // START fix code to utilize the use_function (1 / 2) ?&gt;
+&lt;div style=&quot;padding-bottom: 1em&quot;&gt;&lt;?php
+foreach($tabs as $tab =&gt; $tab_vals) {
+	foreach($tab_vals['options'] as $configuration_option) {
+		if(zen_not_null($configuration_option['use_function'])) {
+			// First call the use_function
+			if (preg_match('/-&gt;/', $configuration_option['use_function'])) {
+				$class_method = explode('-&gt;', $configuration_option['use_function']);
+				if (!is_object(${$class_method[0]})) {
+					include(DIR_WS_CLASSES . $class_method[0] . '.php');
+					${$class_method[0]} = new $class_method[0]();
+				}
+				zen_call_function($class_method[1], $configuration_option['configuration_value'], ${$class_method[0]});
+			} else {
+				zen_call_function($configuration_option['use_function'], $configuration_option['configuration_value']);
+			}
+		}
+	}
+} ?&gt;&nbsp;
+&lt;/div&gt;
+&lt;?php // END fix code to utilize the use_function (1 / 2) ?&gt;
+&lt;div class="mod-content"&gt;</pre>
+					<p>Starting around line 233 in the Numinex
+						&quot;configuration.php&quot; find the following code:
+					</p>
+					<pre class="brush: php;">foreach($tab_vals['options'] as $configuration_option) {
+	echo '&lt;tr&gt;' . "\n";
+	echo '	&lt;td class="cl"&gt;' . $configuration_option['configuration_title'] . '&lt;/td&gt;' . "\n";							
+	echo '	&lt;td class="cl is-details"&gt;&lt;em&gt;' . $configuration_option['configuration_description'] . '&lt;/em&gt;&lt;/td&gt;' . "\n";
+	echo '	&lt;td class="cl"&gt;' . "\n";</pre>
+					<p>Replace with the following code:</p>
+					<pre class="brush: php;">foreach($tab_vals['options'] as $configuration_option) {
+	// START fix code to utilize the use_function (2 / 2)
+	$configuration_value = $configuration_option['configuration_value'];
+	if(zen_not_null($configuration_option['use_function'])) {
+
+		// Run the use_function for display purposes
+		if (preg_match('/-&gt;/', $configuration_option['use_function'])) {
+			$class_method = explode('-&gt;', $configuration_option['use_function']);
+			if (!is_object(${$class_method[0]})) {
+				include(DIR_WS_CLASSES . $class_method[0] . '.php');
+				${$class_method[0]} = new $class_method[0]();
+			}
+			$configuration_value = zen_call_function($class_method[1], $configuration_option['configuration_value'], ${$class_method[0]});
+		} else {
+			$configuration_value = zen_call_function($configuration_option['use_function'], $configuration_option['configuration_value']);
+		}
+
+		// The stock Zen Cart configuration file "reloads" the
+		// page between displaying configuration settings and
+		// editing a configuration setting. This "extra" query
+		// is needed to "replicate" the default Zen Cart behavior.
+		$query = $db-&gt;Execute(
+			'SELECT `configuration_title`, `configuration_value`, ' .
+				'`configuration_description`, `configuration_key`, ' .
+				'`use_function`, `set_function` ' .
+			'FROM `' . $configuration_table . '` ' .
+			'WHERE `configuration_id`=\''  . (int)$configuration_option['configuration_id'] . '\''
+		);
+		if (!$query-&gt;EOF) {
+			$configuration_option['configuration_title'] = $query-&gt;fields['configuration_title'];
+			$configuration_option['configuration_description'] = $query-&gt;fields['configuration_description'];
+			$configuration_option['configuration_value'] = $query-&gt;fields['configuration_value'];
+			$configuration_option['configuration_key'] = $query-&gt;fields['configuration_key'];
+			$configuration_option['use_function'] = $query-&gt;fields['use_function'];
+			$configuration_option['set_function'] = $query-&gt;fields['set_function'];
+		}
+		unset($query);
+	}
+	// END fix code to utilize the use_function (2 / 2)
+	echo '&lt;tr&gt;' . "\n";
+	echo '	&lt;td class="cl"&gt;' . $configuration_option['configuration_title'] . '&lt;/td&gt;' . "\n";							
+	echo '	&lt;td class="cl is-details"&gt;&lt;em&gt;' . $configuration_option['configuration_description'] . '&lt;/em&gt;&lt;/td&gt;' . "\n";
+	echo '	&lt;td class="cl"&gt;' . "\n";</pre>
+				</div>
+				<div id="install">
+					<h2>Installation, Upgrades, and Removal</h2>
+					<h3 class="list-header">Folders inside the distribution archive</h3>
+					<ul>
+						<li>1_new_files (files added by this module)</li>
+						<li>2_htaccess (Apache configuration directives)</li>
+						<li>3_install (manual installation files)</li>
+						<li>4_uninstall (manual uninstallation files)</li>
+						<li>readme (documentation)</li>
+						<li>modified_files/xyz (example modified core Zen Cart files where xyz is the Zen Cart version)</li>
+					</ul>
+					<h3>Important Notes</h3>
+					<p>Ultimate URLs can be installed, upgraded, and
+						removed via Plugin Manager or manually using the
+						included installation code. One should never attempt to
+						bypass these instructions when installing, upgrading, or
+						removing Ultimate URLs.
+					</p>
+					<p>There are some known bugs and issues present in
+						Zen Cart and 3rd party modules which may impact
+						your Zen Cart installation. Please apply any relevant
+						<a href="#patches">patches and workarounds</a> before
+						installing Ultimate URLs. Additional patches and
+						workarounds may be available in the Support Thread.						
+					</p>
+					<p>The location "/temp" in this section refers to the
+						temporary location where the distribution archive for
+						Ultimate URLs has been extracted.
+					</p>
+					<h3>Installation and Upgrade Steps</h3>
+					<ol class="zero">
+						<li><b>Pre - Installation</b>.<br>
+							Backup your Zen Cart installation and database.
+							Best practice is to keep regular backups and
+							perform a manual backup prior to the installation
+							or modification of any portion of Zen Cart.<ol>
+							<li>You can use Secure FTP to backup the
+								files. Two well known FTP programs are
+								WinSCP and FileZilla.
+							</li>
+							<li>You can backup the MySQL database either
+								using a tool such as PhpMyAdmin or from
+								the Zen Cart admin interface using DrByte's
+								<a target="_blank" href="http://www.zen-cart.com/downloads.php?do=file&amp;id=7">Backup MYSQL Plugin</a>
+							</li></ol>
+						</li>
+						<li><b>New Files</b>.
+							<small>(&quot;/temp/1_new_files&quot;)</small><br />
+							These files do not include modifications to any
+							core Zen Cart files. We will be adding these
+							new files to Zen Cart as part of the
+							installation.
+							<ol>
+								<li>Rename the &quot;your_admin_folder&quot;
+									folder to match the name of the store's
+									admin folder.
+								</li>
+								<li>If you have installed any other plugins
+									or modifications to your Zen Cart
+									installation which make changes to any
+									of the <b>New Files</b> you will need to
+									use a tool like Winmerge or Beyond
+									Compare to incorporate those changes
+									into these files.
+								</li>
+								<li>Upload all of the folders and files inside
+									the <b>New Files</b> folder to the
+									location of the Zen Cart installation.
+									The directory structure should match
+									the store's directory structure.<br />
+									<small class="alert">Do not upload the
+									&quot;1_new_files&quot; folder
+									to the store, just the files and folders
+									inside the <b>New Files</b> directory.
+									</small>
+								</li>
+							</ol>
+						</li>
+						<li><b>Apache Directives (htaccess)</b>.
+							<small>(&quot;/temp/2_htaccess&quot;)</small><br />
+							This file contains directives for Apache
+							web servers on how to handle incoming requests
+							for URLs including those generated by Ultimate URLs.
+							<ol>
+								<li>If you are using Apple OSX, UNIX, or BSD
+									based Operating System you may need to
+									change some settings to allow you to see
+									the files in this folder. Look for an
+									option to &quot;show hidden files&quot;.<br />
+									<small class="alert">By default these Operating
+									Systems may be configured to hide files
+									which start with a dot.</small>
+								</li>
+								<li>Open up and edit the supplied sample
+									&quot;.htaccess&quot; file with a plaintext
+									editor (such as notepad). Adjust the
+									Apache directives (especially
+									RewriteBase) as needed for the
+									web server where Zen Cart is installed.<br />
+									<small class="alert">Pay particular
+									attention to the notes and comments inside
+									the sample &quot;.htaccess&quot; file.</small>
+								</li>
+								<li>If an existing &quot;.htaccess&quot;
+									file exists at the root of your Zen Cart
+									installation you may need to add directives
+									from your existing file to the example
+									provided with Ultimate URLs.
+								</li>
+								<li>Upload the edited &quot;.htaccess&quot;
+									file to the root of your Zen Cart
+									installation.
+								</li>
+							</ol>
+						</li>
+						<li><b>Install / Upgrade <small>(using Plugin Manager)</small></b><br />
+							This module is compatible with Plugin Manager and
+							can be installed and upgraded using the administrative
+							page included with a full installation of Plugin
+							Manager.
+							<ol>
+								<li class="alert"><b>This is the recommended
+									method for completing the installation!
+								</b></li>
+								<li>See the Plugin Manager documentation for
+									more details.
+								</li>
+							</ol>
+						</li>
+						<li><b>Manual Install / Upgrade</b>.
+							<small>(&quot;/temp/3_install&quot;)</small><br />
+							These files trigger the installation or upgrade
+							of this module. These are only needed if Plugin
+							manager has not already been installed.
+							<small class="alert">These steps should not be used
+							when a full installation of Plugin Manager is
+							available / installed (use Plugin Manager instead).
+							</small>
+							<ol>
+								<li>Log into the admin side of your Zen Cart
+									installation using a web browser. Yes,
+									log into your admin interface now before
+									continuing.<br />
+									<small class="alert">Failing to first
+									login can result in you missing vital
+									installation and error messages.</small>
+								</li>
+								<li>Upload all of the folders and files inside
+									the <b>Install</b> folder
+									to the location of your Zen Cart
+									installation. The directory structure
+									should match your store's directory
+									structure.<br />
+									<small class="alert">Do not upload the
+									&quot;3_install&quot; folder
+									to your store, just the files and folders
+									inside the <b>Install</b> directory.
+									</small>
+								</li>
+								<li>Click on <b>ANY</b> link in
+									the admin interface (The &quot;Admin Home&quot;
+									link is a good choice).
+								</li>
+								<li>Note any error or success messages which
+									appear on the top of the site.<ul>
+										<li>If all goes well it should report
+											success.
+										</li>
+										<li>If additional
+											steps need to be performed, follow
+											the instructions. When done go
+											back to <b>Install</b>
+											Step C (previous step).
+											<small>The previous step should
+											start with the text &quot;Click
+											on <b>ANY</b> link&quot;
+											.</small></li>
+									</ul> 
+								</li>
+							</ol>
+						</li>
+					</ol>
+					<h3 class="list-header">Uninstalling / Removal</h3>
+					<ol class="zero">
+						<li><b>Pre - Removal</b>.<br />
+							Backup your Zen Cart installation and database.
+							Best practice is to keep regular backups and
+							perform a manual backup prior to the installation
+							or modification of any portion of Zen Cart.<ol>
+							<li>You can use Secure FTP to backup the
+								files. Two well known FTP programs are
+								WinSCP and FileZilla.
+							</li>
+							<li>You can backup the MySQL database either
+								using a tool such as PhpMyAdmin or from
+								the Zen Cart admin interface using DrByte's
+								<a href="http://www.zen-cart.com/downloads.php?do=file&amp;id=7" target="_blank">Backup MYSQL Plugin</a>
+							</li></ol>
+						</li>
+						<li><b>Un-Install <small>(using Plugin Manager)</small></b><br />
+							This module is compatible with Plugin Manager and
+							can be removed using the administrative page included
+							with a full installation of Plugin Manager.
+							<ol>
+								<li class="alert"><b>This is the recommended
+									method for uninstalling this module!
+								</b></li>
+								<li>See the Plugin Manager documentation for
+									more details.
+								</li>
+							</ol>
+						</li>
+						<li><b>Manual Un-Install</b>.
+							<small>(&quot;/temp/3_uninstall&quot;)</small><br />
+							These files trigger the removal of this module and
+							are only needed if Plugin manager has not already
+							been installed. <small class="alert">These steps
+							should not be used when a full installation of
+							Plugin Manager is available / installed (use Plugin
+							Manager instead).</small>
+							<ol>
+								<li>Log into the admin side of your Zen Cart
+									installation using a web browser. Yes,
+									log into your admin interface now before
+									continuing.<br />
+									<small class="alert">Failing to first
+									login can result in you missing vital
+									installation and error messages.</small>
+								</li>
+								<li>Upload all of the folders and files inside
+									the <b>Un-Install</b> folder
+									to the location of your Zen Cart
+									installation. The directory structure
+									should match your store's directory
+									structure.<br />
+									<small class="alert">Do not upload the
+									&quot;4_uninstall&quot; folder
+									to your store, just the files and folders
+									inside the <b>Un-Install</b> directory.
+									</small>
+								</li>
+								<li>Click on <b>ANY</b> link in
+									the admin interface (The &quot;Admin Home&quot;
+									link is a good choice).
+								</li>
+								<li>Note any error or success messages which
+									appear on the top of the site.<ul>
+										<li>If all goes well it should report
+											success.
+										</li>
+										<li>If additional
+											steps need to be performed, follow
+											the instructions. When done go
+											back to <b>Un-Install</b>
+											Step C (previous step).
+											<small>The previous step should
+											start with the text &quot;Click
+											on <b>ANY</b> link&quot;
+											.</small></li>
+									</ul> 
+								</li>
+							</ol>
+						</li>
+						<li><strong>Apache Directives (htaccess)</strong>.
+							<small>(optional)</small><br />
+							One may wish to optionally revert / remove the lines
+							added during installation. Leaving these lines in
+							place (or modifying them to issue a 301 redirect) is
+							recommended.
+							<ol>
+								<li>Removing the directives for Apache web servers
+									letting them know how to handle incoming
+									requests for URLs generated by Ultimate URLs
+									may cause &quot;404&quot; errors for links
+									found in search engines and any bookmarks
+									saved by a user. <span class="alert">
+									Consulting a knowledgeable expert to help
+									with handling the transition back to stock
+									Zen Cart URLs is highly recommended.</span>
+								</li>
+								<li>If you are using Apple OSX, UNIX, or BSD
+									based Operating System you may need to
+									change some settings to allow you to see
+									the files in this folder. Look for an
+									option to &quot;show hidden files&quot;.<br />
+									<small>By default these Operating
+									Systems may be configured to hide files
+									which start with a dot.</small>
+								</li>
+								<li>Retrieve a copy of the &quot;.htaccess&quot;
+									file from the existing Zen Cart website to
+									your local computer.<br />
+									<small>One can use Secure FTP to copy the
+									files. Two well known FTP programs are
+									WinSCP and FileZilla.</small>
+								</li>
+								<li>Open up and edit the local copy of the
+									&quot;.htaccess&quot; file with a plaintext
+									editor (such as notepad). Adjust or remove
+									the Apache directives added by Ultimate URLs
+									as needed.
+								</li>
+								<li>Upload the edited &quot;.htaccess&quot;
+									file to the root of your Zen Cart
+									installation.
+								</li>
+							</ol>
+						</li>
+					</ol>
+					<h3>Modified Core Files</h3>
+					<p><b class="alert">During the normal installation process
+						you should not do anything with these files.</b>
+						These files are not used by the Ultimate URLs installer
+						and copying these files over to the server may interfere
+						with the installation process. In most cases the installer
+						will handle making the required modifications on your
+						behalf during both installation and uninstallation.
+					</p>
+					<p>This does require the web server to have write access to
+						files and folders which are part of the Zen Cart
+						installation. This is allowed (and configured by default)
+						on many hosting providers (especially those utilizing
+						suexec or suPHP for security purposes).
+					</p>
+					<p>In the event your hosting provider does not allow granting
+						write access to the files and folders which are part of
+						the Zen Cart installation some additional steps may be
+						required in order to install Ultimate URLs. These steps
+						should only be used as a last resort.
+					</p>
+					<p>Make sure to use the correct <b>Modified Core Files</b>
+						<small>(&quot;/temp/modified_xxx_files&quot;)</small>
+						matching the version of Zen Cart in use by the store.
+						For example if the installed version of Zen Cart is
+						1.5.4 only use the <b>Modified Core Files</b> from the
+						&quot;/temp/modified_154_files&quot; folder.
+					</p>
+					<h4 class="list-header">Manually Merging for Installations / Upgrades</h4>
+					<ol class="one">
+						<li>Determine which version of Zen Cart is installed.
+							Navigate to the folder matching the installed version
+							of Zen Cart. <b>Modified Core Files</b> refers to this
+							folder.
+							<ol>
+								<li>For example: If using Zen Cart 1.5.3 use
+									the files in &quot;modified_files/1.5.3&quot;.
+								</li>
+							</ol>
+						</li>
+						<li>Rename the &quot;your_admin_folder&quot;
+							folder (inside the <b>Modified Core
+							Files</b> folder) to match the name of
+							your store's admin folder.
+							<ol>
+								<li>This usually uses the same name as the
+									location where one performs Zen Cart
+									administration. For example if the URL in
+									the web browser's address bar is
+									&quot;http://zen-cart.com/EriL83X0b/&quot;,
+									the admin folder name would normally be
+									&quot;EriL83X0b&quot;.
+								</li>
+							</ol>
+						</li>
+						<li>If one has installed any other plugins or
+							modifications to their Zen Cart
+							installation:
+							<ol>
+								<li>Use a tool such as Winmerge or Beyond Compare
+									to compare the <b>Modified Core Files</b>
+									with an unmodified copy of the file from the
+									Zen Cart distribution. In most cases, the
+									changes made by this plugin will be
+									surrounded by comments to make locating the
+									changes easier.
+								</li>
+								<li>Download a copy of the current file from the
+									Zen Cart installation on the server. Use a
+									tool such as Winmerge or Beyond Compare
+									to apply (merge) the identified changes from
+									this plugin to the file from the Zen Cart
+									installation.
+								</li>
+							</ol>
+						</li>
+						<li>Upload all of the folders and files inside
+							the <b>Modified Core Files</b>
+							folder to the location of your Zen Cart
+							installation. The directory structure
+							should match your store's directory
+							structure.
+							<ol>
+								<li class="emphasis">Do not upload the
+								&quot;modified_files/xyz&quot; folder
+								to your store, just the files and folders
+								inside the <b>Modified Core Files</b>
+								directory.</li>
+							</ol>
+						</li>
+					</ol>
+					<h4 class="list-header">Manually Merging for Removal</h4>
+					<ol class="one">
+						<li>Determine which version of Zen Cart is installed.
+							Navigate to the folder matching the installed version
+							of Zen Cart. <b>Modified Core Files</b> refers to this
+							folder.
+							<ol>
+								<li>For example: If using Zen Cart 1.5.3 use
+									the files in &quot;modified_files/1.5.3&quot;.
+								</li>
+							</ol>
+						</li>
+						<li>Rename the &quot;your_admin_folder&quot;
+							folder (inside the <b>Modified Core
+							Files</b> folder) to match the name of
+							your store's admin folder.
+							<ol>
+								<li>This usually uses the same name as the
+									location where one performs Zen Cart
+									administration. For example if the URL in
+									the web browser's address bar is
+									&quot;http://zen-cart.com/EriL83X0b/&quot;,
+									the admin folder name would normally be
+									&quot;EriL83X0b&quot;.
+								</li>
+							</ol>
+						</li>
+						<li>Download a copy of each modified file from the
+							Zen Cart installation on the server. Remove (merge)
+							the changes added by this plugin.
+							<ol>
+								<li>Use a tool such as Winmerge or Beyond Compare
+									to remove (merge) the identified changes from
+									the server files.
+								</li>
+								<li>In most cases, the changes made by this
+									plugin will be surrounded by comments to make
+									identifying the changes easier. If needed
+									compare <b>Modified Core Files</b> to the
+									corresponding &amp;clean&amp; version of the
+									files downloaded from the
+									<a href="http://www.zen-cart.com/">Zen Cart website</a>
+									to identify changes made by this plugin.
+								</li>
+								<li>Overwrite the modified files supplied with
+									this plugin with the merged files from the
+									server.
+								</li>
+							</ol>
+						</li>
+						<li>Upload all of the folders and files inside
+							the <b>Modified Core Files</b>
+							folder to the location of your Zen Cart
+							installation. The directory structure
+							should match your store's directory
+							structure.
+							<ol>
+								<li class="emphasis">Do not upload the
+								&quot;modified_files/xyz&quot; folder
+								to your store, just the files and folders
+								inside the <b>Modified Core Files</b>
+								directory.</li>
+							</ol>
+						</li>
+					</ol>
+					<h3>Confused or Need Some Help?</h3>
+					<p>Feel free to stop by the Zen Cart forums! At some point
+						in our lives we all need some help. Make sure to read
+						through the support thread for this module and search
+						for answers before posting. Keep in mind Zen Cart is
+						<b>free</b> software, and the forum members are
+						volunteers. When one has a time critical project,
+						issue(s) which cannot be duplicated, or a complex
+						request... It may be in one's best interest to hire a
+						professional to handle the project or address the issue(s).
+					</p>
+				</div>
+				<div id="changelog">
+					<h2>Changelog</h2>
+					<div class="version">
+						<h3>Version 2.215</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Feb 2015</span>
+						</div>
+						<ul>
+							<li>Created new install, upgrade, and removal processes using the &quot;plugin&quot; class and associated files</li>
+							<li>Fixed the upgrade script to not attempt reading from the admin_page table if not present (Zen Cart 1.3.9h).</li>
+							<li>Installation, Upgrades, and Removal no longer require modifying core Zen Cart files by hand.</li>
+							<li>Updated how the URL caches work.<ul>
+								<li>Reduced the amount of memory consumed.</li>
+								<li>Better support for showing URLs for multiple languages in the same request.</li>
+								<li>One cache is used per instance of the class generating URLs.</li>
+								<li>No longer uses &quot;eval&quot; or constants.</li>
+								<li>Corrected various spelling errors.</li>
+							</ul></li>
+							<li>Refactored all configuration options to have a consistent naming scheme.</li>
+							<li>Configuration options utilizing dropdowns or radio buttons will have the current setting selected by default.</li>
+							<li>When configuring &quot;selectable&quot; options which alter the generated URLs, the cache is automatically reset.</li>
+							<li>Added a configuration option to generate debug logs about alternate URL generation.</li>
+							<li>The configuration option &quot;remove problematic characters&quot; now defaults to &quot;non-alphanumerical&quot; instead of no filtering when an invalid setting exists in the database.</li>
+							<li>Updated cPath handling to utilize the cPath (off / auto) setting and be more forgiving of broken templates.</li>
+							<li>Fixed an issue causing pages unknown to this module and containing a product_id to always generate a link to the product page .</li>
+							<li>If multi-byte versions of common string functions are available they will be used (better compatibility with multi-byte character encodings).</li>
+							<li>Updated the code retrieving names to encode characters not allowed by in URI's by RFC 3986.</li>
+							<li>Updated the code generating &quot;alternative&quot; URIs to not create &quot;alternative&quot; URIs for real files.</li>
+							<li>Refactored all code related to URIs. The request uri, real uri, and redirect uri are now available as protected variables after the class is constructed.</li>
+							<li>Refactored the &quot;redirect&quot; code.
+								<ul>
+									<li>Will now redirect to the configured URL for both &quot;alternative&quot; and &quot;stock&quot; Zen Cart URLs.</li>
+									<li>Will &quot;skip&quot; over files which physically exist (fixes compatibility with certain other modules).</li>
+									<li>Better support for multilingual sites.</li>
+								</ul>
+							</li>
+							<li>Refactored SQL Queries to utilize the bindVars method of queryFactory.</li>
+							<li>Refactored using a new naming scheme for files (and removed the emphasis on the word SEO).</li>
+							<li>Included the core &quot;plugin&quot; class and associated files.
+								<ul>
+									<li>The class and files are not part of &quot;Ultimate URLs&quot;.</li>
+									<li>Provides for simplification of the installation / upgrade process.</li>
+									<li>Provides for simplification of the removal process.</li>
+									<li>Does some extra checks against Zen Cart's configure.php files.</li>
+								</ul>
+							</li>
+							<li>Updated the readme to provide updated information.<ul>
+								<li>Is now a HTML5 document with text, syntax highlighting, and images.</li>
+								<li>Included information on a workaround for Numinex Users.</li>
+								<li>Included information for multilingual stores.</li>
+								<li>Included new instructions for installation, upgrades, and removal.</li>
+							</ul></li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.212</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Dec 2012</span>
+						</div>
+						<ul>
+							<li>Updated the installation and removal documentation including instructions and notes.</li>
+							<li>Improved performance during the generation of links and canonical links for products.</li>
+							<li>Updated language files to clarify usage of the available options.</li>
+							<li>Updated warning messages used in the configuration menu to provide better feedback.</li>
+							<li>Better handling of extensions for products and categories during installation or when the plugin has been removed / uninstalled.</li>
+							<li>No need to edit the .htaccess file when changing the URL Formats.</li>
+							<li>When changing &quot;non text entry&quot; options the URL cache is reset automatically.</li>
+							<li>Global URL cache can now be re-enabled in the admin configuration if previously disabled (bug in 2.210+).</li>
+							<li>Fixed redirect code for URLs containing unicode characters requiring urlencode / urldecode (bug in 2.210+).</li>
+							<li>All filters are initialized before calling the code to generate the URL caches (bug in 2.210+).</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.211</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Oct 2012</span>
+						</div>
+						<ul>
+							<li>To ensure URLs are W3C compatible, htmlspecialchars is run over all generated URLs with mode and character set (PHP 5.4 compatibility).</li>
+							<li>Setting &quot;Enable automatic rewrite&quot; to true will automatically issue a 301 redirect for URLs not matching the output from zen_href_link.</li>
+							<li>For linked products canonical links are generated when needed by using the product's master category id. The generated links are passed to Zen Cart's canonical link system.</li>
+							<li>Added handling for copy / pasted &quot;Internal URLs&quot; in &quot;EZ-Pages&quot; to make migration to the new version easier for upgraded installations.</li>
+							<li>Updated README_ENGLISH with more detailed installation steps.</li>
+							<li>Changed the names of folders and moved some files around to clarify installation steps.</li>
+							<li>Updated the English language file to clarify the usage of &quot;Enter pages to allow rewrite&quot;.</li>
+							<li>Added option to disable the EZ-Page cache (bug in 2.210+).</li>
+							<li>Page not requiring special handling of parameters will now correctly have the &quot;extension&quot; added to the end of the URL (bug in 2.210+).</li>
+							<li>Cleans up some obsolete configuration options which may still be present when upgrading from a previous version (bug in 2.210+).</li>
+							<li>New .htaccess sample handles product reviews when &quot;Categories as directories&quot; is enabled (bug in 2.210+).</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.210</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Oct 2012</span>
+						</div>
+						<ul>
+							<li>Updated all configuration options to provide better clarity.</li>
+							<li>Added some additional URL Rewrite modes (including short categories as directories).</li>
+							<li>New .htaccess sample to support new modes.</li>
+							<li>Moved the product type code into an init_script to reduce the number of affected core files.</li>
+							<li>Added the ability to enable the EZ-Pages URL cache.</li>
+							<li>If the &quot;page&quot; variable contains &quot;index.php?&quot; and &quot;main_page=&quot; the &quot;page variable will be parsed to determine the appropriate destination page and parameters. You no longer need to edit internal links on EZ-Pages.</li>
+							<li>The generation of the &quot;cPath&quot; parameter is handled automatically.</li>
+							<li>Moved all language specific items into the language folder.</li>
+							<li>Simplified the code used in zen_href_link. Fallback operation uses original Zen Cart function.</li>
+							<li>Created installation, upgrade, and removal scripts. These handle automatically upgrading from older versions without the loss of settings (supports upgrading from version 2.150+).</li>
+							<li>Added affected files for Zen Cart 1.3.9h.</li>
+							<li>Removed obsolete language files.</li>
+							<li>Product links on the shopping_cart strip out the uprid to allow rewritten links to work (bug in 2.200+).</li>
+							<li>&quot;Buy Now&quot; and &quot;Add Selected Products to Cart&quot; on product listing pages will now work (bug in 2.200+).</li>
+							<li>some issues with generating the EZ-Pages cache (bug in 2.200+).</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.207</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Sept 2012</span>
+						</div>
+						<ul>
+							<li>Support for &quot;Multi-Language EZ Pages&quot; plugin (bug in 2.200+).</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.206</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Sept 2012</span>
+						</div>
+						<ul>
+							<li>Included the handler for Custom Product Types.</li>
+							<li>Updated htaccess_sample to include a line supporting linked products when categories as directories is enabled.</li>
+							<li>Updated ZC 1.5.1 Query Cache to add the ability to remove an item from the cache before expiration.</li>
+							<li>Updated ZC 1.5.1 MySQL query_factory to always return a value from the &quot;Execute()&quot; method.</li>
+							<li>Updated ZC 1.5.1 MySQL query_factory to provide better support for cached values.</li>
+							<li>Removed hardcoded table names. Installations with database prefixes will now work (bug in 2.200+).</li>
+							<li>The Product Cache is now generated correctly for non-english language Zen Cart installations (bug in 2.200+).</li>
+							<li>URLs for EZ-Pages are now generated correctly for non-english language Zen Cart installations (bug in 2.200+).</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.205</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Aug 2012</span>
+						</div>
+						<ul>
+							<li>Attempts to cleanup version 2.150 admin page settings (if present).</li>
+							<li>Added support for generating rewritten urls from admin using zen_catalog_href_link.</li>
+							<li>Renamed options in admin to provide better clarity.</li>
+							<li>Using 'ENGINE=MyISAM' instead of 'TYPE=MyISAM' for better MySQL compatibility.</li>
+							<li>Corrected a bug causing admin configuration to not display (bug in 2.200+)</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.200</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?115838">A Ballanger</a>
+							<span class="date">Jun 2012</span>
+						</div>
+						<ul>
+							<li>Added support for the detection and utilization of Unicode regular expressions when supported by PHP.</li>
+							<li>Better compatibility with the Query Cache add-on / plugin</li>
+							<li>Utilizes cache mechanisms built into Zen Cart 1.5 when configured (SQL_CACHE_METHOD)</li>
+							<li>Added support for displaying categories as directories.</li>
+							<li>Added support for defining PCRE based transformations to generated URLs prior to already configured URL filtering.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.150</h3>
+						<div class="meta">
+							<a class="author" href="http://www.jardar.eu">JardaR</a>
+							<span class="date">Mar 2012</span>
+						</div>
+						<ul>
+							<li>Added support for PHP 5.3</li>
+							<li>Only compatible with Zen Cart 1.5</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.110</h3>
+						<div class="meta">
+							<a class="author" href="http://www.zen-cart.com/member.php?22320-swguy">Scott C Wilson (That Software Guy)</a>
+							<span class="date">Aug 2010</span>
+						</div>
+						<ul>
+							<li>Updated 1.3.9 files.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.109</h3>
+						<div class="meta">
+							<span class="author">Mask</span>
+							<span class="date">Apr 2010</span>
+						</div>
+						<ul>
+							<li>Added updated files for Zen cart 1.3.9</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.108</h3>
+						<div class="meta">
+							<span class="author">Ronald Crawford</span>
+							<span class="date">Apr 2010</span>
+						</div>
+						<ul>
+							<li>Added support for EZ-Page URLs</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.106</h3>
+						<div class="meta">
+							<a class="author" href="mailto:antz.bin@gmail.com">Anant Bhatia</a>
+							<span class="date">Jan 2008</span>
+						</div>
+						<ul>
+							<li>Updated for Zen Cart 1.3.8.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 1.105</h3>
+						<div class="meta">
+							<a class="author" href="http://www.imaginacolombia.com">www.imaginacolombia.com</a>
+							<span class="date">July 2007</span>
+						</div>
+						<ul>
+							<li>New config option to select what pages are rewritten and redirected.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.104</h3>
+						<div class="meta">
+							<a class="author" href="http://www.imaginacolombia.com">www.imaginacolombia.com</a>
+							<span class="date">July 2007</span>
+						</div>
+						<ul>
+							<li>Updated for Zen Cart 1.3.7.</li>
+							<li>Added an array to avoid seo in certain pages.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.103</h3>
+						<div class="meta">
+							<span class="author">DrByte</span>
+							<span class="date">Sept 2006</span>
+						</div>
+						<ul>
+							<li>Updated for Zen Cart 1.3.5.</li>
+						</ul>
+					</div>
+					<div class="version">
+						<h3>Version 2.100</h3>
+						<div class="meta">
+							<a class="author" href="http://www.dream-scape.com/pub/zencart/Ultimate_SEO_URLs/">DreamScape</a>
+							<span class="date">Sept 2005</span>
+						</div>
+						<ul>
+							<li>Initial Release</li>
+						</ul>
+					</div>
+				</div>
+				<div id="license">
+					<h2>License</h2>
+					<p>
+						<strong>Ultimate URLs</strong> is released under the
+						General Public License (see the file named LICENSE in
+						the distribution archive for full details).
+					</p>
+					<p>This script is distributed in the hope that it will be
+						useful, but WITHOUT ANY WARRANTY; without even the
+						implied warranty of MERCHANTABILITY or FITNESS FOR A
+						PARTICULAR PURPOSE.
+					</p>
+					<p>Always backup your shop and database before making changes.</p>
+				</div>
+			</div>
+		</div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
+		<script src="js/vendor/jquery-ui-1.10.4.tabs.min.js"></script>
+		<script src="js/vendor/syntaxhighlighter/shCore.js"></script>
+		<script src="js/vendor/syntaxhighlighter/shBrushPhp.js"></script>
+		<script src="js/main.js"></script>
+	</body>
+</html>
