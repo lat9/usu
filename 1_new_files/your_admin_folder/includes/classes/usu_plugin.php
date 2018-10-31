@@ -13,7 +13,7 @@
  * for the Ultimate URLs Zen Cart plugin.
  */
 class usu_plugin extends plugin {
-	public function getVersion() { return '2.215'; }
+	public function getVersion() { return '2.216'; }
 	public function getUniqueKey() { return 'USU'; }
 	public function getUniqueName() { return BOX_CONFIGURATION_USU; }
 	public function getDescription() { return USU_DESCRIPTION; }
@@ -135,15 +135,36 @@ class usu_plugin extends plugin {
 						'`cache_global` TINYINT(1) NOT NULL default \'1\', ' .
 						'`cache_gzip` TINYINT(1) NOT NULL default \'1\', ' .
 						'`cache_method` VARCHAR(20) NOT NULL default \'RETURN\', ' .
-						'`cache_date` DATETIME NOT NULL default \'0000-00-00 00:00:00\', ' .
-						'`cache_expires` DATETIME NOT NULL default \'0000-00-00 00:00:00\', ' .
+						'`cache_date` DATETIME NOT NULL default \'0001-01-01 00:00:00\', ' .
+						'`cache_expires` DATETIME NOT NULL default \'0001-01-01 00:00:00\', ' .
 						'PRIMARY KEY (`cache_id`,`cache_language_id`), ' .
 						'KEY `cache_id` (`cache_id`), ' .
 						'KEY `cache_language_id` (`cache_language_id`), ' .
 						'KEY `cache_global` (`cache_global`) ' .
 					')'
 				);
-			}
+            // -----
+            // On an update, ensure that the datetime fields' defaults are properly set and
+            // update any pre-existing entries that are using the older (now invalid in some
+            // installations) defaults.
+            //
+			} else {
+                $db->Execute(
+                    "ALTER TABLE " . TABLE_USU_CACHE . "
+                        MODIFY `cache_date` DATETIME NOT NULL default '0001-01-01 00:00:00',
+                        MODIFY `cache_expires` DATETIME NOT NULL default '0001-01-01 00:00:00'"
+                );
+                $db->Execute(
+                    "UPDATE " . TABLE_USU_CACHE . "
+                        SET `cache_date` = '0001-01-01 00:00:00'
+                      WHERE `cache_date` = '0000-00-00 00:00:00'"
+                );
+                $db->Execute(
+                    "UPDATE " . TABLE_USU_CACHE . "
+                        SET `cache_expires` = '0001-01-01 00:00:00'
+                      WHERE `cache_expires` = '0000-00-00 00:00:00'"
+                );
+            }
 			if(!$this->dbTableExists(TABLE_USU_CACHE)) {
 				$messageStack->add(sprintf(
 					PLUGIN_INSTALL_ERROR_DATABASE_TABLE,
