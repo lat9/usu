@@ -778,6 +778,13 @@ class usu {
 						'LIMIT 1';
 					$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
 				}
+				elseif (defined('TABLE_EZPAGES_CONTENT')) {
+					$sql = 'SELECT `pages_title` AS `ezpName` ' .
+						'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
+						'WHERE `pages_id`=\':ezpage:\' ' .
+						'AND `languages_id` = \':language:\' ' .
+						'LIMIT 1';
+				}
 				else {
 					$sql = 'SELECT `pages_title` AS `ezpName` ' .
 						'FROM `' . TABLE_EZPAGES . '` ' .
