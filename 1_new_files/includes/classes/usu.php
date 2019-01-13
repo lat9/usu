@@ -783,7 +783,11 @@ class usu {
 						'WHERE `pages_id`=\':ezpage:\' ' .
 						'AND `languages_id` = \':language:\' ' .
 						'LIMIT 1';
+<<<<<<< HEAD
 					$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+=======
+                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+>>>>>>> 6bb8f8becb1673a6d22e9f55d8097b312a87d28c
 				}
 				else {
 					$sql = 'SELECT `pages_title` AS `ezpName` ' .
@@ -1045,11 +1049,20 @@ class usu {
 					'WHERE `languages_id` = \':language:\'';
 				$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
 			} elseif(defined('TABLE_EZPAGES_CONTENT')) {
+<<<<<<< HEAD
 				$sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
 					'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
 					'WHERE `languages_id` = \':language:\'';
 				$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
 			} else {
+=======
+                $sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
+                    'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
+                'WHERE `languages_id` = \':language:\'';
+                $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+            }
+			else {
+>>>>>>> 6bb8f8becb1673a6d22e9f55d8097b312a87d28c
 				$sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
 					'FROM `' . TABLE_EZPAGES . '`';
 			}
