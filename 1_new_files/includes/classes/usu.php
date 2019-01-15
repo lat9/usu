@@ -770,11 +770,10 @@ class usu {
 
 			default:
 				if(defined('TABLE_EZPAGES_TEXT')) {
-					$sql = 'SELECT `et`.`pages_title` AS `ezpName` ' .
-						'FROM `' . TABLE_EZPAGES . '` AS `e`, `' . TABLE_EZPAGES_TEXT . '` AS `et` ' .
-						'WHERE `e`.`pages_id`=\':ezpage:\' ' .
-						'AND `e`.`pages_id` = `et`.`pages_id` ' .
-						'AND `et`.`languages_id` = \':language:\' ' .
+					$sql = 'SELECT `pages_title` AS `ezpName` ' .
+						'FROM `' . TABLE_EZPAGES_TEXT . '`' .
+						'WHERE `pages_id`=\':ezpage:\' ' .
+						'AND `languages_id` = \':language:\' ' .
 						'LIMIT 1';
 					$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
 				}
@@ -784,6 +783,11 @@ class usu {
 						'WHERE `pages_id`=\':ezpage:\' ' .
 						'AND `languages_id` = \':language:\' ' .
 						'LIMIT 1';
+<<<<<<< HEAD
+					$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+=======
+                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+>>>>>>> 6bb8f8becb1673a6d22e9f55d8097b312a87d28c
 				}
 				else {
 					$sql = 'SELECT `pages_title` AS `ezpName` ' .
@@ -1040,15 +1044,27 @@ class usu {
 		$this->is_cached($this->cache_file . 'ezpages', $is_cached, $is_expired);
 		if (!$is_cached || $is_expired) {
 			if(defined('TABLE_EZPAGES_TEXT')) {
-				$sql = 'SELECT `e`.`pages_id` AS `id`, `et`.`pages_title` AS `name` ' .
-					'FROM `' . TABLE_EZPAGES_CONTENT . '` AS `e`, `' . TABLE_EZPAGES_TEXT . '` AS `et` ' .
-					'WHERE `e`.`pages_id` = `et`.`pages_id` ' .
-					'AND `et`.`languages_id` = \':language:\'';
-				$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
-			}
-			else {
 				$sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
-					'FROM `' . TABLE_EZPAGES_CONTENT . '`';
+					'FROM `' .  TABLE_EZPAGES_TEXT . '` ' .
+					'WHERE `languages_id` = \':language:\'';
+				$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+			} elseif(defined('TABLE_EZPAGES_CONTENT')) {
+<<<<<<< HEAD
+				$sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
+					'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
+					'WHERE `languages_id` = \':language:\'';
+				$sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+			} else {
+=======
+                $sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
+                    'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
+                'WHERE `languages_id` = \':language:\'';
+                $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+            }
+			else {
+>>>>>>> 6bb8f8becb1673a6d22e9f55d8097b312a87d28c
+				$sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
+					'FROM `' . TABLE_EZPAGES . '`';
 			}
 
 			$ezpages = $db->Execute($sql, false, true, 43200);
