@@ -13,7 +13,7 @@
  * for the Ultimate URLs Zen Cart plugin.
  */
 class usu_plugin extends plugin {
-	public function getVersion() { return '2.216'; }
+	public function getVersion() { return '2.217'; }
 	public function getUniqueKey() { return 'USU'; }
 	public function getUniqueName() { return BOX_CONFIGURATION_USU; }
 	public function getDescription() { return USU_DESCRIPTION; }
