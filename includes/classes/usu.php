@@ -333,7 +333,7 @@ class usu
 
                     switch (true) {
                         // Handle product urls (check page against handler)
-                        case ($page == zen_get_info_page($p2[1])):
+                        case ($page == $this->getInfoPage($p2[1])):
 
                             // If a cPath was present we need to determine the immediate parent cid
                             $cID = null;
@@ -448,6 +448,30 @@ class usu
 
         return $url;
     }
+    
+    protected function getInfoPage($products_id)
+    {
+        // -----
+        // Quick return if the zen_get_info_page function exists, noting that when
+        // run in the zc156 and earlier admin that it isn't!
+        //
+        if (function_exists('zen_get_info_page')) {
+            return zen_get_info_page($products_id);
+        }
+        
+        // -----
+        // If the function doesn't exist, emulate its output.
+        //
+        $check = $GLOBALS['db']->Execute(
+            "SELECT pt.products_type
+               FROM " . TABLE_PRODUCT_TYPES . " pt
+                    INNER JOIN " . TABLE_PRODUCTS . " p
+                        ON p.products_id = pt.type_id
+              WHERE pt.type_id = " . (int)$products_id . "
+              LIMIT 1"
+        );
+        return ($check->EOF) ? 'product_info' : ($check->fields['products_type'] . '_info');
+    }
 
     /**
      * Convert an array of query parameters to a URI query string. This is safe
@@ -504,7 +528,7 @@ class usu
      * @param integer $pID
      * @return string product name
      */
-    public function get_product_name($pID, $cID = null) 
+    protected function get_product_name($pID, $cID = null) 
     {
         global $db;
 
@@ -584,7 +608,7 @@ class usu
      * @param integer $pID
      * @return string product canonical
      */
-    public function get_product_canonical($pID) 
+    protected function get_product_canonical($pID) 
     {
         global $db;
 
@@ -662,7 +686,7 @@ class usu
      * @param integer $cID NOTE: passed by reference
      * @return string category name
      */
-    public function get_category_name(&$cID, $format = USU_FORMAT)
+    protected function get_category_name(&$cID, $format = USU_FORMAT)
     {
         global $db;
 
@@ -736,7 +760,7 @@ class usu
      * @param integer $mID
      * @return string manufacturer name
      */
-    public function get_manufacturer_name($mID) 
+    protected function get_manufacturer_name($mID) 
     {
         global $db;
 
@@ -772,7 +796,7 @@ class usu
      * @param integer $ezpID
      * @return string expage name
      */
-    public function get_ezpages_name($ezpID) 
+    protected function get_ezpages_name($ezpID) 
     {
         global $db;
 
@@ -832,7 +856,7 @@ class usu
  * @param integer $original Single category_id passed back by reference
  * @return string Full cPath string
  */
-    public function get_full_cPath($cID, &$original)
+    protected function get_full_cPath($cID, &$original)
     {
         if (is_numeric(strpos($cID, '_')) ) {
             $temp = @explode('_', $cID);
@@ -856,7 +880,7 @@ class usu
  * @param mixed $categories Passed by reference
  * @param integer $categories_id
  */
-    public function get_parent_categories_id(&$categories, $categories_id) 
+    protected function get_parent_categories_id(&$categories, $categories_id) 
     {
         global $db;
 
@@ -887,7 +911,7 @@ class usu
      * @param mixed $path Passed by reference
      * @param integer $categories_id
      */
-    public function get_parent_categories_path(&$path, $categories_id, &$cPath = array()) 
+    protected function get_parent_categories_path(&$path, $categories_id, &$cPath = array()) 
     {
         global $db;
 
@@ -948,7 +972,7 @@ class usu
      * @param string $string input text
      * @return string filtered text
      */
-    public function filter($string)
+    protected function filter($string)
     {
         $retval = $string;
 
@@ -1008,7 +1032,7 @@ class usu
      * @param string $regexp the regexp string from the database
      * @return mixed
      */
-    public function expand($regexp) 
+    protected function expand($regexp) 
     {
         if (zen_not_null($regexp)) {
             if ($data = @explode(',', $regexp)) {
@@ -1040,7 +1064,7 @@ class usu
  * @param integer $limit
  * @return string Short word filtered
  */
-    public function short_name($str, $limit=3)
+    protected function short_name($str, $limit=3)
     {
         if(defined('USU_FILTER_SHORT_WORDS')) {
             $limit = (int)USU_FILTER_SHORT_WORDS;
@@ -1063,7 +1087,7 @@ class usu
     /**
      * Function to generate EZ-Pages cache entries
      */
-    public function generate_ezpages_cache() 
+    protected function generate_ezpages_cache() 
     {
         global $db;
 
@@ -1105,7 +1129,7 @@ class usu
     /**
      * Function to generate products cache entries
      */
-    public function generate_products_cache() 
+    protected function generate_products_cache() 
     {
         global $db;
 
@@ -1154,7 +1178,7 @@ class usu
     /**
      * Function to generate manufacturers cache entries
      */
-    public function generate_manufacturers_cache() 
+    protected function generate_manufacturers_cache() 
     {
         global $db;
 
@@ -1182,7 +1206,7 @@ class usu
     /**
      * Function to generate categories cache entries
      */
-    public function generate_categories_cache() 
+    protected function generate_categories_cache() 
     {
         global $db;
 
@@ -1246,7 +1270,7 @@ class usu
      * @param integer $global Sets whether cache record is global is scope
      * @param string $expires Sets the expiration
      */
-    public function save_cache($name, $value, $gzip=1, $global=0, $expires = '+30 days')
+    protected function save_cache($name, $value, $gzip=1, $global=0, $expires = '+30 days')
     {
         global $db;
 
@@ -1308,7 +1332,7 @@ class usu
      * @param string $name
      * @return mixed
      */
-    public function get_cache($name = 'GLOBAL') 
+    protected function get_cache($name = 'GLOBAL') 
     {
         global $db;
 
@@ -1368,7 +1392,7 @@ class usu
     /**
      * Function to perform basic garbage collection for database cache system
      */
-    public function cache_gc() 
+    protected function cache_gc() 
     {
         global $db;
 
@@ -1386,7 +1410,7 @@ class usu
      * @param boolean $is_cached NOTE: passed by reference
      * @param boolean $is_expired NOTE: passed by reference
      */
-    public function is_cached($name, &$is_cached, &$is_expired) 
+    protected function is_cached($name, &$is_cached, &$is_expired) 
     {
         global $db, $queryCache;
 
