@@ -276,7 +276,7 @@ class usu
             }
         }
 
-        switch(true){
+        switch (true) {
             case (!isset($_SESSION['customer_id']) && defined('ENABLE_PAGE_CACHE') && ENABLE_PAGE_CACHE == 'true' && class_exists('page_cache')):
                 $return = $link . $separator . '<zensid>';
                 break;
