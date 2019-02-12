@@ -21,16 +21,6 @@ if (isset($_GET['main_page'])) {
 
     if ($_GET['main_page'] == FILENAME_PRODUCT_INFO && isset($_GET['products_id'])) {
         // Retrieve the product type handler from the database
-        $type = $db->Execute(
-            "SELECT pt.type_handler
-               FROM " . TABLE_PRODUCTS . " p
-                    LEFT JOIN " . TABLE_PRODUCT_TYPES . "pt
-                        ON pt.type_id = p.products_type
-              WHERE p.products_id = " . (int)$_GET['products_id'] . "
-              LIMIT 1"
-        );
-        if (!$type->EOF) {
-            $_GET['main_page'] = $type->fields['type_handler'] . '_info';
-        }
+        $_GET['main_page'] = zen_get_info_page($_GET['products_id']);
     }
 }
