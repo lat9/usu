@@ -99,47 +99,23 @@ class usu
         $this->canonical();
 
         // Start logging
-        $this->logstream = false;
+        $this->debug = false;
         if (defined('USU_DEBUG') && USU_DEBUG == 'true') {
-            $date = new DateTime();
-
-            // The base path for the log file is determined now to ensure it
-            // will be available when this instance is garbage collected.
-            $this->logfile = (defined('DIR_FS_LOGS') ? DIR_FS_LOGS : DIR_FS_SQL_CACHE . '/logs') .
-                '/ultimate_urls/' . (IS_ADMIN_FLAG ? 'adm-' . ltrim(basename($_SERVER['SCRIPT_NAME'], '.php')) : $_GET['main_page']) .
-                $date->format('-Y-M-d');
-
-            // Open a new log stream
-            $this->logstream = fopen('php://temp', 'r+');
-
-            // Log startup information
-            $this->log('============================================================');
-            $this->log('===== URL Generation Log Started ' . $date->format('Y-M-d\TH:i:s'));
-            $this->log('============================================================');
-            $this->log('Real URI:      ' . $this->real_uri);
-            $this->log('Request URI:   ' . $this->uri);
-            $this->log('Canonical URI: ' . $this->canonical);
-            $this->log(PHP_EOL, false);
+            $this->debug = true;
+            if (IS_ADMIN_FLAG) {
+                $this->logfile = DIR_FS_LOGS . '/usu-adm-' . date('Ymd-His') . '.log';
+                $this->logpage = $_SERVER['SCRIPT_NAME'];
+            } else {
+                $this->logfile = DIR_FS_LOGS . '/usu-' . date('Ymd-His') . '.log';
+                $this->logpage = (isset($_GET['main_page'])) ? $_GET['main_page'] : 'index';
+            }
         }
 
         // Redirect if enabled and neccessary
         if (defined('USU_REDIRECT') && USU_REDIRECT == 'true') {
-            $this->log('============================================================');
-            $this->log('===== Redirect Check Requested.');
-            $this->log('============================================================');
-
             if ($this->needs_redirect()) {
                 $this->redirect();
             }
-            $this->log(PHP_EOL, false);
-        }
-
-        // Minor performance increase when not enabled
-        if ($this->logstream !== false) {
-            $this->log('============================================================');
-            $this->log('===== Generated Alternative URLs');
-            $this->log('============================================================');
-            $this->log(PHP_EOL, false);
         }
     }
 
@@ -162,9 +138,17 @@ class usu
         if (!defined('USU_ENABLED') || USU_ENABLED == 'false') {
             return null;
         }
+        
+        // -----
+        // If this is the first href-link generated for the current page's rendering, include some information
+        // regarding which page (storefront vs. admin) that the request is being generated for.
+        //
+        if (!isset($this->first_access)) {
+            $this->first_access = true;
+            $this->log("=====> URL Generation Log Started, for page ($logdata), real_uri: {$this->real_url}, uri: {$this->uri}.");
+        }
 
-        $this->log(PHP_EOL, false);
-        $this->log(
+        $this->log(PHP_EOL .
             'Request sent to href_link(' . var_export($page, true) . ', ' .
             var_export($parameters, true) . ', ' . var_export($connection, true) . ', ' .
             var_export($add_session_id, true) . ', ' . var_export($search_engine_safe, true) . ', ' .
@@ -208,7 +192,7 @@ class usu
 
         // Do not rewrite if page is not in the list of pages to rewrite
         if (!$this->filter_page($page)) {
-            $this->log('Page was not in the list of pages to rewrite, URI not generated!');
+            $this->log("Page ($page) was not in the list of pages to rewrite, URI not generated!");
             return null;
         }
 
@@ -247,8 +231,9 @@ class usu
 
         $link = $this->add_sid($link, $add_session_id, $connection, $separator);
 
-        $this->log('Generated URL: ' . htmlspecialchars($link, ENT_QUOTES, CHARSET, false));
-        return htmlspecialchars($link, ENT_QUOTES, CHARSET, false);
+        $generated_url = htmlspecialchars($link, ENT_QUOTES, CHARSET, false);
+        $this->log("Generated URL: $generated_url");
+        return $generated_url;
     }
 
     /**
@@ -1508,7 +1493,6 @@ class usu
         // in use by this module, do not redirect.
         if ($_SESSION['languages_id'] != $this->languages_id) {
             $this->log('NO REDIRECT: Language of the URI did not match the current language.');
-            $this->log(PHP_EOL, false);
             return false;
         }
 
@@ -1582,14 +1566,12 @@ class usu
             $old_params = explode('&', $parsed_uri['query']);
             asort($old_params);
             if (count($params) != count($old_params)) {
-                $this->log('Number of paramaters did not match the requested URI.');
+                $this->log('Number of parameters did not match the requested URI.');
                 return true;
             } else {
                 for ($i = 0,$n = count($params); $i < $n; $i++) {
                     if (urldecode($params[$i]) != urldecode($old_params[$i])) {
-                        $this->log('The value of paramaters did not match the requested URI.');
-                        $this->log('Alternate URI param: ' . urldecode($params[$i]));
-                        $this->log('Requested URI param: ' . urldecode($old_params[$i]));
+                        $this->log('The value of parameters did not match the requested URI. Alternate URL param: ' . urldecode($params[$i]) . ', requested URI param: ' . urldecode($old_params[$i]));
                         return true;
                     }
                 }
@@ -1652,46 +1634,11 @@ class usu
      * @param string $string the string to log.
      * @param bool $eol true to add an End Of Line character to the string,
      *         false otherwise.
-     *
-     * @return bool true if the log was written, false otherwise.
      */
-    protected function log($string, $eol = true) 
+    protected function log($message) 
     {
-        $retval = false;
-
-        // The logstream is initialized in the constructor if enabled
-        if ($this->logstream !== false) {
-            $retval = (fwrite($this->logstream, ((string) $string) . ($eol ? PHP_EOL : '')) !== false);
-        }
-
-        return $retval;
-    }
-
-    /**
-     * Called when this instance is garbage collected of the running PHP process
-     * ends. If a log stream has been opened, this will write the stream to a
-     * file and close the stream.
-     */
-    function __destruct() 
-    {
-        if ($this->logstream !== false) {
-
-            // Create any needed directories
-            if (is_dir(dirname($this->logfile)) || mkdir(dirname($this->logfile), 0777, true)) {
-
-                // Give each request it's own file
-                $i = 0;
-                while(file_exists($this->logfile . '_' . $i . '.log')) {
-                    $i++;
-                }
-                $this->logfile .= '_' . $i . '.log';
-
-                // Write the log to a file
-                rewind($this->logstream);
-                file_put_contents($this->logfile, stream_get_contents($this->logstream));
-            }
-
-            fclose($this->logstream);
+        if ($this->debug) {
+            error_log(((string)$message) . PHP_EOL, 3, $this->logfile);
         }
     }
 }
