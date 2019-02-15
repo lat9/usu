@@ -19,7 +19,7 @@ Within that module's `zen_href_link` function, find and remove the following sec
     // END alternative URLs patch
 ```
 
-Check the `global` directive at the very beginning of the function, ensuring that the variables' listed includes `zco_notifier`, adding that variable name if not present.
+Check the `global` directive at the very beginning of the function, ensuring that the variables listed includes `$zco_notifier`, adding that variable name if not present.
 
 
 If the following code block is not present at the beginning of the function, just after the `global` directive, add the code block at that point.
