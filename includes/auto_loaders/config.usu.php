@@ -1,6 +1,6 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart.
+ * Part of Ultimate URLs, v3.0.0+, for Zen Cart.
  *
  * @copyright Copyright 2019        Cindy Merkin (vinosdefrutastropicales.com)
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
@@ -16,7 +16,8 @@ $autoLoadConfig[71][] = array(
     'loadFile' => 'init_usu.php'
 );
 
-// must be 120 since 110 is where the language components are established for the session
+// Using 120 since 110 is where the language components are established for the session
+// and 161 is where the canonical link is determined
 $autoLoadConfig[120][] = array(
     'autoType' => 'class',
     'loadFile' => 'observers/UsuObserver.php'
