@@ -29,8 +29,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
             'init_includes/init_usu.php',
         ),
        'admin_includes' => array(
+            'reset_seo_cache.php',
             'auto_loaders/config.seo.php',
             'auto_loaders/config.usu.php',
+            'classes/usu_plugin.php',
             'classes/observers/UsuAdminObserver.php',
             'extra_datafiles/seo.php',
             'extra_datafiles/usu.php',
@@ -41,6 +43,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
             'init_includes/init_usu_admin_install.php',
             'init_includes/init_usu_admin_update.php',
             'init_includes/init_usu_admin_update_from_ultimate_seo.php',
+            'init_includes/init_usu_install.php',
             'languages/english/usu_configuration.php',
             'languages/english/usu_uninstall.php',
             'languages/english/extra_definitions/seo.php',
