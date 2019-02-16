@@ -1,0 +1,4 @@
+/pages            export-ignore
+.gitattributes    export-ignore
+*.yml             export-ignore
+readme.md         export-ignore
