@@ -15,6 +15,11 @@ class UsuObserver extends base
     {
         $this->enabled = (defined('USU_ENABLED') && USU_ENABLED == 'true');
         if ($this->enabled) {
+            if (!class_exists('usu')) {
+                require DIR_WS_CLASSES . 'usu.php';
+            }
+            $this->usu = new usu();
+            
             $this->attach (
                 $this, 
                 array( 
@@ -22,11 +27,6 @@ class UsuObserver extends base
                    'NOTIFY_SEFU_INTERCEPT', 
                 )
             );
-            
-            if (!class_exists('usu')) {
-                require DIR_WS_CLASSES . 'usu.php';
-            }
-            $this->usu = new usu();
         }
     }
   
