@@ -48,6 +48,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
             'languages/english/usu_uninstall.php',
             'languages/english/extra_definitions/seo.php',
             'languages/english/extra_definitions/usu.php',
+            'languages/english/modules/plugins/usu.php',
         ),
         'admin_root' => array(
             'usu_uninstall.php',
