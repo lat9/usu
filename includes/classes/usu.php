@@ -448,14 +448,14 @@ class usu
         // If the function doesn't exist, emulate its output.
         //
         $check = $GLOBALS['db']->Execute(
-            "SELECT pt.products_type
-               FROM " . TABLE_PRODUCT_TYPES . " pt
-                    INNER JOIN " . TABLE_PRODUCTS . " p
-                        ON p.products_id = pt.type_id
-              WHERE pt.type_id = " . (int)$products_id . "
+            "SELECT pt.type_handler
+               FROM " . TABLE_PRODUCTS . " p
+                    INNER JOIN " . TABLE_PRODUCT_TYPES . " pt
+                        ON pt.type_id = p.products_type
+              WHERE p.products_id = " . (int)$products_id . "
               LIMIT 1"
         );
-        return ($check->EOF) ? 'product_info' : ($check->fields['products_type'] . '_info');
+        return ($check->EOF) ? 'product_info' : ($check->fields['type_handler'] . '_info');
     }
 
     /**
