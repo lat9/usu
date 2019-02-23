@@ -1,10 +1,22 @@
 # Upgrading Ultimate URLs from a Version Prior to v3.0.0
 
-v3.0.0 of Ultimate URLs (a.k.a. _USU_) makes a **major** change to both the plugin's installation procedures and the way it handles the generation of its alternate URLs.  This document identifies the steps you will need to take to remove previous versions' **core-file** changes prior to any update to v3.0.0 or later.
+v3.0.0 of Ultimate URLs (a.k.a. _USU_) makes a **major** change to both the plugin's installation procedures and the way it handles the generation of its alternate URLs.  This document identifies the steps you will need to take to remove previous versions' **core-file** changes and installation files _prior to_ any update to v3.0.0 or later.
 
 **Note**: If your store _still_ runs on Zen Cart 1.5.0 or earlier, the notifications required below _will not operate properly_; you'll need to continue using your current installation of _USU_.
 
-## /includes/functions/html_output.php
+## Remove Installation Files for Previous _USU_ Versions
+
+To ensure that a previous installation of _USU_ doesn't mistakenly re-update itself, you'll need to delete the following files from your site's admin directory, noting that any use of `admin` in these instructions refers to your "secret" admin-directory's actual name:
+
+1. `admin/includes/classes/usu_plugin.php`
+1. `admin/includes/extra_configures/plugin.php`
+1. `admin/includes/init_includes/init_usu_install.php`
+
+## Remove Zen Cart "Core File" Modifications
+
+_USU_ v3.0.0 and later no longer requires any Zen Cart **core-file** modifications.  This section identifies the changes made to **core-files** by prior versions of _USU_ and must be removed using a text-editor _before_ you install _USU_ v3.0.0+.
+
+### /includes/functions/html_output.php
 
 Within that module's `zen_href_link` function, find and remove the following section:
 
@@ -30,9 +42,9 @@ If the following code block is not present at the beginning of the function, jus
     if($link !== null) return $link;
 ``` 
 
-## /includes/init_includes/overrides/init_canonical.php
+### /includes/init_includes/overrides/init_canonical.php
 
-_USU_ no longer requires changes to this module, but there are other plugins that also distribute this override-file. 
+_USU_ no longer requires changes to this module, but there are other plugins that also distribute this override-file.  If you keep this file, be sure that you've updated it to reflect your current version of Zen Cart!
 
 If none of your store's other plugins require this override, the file can be safely removed; otherwise, find the following block and remove it:
 
@@ -45,7 +57,7 @@ If none of your store's other plugins require this override, the file can be saf
     break;
 ```
 
-## /admin/includes/functions/html_output.php
+### /admin/includes/functions/html_output.php
 
 Within that module's `zen_catalog_href_link` function, find and remove the following section:
 
@@ -69,7 +81,7 @@ If the following code block is not present at the beginning of the function, jus
     if($link !== null) return $link;
 ```
 
-## /admin/categories.php
+### /admin/categories.php
 
 Find this code-block towards the beginning of the module and remove it:
 
@@ -81,7 +93,7 @@ Find this code-block towards the beginning of the module and remove it:
 ```
 
 
-## /admin/product.php
+### /admin/product.php
 
 Find this code-block towards the beginning of the module and remove it:
 
