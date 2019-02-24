@@ -26,7 +26,7 @@ To ensure that a previous installation of _USU_ doesn't mistakenly re-update its
 
 ### Zen Cart "Core File" Modifications
 
-_USU_ v3.0.0 and later no longer requires any Zen Cart **core-file** modifications.  This section identifies the changes made to **core-files** by prior versions of _USU_.  Each modified file must either be _restored_ to its as-shipped version from your store's Zen Cart distribution, or _removed_ using a text-editor _before_ you install _USU_ v3.0.0+.
+_USU_ v3.0.0 and later no longer requires any Zen Cart **core-file** modifications.  This section identifies the changes made to **core-files** by prior versions of _USU_.  Each modified file must either be _restored_ to its as-shipped version from your store's Zen Cart distribution, or _modified_ using a text-editor _before_ you install _USU_ v3.0.0+.
 
 **Note:** In either case, make sure that each file doesn't have additional changes required by other add-ons currently installed in your store.  I'll suggest using, for each of the files listed below, a file-comparison tool (e.g. _WinMerge_ or _Beyond Compare_) to determine what changes have been made over-and-above your store's current Zen Cart version.
 
