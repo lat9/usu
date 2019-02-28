@@ -11,7 +11,7 @@ v3.0.0 of Ultimate URLs (a.k.a. _USU_) makes a **major** change to both the plug
 There are two ways you can remove those previous _USU_ changes **before** you upgrade to v3.0.0; in either case, you should back-up your store's file-system _before_ proceeding!
 
 
-1.  If your store (and _USU_) is running on a version of Zen Cart _prior to_ Zen Cart 1.5.6, run the _USU_ auto-uninstall that is distributed with your current version of _USU_.  Make note of your current configuration settings, so that you can apply them once you install _USU_ v3.0.0+.
+1.  If your store (and _USU_) is running on a version of Zen Cart _prior to_ Zen Cart 1.5.6, run the _USU_ auto-uninstall that is distributed with your current version of _USU_.  Make note of your current configuration settings, so that you can re-apply them once you install _USU_ v3.0.0+.
 2.  If you have already upgraded your store to Zen Cart 1.5.6 or later, you'll need to perform some file-related changes directly, as identified in the following sections.
 
 ## Manually Removing a Previous _USU_ Version
