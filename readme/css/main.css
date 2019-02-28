@@ -187,6 +187,13 @@ ol.zero ol li { text-indent: 0; }
 ol.zero ol li:before { content: none; }
 ol.zero li.append-step:after { content: "(Go back to Step " counter(item) ")"; font-size: x-small; }
 
+.usu-table { width: 100%; }
+.usu-table , .usu-table  th, .usu-table  td {border: 1px solid #444; border-collapse: collapse; padding: 0.3em; vertical-align: top; }
+.usu-table  ol { padding-left: 2em; }
+
+.ph { color: blue; }
+.smaller { font-size: smaller; }
+
 /* ==========================================================================
    Helper classes
    ========================================================================== */
