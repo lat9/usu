@@ -63,7 +63,7 @@ $config_updates = array(
     ),
     'SEO_ADD_CPATH_TO_PRODUCT_URLS' => array(
         'new_name' => 'CPATH',
-        'value' => ((defined('SEO_ADD_CPATH_TO_PRODUCT_URLS') && SEO_ADD_CPATH_TO_PRODUCT_URLS == 'false') ? 'off' : 'auto',
+        'value' => (defined('SEO_ADD_CPATH_TO_PRODUCT_URLS') && SEO_ADD_CPATH_TO_PRODUCT_URLS == 'false') ? 'off' : 'auto',
     ),
     'SEO_URL_CPATH' => array(
         'new_name' => 'CPATH',
