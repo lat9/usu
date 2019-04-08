@@ -261,14 +261,21 @@
                             <th>Changes</th>
                         </tr>
                         <tr>
-                            <td>3.0.1-beta1</td>
-                            <td>2019-03-03</td>
+                            <td>3.0.1-beta2</td>
+                            <td>2019-04-08</td>
                             <td>lat9</td>
                             <td>This release contains changes associated with the following issues:<ol>
                                 <li>BUGFIX: PHP error logged on upgrade.</li>
+                                <li>CHANGE: Update USU's uninstall procedure to allow <em>only</em> the configuration settings to be removed.</li>
+                                <li>CHANGE: Simplify handling of configuration settings.</li>
                                 <li>The following files were changed:<ol type="a">
-                                    <li>/YOUR_ADMIN/init_includes/init_usu_admin.php</li>
-                                    <li>/YOUR_ADMIN/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                                    <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                                    <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_config_changes.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                                    <li>/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</li>
+                                    <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</li>
                                 </ol></li>
                             </ol></td>
                         </tr>

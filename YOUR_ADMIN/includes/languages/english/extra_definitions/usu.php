@@ -10,9 +10,13 @@ define('BOX_CONFIGURATION_USU', 'Ultimate URLs');
 define('BOX_CONFIGURATION_USU_UNINSTALL', 'Uninstall Ultimate URLs');
 
 // Messages used on the configuration page
-define('USU_PLUGIN_WARNING_CONFIG_ADJUSTED', 'Due to the setting you have selected for \'%s\', the value for \'%s\' has been changed to \'%s\'!');
-define('USU_PLUGIN_WARNING_CONFIG_INVALID', 'The value you have selected (\'%1$s\') for \'%2$s\' is invalid and has been changed to \'%3$s\'!');
-define('USU_PLUGIN_WARNING_GLOBAL_DISABLED', 'The global USU cache has been disabled. This is not recommended and will disable all other URL caches.');
+define('USU_PLUGIN_WARNING_GLOBAL_DISABLED', 'The global USU cache has been disabled. This is not recommended and overrides USU\'s caching of <em>all</em> URL types.');
+
+define('USU_PLUGIN_WARNING_SHORT_WORDS', 'The value entered for the <em>Filter short words</em> setting (<b>%s</b>) is not a positive integer; the setting has been defaulted to <b>0</b>.');
+define('USU_PLUGIN_WARNING_CATEGORY_DIR', 'The setting for <em>Display categories as directories</em> has been changed to <code>short</code>, since its <code>full</code> setting is incompatible with <em>Format of alternate URLs</em> setting of <code>parent</code>.');
+define('USU_PLUGIN_WARNING_FORMAT', 'The setting for <em>Format of alternate URLs</em> has been changed to <code>original</code>, since its <code>parent</code> setting is incompatible with <em>Display categories as directories</em> setting of <code>full</code>.');
+
+define('USU_PLUGIN_CACHE_RESET', 'The USU cache (%s) has been reset.');
 
 // General warning messages
 define('USU_PLUGIN_WARNING_TABLE', 'WARNING: The database table \'%s\' is missing!<ul><li>The SQL caches for \'Ultimate URLs\' have been disabled to prevent errors.</li><li>This may lead to degraded performance when loading pages.</li><li><b>Recommendation:</b> run the installer included with \'Ultimate URLs\'.</li></ul>');

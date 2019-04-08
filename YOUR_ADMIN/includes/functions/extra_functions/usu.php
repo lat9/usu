@@ -8,7 +8,7 @@
  */
 
 /**
- * This function provides a means to reset USU's URL cache, either **all* cached entries
+ * This function provides a means to reset USU's URL cache, either **all** cached entries
  * or individual ones.  The function is invoked by:
  *
  * 1) Configuration->Ultimate URLs->Reset URL Cache, set to 'true'
@@ -49,6 +49,8 @@ function usu_reset_cache_data($value)
             "DELETE FROM " . TABLE_USU_CACHE . "
               WHERE cache_name $where_clause"
         );
+        $cache_type = ($value == 'true') ? 'global' : $value;
+        $GLOBALS['messageStack']->add_session(sprintf(USU_PLUGIN_CACHE_RESET, $cache_type), 'success');
     }
     return 'false';
 }
@@ -62,6 +64,7 @@ function usu_reset_cache_data($value)
  */
 function usu_check_cpath_option($value) 
 {
+/*
     $value_ok = true;
     switch ($value) {
         case 'disable':
@@ -79,6 +82,7 @@ function usu_check_cpath_option($value)
         zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CPATH' LIMIT 1");
         usu_reset_cache_data('true');
     }
+*/
     return $value;
 }
 
@@ -94,11 +98,13 @@ function usu_check_cpath_option($value)
  */
 function usu_check_url_format_option($value) 
 {
+/*
     switch ($value) {
         case 'enable-parent':
+            $value = 'parent';
             if (USU_CATEGORY_DIR == 'full') {
                 zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => 'short'), 'update', "configuration_key = 'USU_CATEGORY_DIR' LIMIT 1");
-                echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_CONFIG_ADJUSTED, usu_get_configuration_title('USU_FORMAT'), usu_get_configuration_title('USU_CATEGORY_DIR'), 'short') . '</span></div>';
+                echo '<div><span class="alert">' . USU_PLUGIN_WARNING_CATEGORY_DIR . '</span></div>';
             }
             break;
         case 'enable-original':
@@ -110,6 +116,7 @@ function usu_check_url_format_option($value)
         default:
             break;
     }
+*/
     return $value;
 }
 
@@ -125,6 +132,7 @@ function usu_check_url_format_option($value)
  */
 function usu_check_category_dir_option($value) 
 {
+/*
     switch ($value) {
         case 'disable':
             $value = 'off';
@@ -133,19 +141,21 @@ function usu_check_category_dir_option($value)
             break;
 
         case 'enable-full':
+            $value = 'full';
             if (USU_FORMAT == 'parent') {
                 zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => 'original'), 'update', "configuration_key = 'USU_FORMAT' LIMIT 1");
-                echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_CONFIG_ADJUSTED, usu_get_configuration_title('USU_CATEGORY_DIR'), usu_get_configuration_title('USU_FORMAT'), 'original') . '</span></div>';
+                echo '<div><span class="alert">' . USU_PLUGIN_WARNING_FORMAT . '</span></div>';
             }
             break;
         case 'enable-short':
-            $value = substr($value, 7);
+            $value = 'short';
             zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CATEGORY_DIR' LIMIT 1");
             usu_reset_cache_data('true');
             break;
         default:
             break;
     }
+*/
     return $value;
 }
 
@@ -158,34 +168,39 @@ function usu_check_category_dir_option($value)
  */
 function usu_check_remove_chars_option($value) 
 {
+/*
     switch($value) {
         case 'enable-non-alphanumerical':
         case 'enable-punctuation':
-            $value = substr($value, 7);
+            $value = str_replace('enable-', '', $value);
             zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_REMOVE_CHARS' LIMIT 1");
             usu_reset_cache_data('true');
             break;
+            
         default:
             break;
     }
+*/
     return $value;
 }
 
 /**
- * Checks the value of the short words option. If the value is not an
- * integer, the value will be changed to 0.
+ * Checks the value of the short words option. If the value is not a positive integer,
+ * the value will be changed to 0.
  *
  * @param string $value the current value for the short words option
  * @return string the value to display for the short words option
  */
 function usu_check_short_words($value) 
 {
-    if (!ctype_digit($value)) {
-        $old_value = $value;
+/*
+    if (!ctype_digit($value) || ((int)$value) < 0) {
+        zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => '0'), 'update', "configuration_key = 'USU_FILTER_SHORT_WORDS' LIMIT 1");
+        
+        echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_SHORT_WORDS, $value) . '</span></div>';
         $value = '0';
-        zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_FILTER_SHORT_WORDS' LIMIT 1");
-        echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_CONFIG_INVALID, $old_value, usu_get_configuration_title('USU_FILTER_SHORT_WORDS'), $value) . '</span></div>';
     }
+*/
     return $value;
 }
 
@@ -198,6 +213,7 @@ function usu_check_short_words($value)
  */
 function usu_check_cache_options($value) 
 {
+/*
     $temp = explode('-', $value);
     if (count($temp) < 2) {
         $temp[] = 'global';
@@ -228,6 +244,7 @@ function usu_check_cache_options($value)
         default:
             break;
     }
+*/
     return $value;
 }
 
@@ -239,17 +256,21 @@ function usu_check_cache_options($value)
  */
 function usu_set_cpath_option($value) 
 {
+/*
     if ($value == 'auto') {
         $options = array(
             'auto',
             'disable'
         );
     } else {
+        $value = 'off';
         $options = array(
             'enable-auto',
             'off'
         );
     }
+*/
+    $options = array('auto', 'off');
     return zen_cfg_select_option($options, $value);
 }
 
@@ -261,17 +282,21 @@ function usu_set_cpath_option($value)
  */
 function usu_set_url_format_option($value) 
 {
+/*
     if ($value == 'original') {
         $options = array(
             'original',
             'enable-parent'
         );
     } else {
+        $value = 'parent';
         $options = array(
             'enable-original',
             'parent'
         );
     }
+*/
+    $options = array('original', 'parent');
     return zen_cfg_select_option($options, $value);
 }
 
@@ -283,25 +308,29 @@ function usu_set_url_format_option($value)
  */
 function usu_set_category_dir_option($value) 
 {
+/*
     if ($value == 'off') {
         $options = array(
             'off',
             'enable-short',
             'enable-full'
         );
-    } elseif($value == 'full') {
+    } elseif ($value == 'full') {
         $options = array(
             'disable',
             'enable-short',
             'full'
         );
     } else {
+        $value = 'short';
         $options = array(
             'disable',
             'short',
             'enable-full'
         );
     }
+*/
+    $options = array('off', 'short', 'full');
     return zen_cfg_select_option($options, $value);
 }
 
@@ -313,6 +342,7 @@ function usu_set_category_dir_option($value)
  */
 function usu_set_remove_chars_option($value) 
 {
+/*
     if ($value == 'non-alphanumerical') {
         $options = array(
             'non-alphanumerical',
@@ -324,6 +354,8 @@ function usu_set_remove_chars_option($value)
             'punctuation'
         );
     }
+*/
+    $options = array('non-alphanumerical', 'punctuation');
     return zen_cfg_select_option($options, $value);
 }
 
@@ -335,6 +367,7 @@ function usu_set_remove_chars_option($value)
  */
 function usu_set_global_cache_option($value) 
 {
+/*
     if ($value == 'true') {
         $options = array(
             'true',
@@ -346,6 +379,8 @@ function usu_set_global_cache_option($value)
             'false'
         );
     }
+*/
+    $options = array('true', 'false');
     return zen_cfg_select_option($options, $value);
 }
 
@@ -357,6 +392,7 @@ function usu_set_global_cache_option($value)
  */
 function usu_set_cache_options($cache, $value) 
 {
+/*
     $cache = strtolower($cache);
     $key = 'USU_CACHE_' . strtoupper($cache);
     if (constant($key) == 'true') {
@@ -370,6 +406,8 @@ function usu_set_cache_options($cache, $value)
             'false'
         );
     }
+*/
+    $options = array('true', 'false');
     return zen_cfg_select_option($options, $value);
 }
 

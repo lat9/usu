@@ -14,8 +14,8 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.0.1-beta1');
-define('USU_CURRENT_UPDATE_DATE', '2019-03-03');
+define('USU_CURRENT_VERSION', '3.0.1-beta2');
+define('USU_CURRENT_UPDATE_DATE', '2019-04-08');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
@@ -156,4 +156,13 @@ if (in_array($usu_current_page, $usu_action_pages) && !empty($_GET['action'])) {
         default:
             break;
     }
+}
+
+// -----
+// Perform some checks for option-dependent USU configuration changes and values.  For versions of USU
+// prior to v3.0.1, these checks were performed within various 'usu_check_*' functions associated
+// with a configuration key's 'use_function' settings.
+//
+if ($usu_current_page == FILENAME_CONFIGURATION && isset($_GET['gID']) && $_GET['gID'] == $cgi && isset($_GET['action']) && $_GET['action'] == 'save') {
+    require DIR_WS_INCLUDES . 'init_includes/init_usu_admin_config_changes.php';
 }
