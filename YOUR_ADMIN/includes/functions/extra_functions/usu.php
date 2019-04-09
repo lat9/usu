@@ -55,6 +55,10 @@ function usu_reset_cache_data($value)
     return 'false';
 }
 
+// =======================================
+// ==> NOTE: All the following functions are deprecated as of v3.0.1 and will be removed in a future USU release.
+// =======================================
+
 /**
  * Checks the value of the cPath option. If the value has been changed, the
  * new value will be saved to the database and the URL cache reset.
