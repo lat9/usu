@@ -14,8 +14,8 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.0.1-beta2');
-define('USU_CURRENT_UPDATE_DATE', '2019-04-08');
+define('USU_CURRENT_VERSION', '3.0.1-beta3');
+define('USU_CURRENT_UPDATE_DATE', '2019-04-09');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
@@ -29,12 +29,7 @@ if (!isset($_SESSION['admin_id'])) {
 // Locate (or create) the plugin's "Configuration Group", recording the configuration group's ID
 // for use by the install/update processing.
 //
-// Note: This section also detects if an old version of 'Ultimate SEO' is installed, setting
-// a flag for use by the plugin's upgrade processing if so detected.
-//
 $configurationGroupTitle = 'Ultimate URLs';
-$ultimate_seo_found = false;
-$is_new_install = false;
 $check = $db->Execute(
     "SELECT configuration_group_id
        FROM " . TABLE_CONFIGURATION_GROUP . "
@@ -43,7 +38,6 @@ $check = $db->Execute(
 );
 if (!$check->EOF) {
     $cgi = $check->fields['configuration_group_id'];
-    $ultimate_seo_found = true;
     $db->Execute(
         "UPDATE " . TABLE_CONFIGURATION_GROUP . "
             SET configuration_group_title = '$configurationGroupTitle'
@@ -60,7 +54,6 @@ if (!$check->EOF) {
     if (!$check->EOF) {
         $cgi = $check->fields['configuration_group_id'];
     } else {
-        $is_new_install = true;
         $db->Execute(
             "INSERT INTO " . TABLE_CONFIGURATION_GROUP . " 
                 (configuration_group_title, configuration_group_description, sort_order, visible) 
@@ -79,13 +72,17 @@ if (!$check->EOF) {
 unset($check);
 
 // -----
-// Perform initial installation processes.
+// Perform initial installation processes if not previously installed OR if the
+// previously-installed version was less than 3.0.1 (correcting install/upgrade issues
+// possibly introduced by v3.0.0).
 //
-if (!defined('USU_VERSION')) {
+if (!defined('USU_VERSION') || (USU_VERSION != USU_CURRENT_VERSION && version_compare(USU_VERSION, '3.0.1', '<'))) {
     require DIR_WS_INCLUDES . 'init_includes/init_usu_admin_install.php';
-    $messageStack->add(sprintf(USU_INSTALLED_SUCCESS, USU_CURRENT_VERSION), 'success');
     
-    define('USU_VERSION', '0.0.0');
+    if (!defined('USU_VERSION')) {
+        $messageStack->add(sprintf(USU_INSTALLED_SUCCESS, USU_CURRENT_VERSION), 'success');
+        define('USU_VERSION', '0.0.0');
+    }
 }
 
 // -----
