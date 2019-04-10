@@ -27,11 +27,12 @@ if (zen_page_key_exists('UltimateSEO')) {
 // See if any 'Ultimate SEO' settings are in effect, carrying over those pre-existing settings
 // into the to-be-installed 'Ultimate URLs' settings.
 //
-$add_product_cat_value = (defined('SEO_ADD_PRODUCT_CAT') && SEO_ADD_PRODUCT_CAT == 'true') ? 'parent' : 'original';
-if (defined('SEO_ADD_CAT_PARENT') && SEO_ADD_CAT_PARENT == 'true') {
-    $add_product_cat_value = 'original';
+$url_format_value = ((defined('SEO_ADD_PRODUCT_CAT') && SEO_ADD_PRODUCT_CAT == 'true') || (defined('SEO_URL_FORMAT') && SEO_URL_FORMAT != 'enable-original')) ? 'parent' : 'original';
+$usu_config_install['FORMAT']['configuration_value'] = $url_format_value;
+
+if (defined('SEO_URL_CATEGORY_DIR')) {
+    $usu_config_install['CATEGORY_DIR']['configuration_value'] = (SEO_URL_CATEGORY_DIR == 'disabled') ? 'off' : ((SEO_URL_CATEGORY_DIR == 'enable-short') ? 'short' : 'full');
 }
-$usu_config_install['FORMAT']['configuration_value'] = $add_product_cat_value;
 
 $pcre = (defined('SEO_URLS_FILTER_CHARS') && zen_not_null(SEO_URLS_FILTER_CHARS)) ? SEO_URLS_FILTER_CHARS : '';
 $pcre_suffix = (defined('SEO_URLS_FILTER_PCRE') && SEO_URLS_FILTER_PCRE != '') ? SEO_URLS_FILTER_PCRE : '';
@@ -43,6 +44,9 @@ if ($pcre != '' || $pcre_suffix != '') {
 if (defined('SEO_REMOVE_ALL_SPEC_CHARS')) {
     $usu_config_install['REMOVE_CHARS']['configuration_value'] = (SEO_REMOVE_ALL_SPEC_CHARS == 'true') ? 'non-alphanumerical' : 'punctuation';
 }
+if (defined('SEO_URL_REMOVE_CHARS')) {
+    $usu_config_install['REMOVE_CHARS']['configuration_value'] = (SEO_URL_REMOVE_CHARS == 'enable-non-alphanumerical') ? 'non-alphanumerical' : 'punctuation';
+}
 
 if (defined('SEO_ADD_CAT_PARENT')) {
     $usu_config_install['CATEGORY_DIR']['configuration_value'] = (SEO_ADD_CAT_PARENT == 'false') ? 'off' : 'full';
@@ -50,6 +54,9 @@ if (defined('SEO_ADD_CAT_PARENT')) {
 
 if (defined('SEO_ADD_CPATH_TO_PRODUCT_URLS')) {
     $usu_config_install['CPATH']['configuration_value'] = (SEO_ADD_CPATH_TO_PRODUCT_URLS == 'false') ? 'off' : 'auto';
+}
+if (defined('SEO_URL_CPATH')) {
+    $usu_config_install['CPATH']['configuration_value'] = (SEO_URL_CPATH == 'enable-auto') ? 'auto' : 'off';
 }
 
 if (defined('SEO_URL_END')) {

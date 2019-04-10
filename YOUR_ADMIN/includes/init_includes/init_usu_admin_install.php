@@ -51,7 +51,7 @@ error_log('Original configuration values: ' . PHP_EOL . json_encode($usu_install
 // remove all configuration settings associated with 'Ultimate SEO'.
 //
 require DIR_WS_INCLUDES . 'init_includes/init_usu_admin_update_from_ultimate_seo.php';
-error_log('After Ultimate SEO check: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
+error_log(PHP_EOL . 'After Ultimate SEO check: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
 
 // -----
 // Check for the presence of each of the USU_* configuration settings, using those previous settings as an overriding
@@ -65,7 +65,7 @@ foreach ($usu_install_config as $usu_key => $values) {
         $usu_install_config[$usu_key]['configuration_value'] = constant("USU_$usu_key");
     }
 }
-error_log('After Ultimate URLs check: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
+error_log(PHP_EOL . 'After Ultimate URLs check: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
 
 // -----
 // Now, sanitize each of the selection-related settings to ensure that valid values are present.  If the possible values for
@@ -88,7 +88,7 @@ foreach ($usu_install_config as $usu_key => $values) {
         }
     }
 }
-error_log('After sanitization: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
+error_log(PHP_EOL . 'After sanitization: ' . PHP_EOL . json_encode($usu_install_config) . PHP_EOL, 3, $usu_install_filename);
 
 // -----
 // Remove any previous USU configuration; the required updates will be performed next, using defaults based
