@@ -28,47 +28,47 @@ if (zen_page_key_exists('UltimateSEO')) {
 // into the to-be-installed 'Ultimate URLs' settings.
 //
 $url_format_value = ((defined('SEO_ADD_PRODUCT_CAT') && SEO_ADD_PRODUCT_CAT == 'true') || (defined('SEO_URL_FORMAT') && SEO_URL_FORMAT != 'enable-original')) ? 'parent' : 'original';
-$usu_config_install['FORMAT']['configuration_value'] = $url_format_value;
+$usu_install_config['FORMAT']['configuration_value'] = $url_format_value;
 
 if (defined('SEO_URL_CATEGORY_DIR')) {
-    $usu_config_install['CATEGORY_DIR']['configuration_value'] = (SEO_URL_CATEGORY_DIR == 'disabled') ? 'off' : ((SEO_URL_CATEGORY_DIR == 'enable-short') ? 'short' : 'full');
+    $usu_install_config['CATEGORY_DIR']['configuration_value'] = (SEO_URL_CATEGORY_DIR == 'disabled') ? 'off' : ((SEO_URL_CATEGORY_DIR == 'enable-short') ? 'short' : 'full');
 }
 
 $pcre = (defined('SEO_URLS_FILTER_CHARS') && zen_not_null(SEO_URLS_FILTER_CHARS)) ? SEO_URLS_FILTER_CHARS : '';
 $pcre_suffix = (defined('SEO_URLS_FILTER_PCRE') && SEO_URLS_FILTER_PCRE != '') ? SEO_URLS_FILTER_PCRE : '';
 if ($pcre != '' || $pcre_suffix != '') {
     $pcre_separator = ($pcre != '' && $pcre_suffix != '') ? ', ' : '';
-    $usu_config_install['FILTER_PCRE']['configuration_value'] = $pcre . $pcre_separator . $pcre_suffix;
+    $usu_install_config['FILTER_PCRE']['configuration_value'] = $pcre . $pcre_separator . $pcre_suffix;
 }
 
 if (defined('SEO_REMOVE_ALL_SPEC_CHARS')) {
-    $usu_config_install['REMOVE_CHARS']['configuration_value'] = (SEO_REMOVE_ALL_SPEC_CHARS == 'true') ? 'non-alphanumerical' : 'punctuation';
+    $usu_install_config['REMOVE_CHARS']['configuration_value'] = (SEO_REMOVE_ALL_SPEC_CHARS == 'true') ? 'non-alphanumerical' : 'punctuation';
 }
 if (defined('SEO_URL_REMOVE_CHARS')) {
-    $usu_config_install['REMOVE_CHARS']['configuration_value'] = (SEO_URL_REMOVE_CHARS == 'enable-non-alphanumerical') ? 'non-alphanumerical' : 'punctuation';
+    $usu_install_config['REMOVE_CHARS']['configuration_value'] = (SEO_URL_REMOVE_CHARS == 'enable-non-alphanumerical') ? 'non-alphanumerical' : 'punctuation';
 }
 
 if (defined('SEO_ADD_CAT_PARENT')) {
-    $usu_config_install['CATEGORY_DIR']['configuration_value'] = (SEO_ADD_CAT_PARENT == 'false') ? 'off' : 'full';
+    $usu_install_config['CATEGORY_DIR']['configuration_value'] = (SEO_ADD_CAT_PARENT == 'false') ? 'off' : 'full';
 }
 
 if (defined('SEO_ADD_CPATH_TO_PRODUCT_URLS')) {
-    $usu_config_install['CPATH']['configuration_value'] = (SEO_ADD_CPATH_TO_PRODUCT_URLS == 'false') ? 'off' : 'auto';
+    $usu_install_config['CPATH']['configuration_value'] = (SEO_ADD_CPATH_TO_PRODUCT_URLS == 'false') ? 'off' : 'auto';
 }
 if (defined('SEO_URL_CPATH')) {
-    $usu_config_install['CPATH']['configuration_value'] = (SEO_URL_CPATH == 'enable-auto') ? 'auto' : 'off';
+    $usu_install_config['CPATH']['configuration_value'] = (SEO_URL_CPATH == 'enable-auto') ? 'auto' : 'off';
 }
 
 if (defined('SEO_URL_END')) {
-    $usu_config_install['END']['configuration_value'] = SEO_URL_END;
+    $usu_install_config['END']['configuration_value'] = SEO_URL_END;
 }
 
 if (defined('SEO_URLS_FILTER_SHORT_WORDS')) {
-    $usu_config_install['FILTER_SHORT_WORDS']['configuration_value'] = SEO_URLS_FILTER_SHORT_WORDS;
+    $usu_install_config['FILTER_SHORT_WORDS']['configuration_value'] = SEO_URLS_FILTER_SHORT_WORDS;
 }
 
 if (defined('SEO_URLS_ONLY_IN') && SEO_URLS_ONLY_IN != '') {
-    $usu_config_install['FILTER_PAGES']['configuration_value'] = SEO_URLS_ONLY_IN;
+    $usu_install_config['FILTER_PAGES']['configuration_value'] = SEO_URLS_ONLY_IN;
 }
 
 // -----
@@ -85,7 +85,7 @@ $true_false_updates = array(
 );
 foreach ($true_false_updates as $seo_key => $usu_key) {
     if (defined($seo_key)) {
-        $usu_config_install[$usu_key]['configuration_value'] = constant($seo_key);
+        $usu_install_config[$usu_key]['configuration_value'] = constant($seo_key);
     }
 }
 
