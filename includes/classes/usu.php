@@ -1049,24 +1049,25 @@ class usu
  * @param integer $limit
  * @return string Short word filtered
  */
-    protected function short_name($str, $limit=3)
+    protected function short_name($str, $limit = 3)
     {
-        if(defined('USU_FILTER_SHORT_WORDS')) {
+        if (defined('USU_FILTER_SHORT_WORDS')) {
             $limit = (int)USU_FILTER_SHORT_WORDS;
         }
-        $foo = @explode('-', $str);
+        
+        $str = (string)$str;
+        if (empty($str)) {
+            return $str;
+        }
+        
+        $foo = explode('-', $str);
         $container = array();
-        foreach ($foo as $index => $value){
-            switch (true) {
-                case (strlen($value) <= $limit):
-                    continue;
-                default:
-                    $container[] = $value;
-                    break;
+        foreach ($foo as $index => $value) {
+            if (strlen($value) > $limit) {
+                $container[] = $value;
             }
-        } # end foreach
-        $container = (sizeof($container) > 1) ? implode('-', $container) : $str;
-        return $container;
+        }
+        return (count($container) > 1) ? implode('-', $container) : $str;
     }
 
     /**
