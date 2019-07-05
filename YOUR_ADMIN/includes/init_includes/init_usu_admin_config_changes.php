@@ -120,6 +120,17 @@ if (!$usu_check->EOF) {
             $_POST['configuration_value'] = 'false';
             break;
         // -----
+        // The 'Enter PCRE Filter Rules' value requires that the filters be entered as
+        // find1=>replace1[,find2=>replace2]...
+        //
+        // Unfortunately, the Zen Cart admin sanitization is changing the => to =&gt; which
+        // breaks the URL handling on the storefront.  If that setting is being updated, make
+        // sure that any =&gt; values are properly changed back to =>.
+        //
+        case 'USU_FILTER_PCRE':
+            $_POST['configuration_value'] = str_replace('=&gt;', '=>', $_POST['configuration_value']);
+            break;
+        // -----
         // For all other settings, no action required.
         //
         default:
