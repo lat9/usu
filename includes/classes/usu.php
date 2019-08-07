@@ -919,7 +919,7 @@ class usu
 
             // Add category id to cPath and name to path
             $cPath[sizeof($cPath)] = $categories_id;
-            $path[sizeof($path)] = $this->filter($parent->fields['name']) . '-c-' .
+            $path[sizeof($path)] = $this->filter($parent->fields['name']) . $this->reg_anchors['cPath'] .
             (sizeof($cPath) > 1 ? implode('_', $cPath) : $categories_id);
         }
     }
