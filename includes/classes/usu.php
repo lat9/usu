@@ -435,7 +435,10 @@ class usu
                             $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
                             break;
 
-                        case ($page == FILENAME_PRODUCT_INFO):
+                        // -----
+                        // If the current 'page' requested is a 'product_[something_]info', don't add the parameter.
+                        //
+                        case (preg_match('/product_(\S+_)?info/', $page)):
                             break;
 
                         default:
