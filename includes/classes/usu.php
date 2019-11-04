@@ -145,7 +145,7 @@ class usu
         //
         if (!isset($this->first_access)) {
             $this->first_access = true;
-            $this->log("=====> URL Generation Log Started, for page ($logdata), real_uri: {$this->real_url}, uri: {$this->uri}.");
+            $this->log("=====> URL Generation Log Started, for page: {$this->uri}.");
         }
 
         $this->log(PHP_EOL .
@@ -198,7 +198,7 @@ class usu
 
         // The base URL for the request
         if (IS_ADMIN_FLAG === true) {
-            if ($connection == 'SSL' && ENABLE_SSL_CATALOG == 'true') {
+            if ($connection == 'SSL' && ENABLE_SSL == 'true') {
                 $link = HTTPS_CATALOG_SERVER;
                 if ($use_dir_ws_catalog) {
                     $link .= DIR_WS_HTTPS_CATALOG;
@@ -286,7 +286,7 @@ class usu
     protected function parse_parameters($page, $params, &$separator) 
     {
         // We always need cPath to be first, so find and extract
-        $cPath = array();
+        $cPath = false;
         if (1 === preg_match('/(?:^|&)c[Pp]ath=([^&]+)/', $params, $cPath)) {
             $params = str_replace($cPath[0], '', $params);
             $cPath = $cPath[1];
@@ -295,7 +295,7 @@ class usu
         // Cleanup parameters and convert to initial array
         $params = trim($params, "?& \t\n\r\0\x0B");
         $p = array();
-        if (zen_not_null($params)) {
+        if (!empty($params)) {
             $p = @explode('&', $params);
         }
 
@@ -308,8 +308,14 @@ class usu
         $this->log(var_export($p, true));
 
         $container = array();
-        foreach ($p as $index => $valuepair){
-            $p2 = @explode('=', $valuepair);
+        foreach ($p as $valuepair) {
+            // -----
+            // No '=' separating the key from its value?
+            if (strpos($valuepair, '=') === false) {
+                $p2 = array($valuepair, '');
+            } else {
+                $p2 = explode('=', $valuepair);
+            }
 
             switch ($p2[0]) {
                 case 'products_id':
@@ -1516,21 +1522,14 @@ class usu
             return false;
         }
 
-        // Build the params for zen_href_link
-        $params = array();
-        foreach ($_GET as $key => $value) {
-            if ($key == 'main_page') {
-                continue;
-            }
-
-            // Fix the case sensitivity, shopping cart sometimes breaks this
-            if ($key == 'cpath') {
-                $key = 'cPath';
-            }
-
-            $params[] = $key . '=' . $value;
-        }
-        $params = (sizeof($params) > 0) ? implode('&', $params) : '';
+        // -----
+        // Form a string of all $_GET parameters (without the 'main_page'), then change
+        // any occurrence of 'cpath' to its 'cPath' form (sometimes broken in previous
+        // Zen Cart versions of the shopping cart) and lop off any trailing '&'.
+        //
+        $params = zen_get_all_get_params(array('main_page'));
+        $params = str_replace('cpath=', 'cPath=', $params);
+        $params = rtrim($params, '&');
         $this->log('Params from $_GET: ' . $params);
 
         // Determine the alternative URL for the request
@@ -1567,7 +1566,7 @@ class usu
             $old_params = explode('&', $parsed_uri['query']);
             asort($old_params);
             if (count($params) != count($old_params)) {
-                $this->log('Number of parameters did not match the requested URI.');
+                $this->log('Number of parameters did not match the requested URI: ' . $this->redirect_uri['query'] . ' vs. ' . $parsed_uri['query']);
                 return true;
             } else {
                 for ($i = 0,$n = count($params); $i < $n; $i++) {
