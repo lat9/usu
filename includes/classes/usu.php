@@ -287,9 +287,9 @@ class usu
     {
         // We always need cPath to be first, so find and extract
         $cPath = false;
-        if (1 === preg_match('/(?:^|&)c[Pp]ath=([^&]+)/', $params, $cPath)) {
-            $params = str_replace($cPath[0], '', $params);
-            $cPath = $cPath[1];
+        if (1 === preg_match('/(?:^|&)c[Pp]ath=([^&]+)/', $params, $path)) {
+            $params = str_replace($path[0], '', $params);
+            $cPath = $path[1];
         }
 
         // Cleanup parameters and convert to initial array
@@ -300,66 +300,107 @@ class usu
         }
 
         // Add the cPath to the start of the parameters if present
-        if (is_string($cPath)) {
+        if ($cPath !== false) {
             array_unshift($p, 'cPath=' . $cPath);
         }
 
         $this->log('Parsing Parameters for ' . $page);
         $this->log(var_export($p, true));
 
-        $container = array();
+        $link_params = array();
         foreach ($p as $valuepair) {
             // -----
-            // No '=' separating the key from its value?
+            // No '=' separating the key from its value?  Set it, so that the array has at least
+            // two elements.
+            //
             if (strpos($valuepair, '=') === false) {
                 $p2 = array($valuepair, '');
             } else {
                 $p2 = explode('=', $valuepair);
             }
 
+            // -----
+            // Determine if the to-be-generated URL is for one of the 'encoded' pages.
+            //
             switch ($p2[0]) {
+                // -----
+                // If the 'products_id' variable is present, it could be for a product's details page or
+                // a product's reviews listing or detailed review.
+                //
                 case 'products_id':
+                    // -----
                     // Make sure if uprid is passed it is converted to the correct pid
-                    $p2[1] = zen_get_prid($p2[1]);
-
+                    //
+                    $prid = (int)zen_get_prid($p2[1]);
+                    
+                    // -----
+                    // If a cPath was supplied for the link, grab the immediate parent 'category'.
+                    //
+                    $cID = null;
+                    if ($cPath !== false) {
+                        $cID = strrpos($cPath, '_');
+                        if ($cID !== false) {
+                            $cID = substr($cPath, $cID + 1);
+                        } else {
+                            $cID = $cPath;
+                        }
+                    }
+                    
+                    // -----
+                    // Now, check for various pages whose URLs are encoded by USU.
+                    //
+                    $url_created = true;
                     switch (true) {
-                        // Handle product urls (check page against handler)
-                        case ($page == $this->getInfoPage($p2[1])):
-
-                            // If a cPath was present we need to determine the immediate parent cid
-                            $cID = null;
-                            if (array_key_exists('cPath', $container)) {
-                                $cID = strrpos($container['cPath'], '_');
-                                if($cID !== false) {
-                                    $cID = substr($container['cPath'], $cID+1);
-                                } else {
-                                    $cID = $container['cPath'];
-                                }
-
-                                if (USU_CATEGORY_DIR != 'off' || USU_CPATH != 'auto') {
-                                    unset($container['cPath']);
-                                }
+                        // -----
+                        // A product's details' page, e.g. product_info.
+                        //
+                        case ($page == $this->getInfoPage($prid)):
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), $p2[0], $prid, USU_END, $separator);
+                            
+                            // -----
+                            // Note: The (string) cast is needed, otherwise the (now integer) $prid will be a match
+                            // to its uprid (if supplied)!
+                            //
+                            if (((string)$prid) != $p2[1]) {
+                                $link_params[] = $valuepair;
                             }
-                            $url = $this->make_url($page, $this->get_product_name($p2[1], $cID), $p2[0], $p2[1], USU_END, $separator);
                             break;
+
+                        // -----
+                        // A listing of a product's reviews.
+                        //
                         case ($page == FILENAME_PRODUCT_REVIEWS):
-                            if (array_key_exists('cPath', $container) && (USU_CATEGORY_DIR != 'off' || USU_CPATH != 'auto')) {
-                                unset($container['cPath']);
-                            }
-                            $url = $this->make_url($page, $this->get_product_name($p2[1], $cID), 'products_id_review', $p2[1], USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review', $prid, USU_END, $separator);
                             break;
+
+                        // -----
+                        // The display of a product's review details.
+                        //
                         case ($page == FILENAME_PRODUCT_REVIEWS_INFO):
-                            if (array_key_exists('cPath', $container) && (USU_CATEGORY_DIR != 'off' || USU_CPATH != 'auto')) {
-                                unset($container['cPath']);
-                            }
-                            $url = $this->make_url($page, $this->get_product_name($p2[1], $cID), 'products_id_review_info', $p2[1], USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_info', $prid, USU_END, $separator);
                             break;
+
+                        // -----
+                        // Anything else, just add the parameter to the link's parameters.
+                        //
                         default:
-                            $container[$p2[0]] = $p2[1];
+                            $url_created = false;
+                            $link_params[] = $valuepair;
                             break;
+                    }
+                    
+                    // -----
+                    // If a product-specific URL was created and the store's configuration indicates that no cPath parameter should
+                    // be included, remove it from the current link parameters.
+                    //
+                    if ($url_created && $cPath !== false && (USU_CATEGORY_DIR != 'off' || USU_CPATH != 'auto')) {
+                        unset($link_params[0]);
                     }
                     break;
 
+                // -----
+                // A 'cPath' parameter is normally included on listing pages (for the categories' listings).
+                //
                 case 'cPath':
                     switch (true) {
                         case ($p2[1] == ''):
@@ -383,9 +424,9 @@ class usu
                             break;
 
                         default:
-                            $container[$p2[0]] = $p2[1];
+                            $link_params[] = $valuepair;
                             break;
-                        }
+                    }
                     break;
 
                 case 'manufacturers_id':
@@ -393,12 +434,14 @@ class usu
                         case ($page == FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
                             $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
                             break;
+
                         case ($page == FILENAME_PRODUCT_INFO):
                             break;
+
                         default:
-                            $container[$p2[0]] = $p2[1];
+                            $link_params[] = $valuepair;
                             break;
-                        }
+                    }
                     break;
 
                 case 'pID':
@@ -406,8 +449,9 @@ class usu
                         case ($page == FILENAME_POPUP_IMAGE):
                             $url = $this->make_url($page, $this->get_product_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
                             break;
+
                         default:
-                            $container[$p2[0]] = $p2[1];
+                            $link_params[] = $valuepair;
                             break;
                     }
                     break;
@@ -417,24 +461,23 @@ class usu
                         case ($page == FILENAME_EZPAGES):
                             $url = $this->make_url($page, $this->get_ezpages_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
                             break;
+
                         default:
-                            $container[$p2[0]] = $p2[1];
+                            $link_params[] = $valuepair;
                             break;
-                        }
+                    }
                     break;
 
                 default:
-                    $container[$p2[0]] = $p2[1];
+                    $link_params[] = $valuepair;
                     break;
             }
         }
 
         $url = isset($url) ? $url : $page . USU_END;
-        if (sizeof($container) > 0) {
-            if ($imploded_params = $this->build_query($container)) {
-                $url .= $separator . zen_output_string($imploded_params);
-                $separator = '&';
-            }
+        if (!empty($link_params)) {
+            $url .= $separator . zen_output_string(implode('&', $link_params));
+            $separator = '&';
         }
 
         return $url;
@@ -1455,35 +1498,25 @@ class usu
         $this->real_uri = ltrim(basename($_SERVER['SCRIPT_NAME']) . ($_SERVER['QUERY_STRING'] != '' ? '?' . $_SERVER['QUERY_STRING'] : ''), '/' );
         $this->canonical = null;
 
-        if ($this->filter_page($_GET['main_page']) && array_key_exists('products_id', $_GET)) {
-            // Retrieve the product type handler from the database
-            $sql = 'SELECT `pt`.`type_handler` ' .
-                'FROM `'. TABLE_PRODUCTS .'` AS `p` ' .
-                'LEFT JOIN `'. TABLE_PRODUCT_TYPES .'` AS `pt` ON `pt`.`type_id` = `p`.`products_type` ' .
-                'WHERE `p`. `products_id` = \':pid:\' LIMIT 1';
-            $sql = $db->bindVars($sql, ':pid:', $_GET['products_id'], 'integer');
-            $type = $db->Execute($sql);
-            if (!$type->EOF) {
-                // Validate this was a request to the product page
-                $product_page = $type->fields['type_handler'] . '_info';
-                if ($_GET['main_page'] == $product_page) {
-                    // Only add the canonical if one is found
-                    $this->canonical = $this->get_product_canonical((int)$_GET['products_id']);
-                    if ($this->canonical !== null) {
-                        $separator = '?';
-                        $this->canonical = $this->make_url(
-                            $product_page,
-                            $this->canonical,
-                            'products_id', (int)$_GET['products_id'],
-                            USU_END,
-                            $separator
-                        );
-                        $this->canonical = ($request_type == 'SSL' ? HTTPS_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_SERVER . DIR_WS_CATALOG) . htmlspecialchars($this->canonical, ENT_QUOTES, CHARSET, false);
-                        unset($separator);
-                    }
+        if ($this->filter_page($_GET['main_page']) && isset($_GET['products_id'])) {
+            $product_page = $this->getInfoPage((int)$_GET['products_id']);
+            if ($_GET['main_page'] == $product_page) {
+                // Only add the canonical if one is found
+                $this->canonical = $this->get_product_canonical((int)$_GET['products_id']);
+                if ($this->canonical !== null) {
+                    $separator = '?';
+                    $this->canonical = $this->make_url(
+                        $product_page,
+                        $this->canonical,
+                        'products_id', (int)$_GET['products_id'],
+                        USU_END,
+                        $separator
+                    );
+                    $this->canonical = ($request_type == 'SSL' ? HTTPS_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_SERVER . DIR_WS_CATALOG) . htmlspecialchars($this->canonical, ENT_QUOTES, CHARSET, false);
+                    unset($separator);
                 }
             }
-            unset($type, $product_page, $separator);
+            unset($product_page, $separator);
         }
     }
 
