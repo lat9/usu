@@ -276,7 +276,7 @@ class usu
     }
 
     /**
-     * Parses the paramaters for a page to generate a valid url for the page.
+     * Parses the parameters for a page to generate a valid url for the page.
      *
      * @param string $page the name of the page
      * @param string $params any paramaters for the page
@@ -568,7 +568,8 @@ class usu
     protected function get_product_name($pID, $cID = null) 
     {
         global $db;
-
+        $pID = (int)$pID;
+        $categories_clause = ($cID !== null) ? (' AND ptc.categories_id = ' . (int)$cID) : '';
         // Handle generating the product name
         switch (true) {
             case (defined('PRODUCT_NAME_' . $pID)):
@@ -581,24 +582,24 @@ class usu
 
             default:
                 if (USU_FORMAT == 'parent') {
-                    $sql = 'SELECT `pd`.`products_name` AS `pName`, `ptc`.`categories_id` AS `c_id`, `p`.`master_categories_id` AS `master_id` ' .
-                        'FROM `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                        'LEFT JOIN `' . TABLE_PRODUCTS . '` AS `p` ' .
-                        'ON `pd`.`products_id`=`p`.`products_id` ' .
-                        'LEFT JOIN `' . TABLE_PRODUCTS_TO_CATEGORIES . '` AS `ptc` ' .
-                        'ON `pd`.`products_id`=`ptc`.`products_id` ' .
-                        'WHERE `pd`.`products_id`=\':pid:\' ' .
-                        ($cID !== null ? 'AND `ptc`.`categories_id` = \':cid:\'' : '' ) .
-                        'AND `language_id`=\':language:\' LIMIT 1';
-                    $sql = $db->bindVars($sql, ':cid:', $cID, 'integer');
+                    $sql =
+                        "SELECT pd.products_name AS pName, ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                           FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
+                                LEFT JOIN " . TABLE_PRODUCTS . " p
+                                    ON p.products_id = pd.products_id
+                                LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
+                                    ON ptc.products_id = pd.products_id
+                          WHERE pd.products_id = $pID
+                            AND pd.language_id = {$this->languages_id}" . $categories_clause . "
+                          LIMIT 1";
                 } else {
-                    $sql = 'SELECT `pd`.`products_name` as `pName` ' .
-                        'FROM `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                        'WHERE `products_id`=\':pid:\' ' .
-                        'AND `language_id`=\':language:\' LIMIT 1';
+                    $sql = 
+                        "SELECT pd.products_name as pName
+                           FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
+                          WHERE pd.products_id = $pID
+                            AND pd.language_id = {$this->languages_id}
+                          LIMIT 1";
                 }
-                $sql = $db->bindVars($sql, ':pid:', $pID, 'integer');
-                $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
                 $result = $db->Execute($sql, false, true, 43200);
                 $pName = $this->filter($result->fields['pName']);
 
@@ -615,15 +616,14 @@ class usu
 
         // Add the category
         if (USU_CATEGORY_DIR != 'off') {
-            $sql = 'SELECT `ptc`.`categories_id` AS `c_id`, `p`.`master_categories_id` AS `master_id` ' .
-                'FROM `' . TABLE_PRODUCTS . '` AS `p` ' .
-                'LEFT JOIN `' . TABLE_PRODUCTS_TO_CATEGORIES . '` AS `ptc` ' .
-                'ON `p`.`products_id`=`ptc`.`products_id` ' .
-                'WHERE `p`.`products_id`=\':pid:\' ' .
-                ($cID !== null ? 'AND `ptc`.`categories_id` = \':cid:\'' : '' ) .
-                'LIMIT 1';
-            $sql = $db->bindVars($sql, ':cid:', $cID, 'integer');
-            $sql = $db->bindVars($sql, ':pid:', $pID, 'integer');
+            $sql = 
+                "SELECT ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                   FROM " . TABLE_PRODUCTS . " p
+                        LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
+                            ON ptc.products_id = p.products_id
+                  WHERE p.products_id = $pID" . $categories_clause . "
+                  LIMIT 1";
+
 
             $result = $db->Execute($sql, false, true, 43200);
             $category = '';
@@ -650,14 +650,16 @@ class usu
         global $db;
 
         $retval = null;
+        $pID = (int)$pID;
         // Only need to add the canonicals if different paths exist
         if (USU_CATEGORY_DIR != 'off') {
-            $sql = 'SELECT `ptc`.`categories_id` AS `c_id`, `p`.`master_categories_id` AS `master_id` ' .
-                'FROM `' . TABLE_PRODUCTS . '` AS `p` ' .
-                'LEFT JOIN `' . TABLE_PRODUCTS_TO_CATEGORIES . '` AS `ptc` ' .
-                'ON `p`.`products_id`=`ptc`.`products_id` ' .
-                'WHERE `p`.`products_id`=\':pid:\' LIMIT 1';
-            $sql = $db->bindVars($sql, ':pid:', $pID, 'integer');
+            $sql = 
+                "SELECT ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                   FROM " . TABLE_PRODUCTS . " AS p
+                        LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
+                            ON p.products_id = ptc.products_id
+                  WHERE p.products_id = $pID
+                  LIMIT 1";
             $result = $db->Execute($sql, false, true, 43200);
             if (!$result->EOF) {
                 $cID = (int)$result->fields['c_id'];
@@ -666,8 +668,7 @@ class usu
                 // Master category and product category do not match. This
                 // product will need a canonical.
                 if ($cID != $masterID) {
-                    $retval = $this->get_category_name($masterID) .
-                    $this->reg_anchors['cPath'] . $masterID . '/';
+                    $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
 
                     // Get the product name
                     switch (true) {
@@ -681,27 +682,29 @@ class usu
 
                         default:
                             if (USU_FORMAT == 'parent') {
-                                $sql = 'SELECT `pd`.`products_name` AS `pName`, `ptc`.`categories_id` AS `c_id`, `p`.`master_categories_id` AS `master_id` ' .
-                                    'FROM `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                                    'LEFT JOIN `' . TABLE_PRODUCTS . '` AS `p` ' .
-                                    'ON `pd`.`products_id`=`p`.`products_id` ' .
-                                    'LEFT JOIN `' . TABLE_PRODUCTS_TO_CATEGORIES . '` AS `ptc` ' .
-                                    'ON `pd`.`products_id`=`ptc`.`products_id` ' .
-                                    'WHERE `pd`.`products_id`=\':pid:\' ' .
-                                    'AND `language_id`=\':language:\' LIMIT 1';
+                                $sql =
+                                    "SELECT pd.products_name AS pName, ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                                       FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
+                                            LEFT JOIN " . TABLE_PRODUCTS . " p
+                                                ON p.products_id = pd.products_id
+                                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
+                                                ON ptc.products_id = pd.products_id
+                                      WHERE pd.products_id = $pID
+                                        AND pd.language_id = {$this->languages_id}" . $categories_clause . "
+                                      LIMIT 1";
                             } else {
-                                $sql = 'SELECT `pd`.`products_name` as `pName` ' .
-                                    'FROM `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                                    'WHERE `products_id`=\':pid:\' ' .
-                                    'AND `language_id`=\':language:\' LIMIT 1';
+                                $sql = 
+                                    "SELECT pd.products_name as pName
+                                       FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
+                                      WHERE pd.products_id = $pID
+                                        AND pd.language_id = {$this->languages_id}
+                                      LIMIT 1";
                             }
-                            $sql = $db->bindVars($sql, ':pid:', $pID, 'integer');
-                            $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
                             $result = $db->Execute($sql, false, true, 43200);
                             $pName = $this->filter($result->fields['pName']);
 
                             if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                                $cID = (int)$result->fields['c_id'];
+                                $cID = $result->fields['c_id'];
                                 $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
                             }
 
@@ -727,7 +730,7 @@ class usu
     {
         global $db;
 
-        $single_cID = $cID;
+        $single_cID = (int)$cID;
         $full_cPath = $this->get_full_cPath($cID, $single_cID); // full cPath needed for uniformity
         switch (true) {
             case (defined('CATEGORY_NAME_' . $full_cPath) && $format == USU_FORMAT):
@@ -753,35 +756,34 @@ class usu
                     }
                     unset($path);
                 } elseif ($format == 'parent') {
-                    $sql = 'SELECT `c`.`categories_id`, `c`.`parent_id`, `cd`.`categories_name` AS `cName`, `cd2`.`categories_name` AS `pName` ' .
-                        'FROM `' . TABLE_CATEGORIES_DESCRIPTION . '` AS `cd`, `' . TABLE_CATEGORIES . '` AS `c` ' .
-                        'LEFT JOIN `' . TABLE_CATEGORIES_DESCRIPTION . '` AS `cd2` ' .
-                        'ON `c`.`parent_id`=`cd2`.`categories_id` AND `cd2`.`language_id`=\':language:\' ' .
-                        'WHERE `c`.`categories_id`=\':cid:\' ' .
-                        'AND `cd`.`categories_id`=\':cid:\' ' .
-                        'AND `cd`.`language_id`=\':language:\' ' .
-                        'LIMIT 1';
-                    $sql = $db->bindVars($sql, ':cid:', $single_cID, 'integer');
-                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+                    $sql = 
+                        "SELECT c.categories_id, c.parent_id, cd.categories_name AS cName, cd2.categories_name AS pName
+                           FROM " . TABLE_CATEGORIES_DESCRIPTION . " AS cd, " . TABLE_CATEGORIES . " AS c
+                                LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
+                                    ON c.parent_id = cd2.categories_id 
+                                   AND cd2.language_id = {$this->languages_id}
+                          WHERE c.categories_id = $single_cID
+                            AND cd.categories_id = c.categories_id
+                            AND cd.language_id = {$this->languages_id}
+                          LIMIT 1";
                     $result = $db->Execute($sql, false, true, 43200);
                     if (!$result->EOF) {
                         $cName = zen_not_null($result->fields['pName']) ? $this->filter($result->fields['pName'] . ' ' . $result->fields['cName']) : $this->filter($result->fields['cName']);
                     }
                 } else {
-                    $sql = 'SELECT `categories_name` AS `cName` ' .
-                        'FROM `' . TABLE_CATEGORIES_DESCRIPTION . '` ' .
-                        'WHERE `categories_id`=\':cid:\' ' .
-                        'AND `language_id`=\':language:\' ' .
-                        'LIMIT 1';
-                    $sql = $db->bindVars($sql, ':cid:', $single_cID, 'integer');
-                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+                    $sql = 
+                        "SELECT categories_name AS cName
+                           FROM " . TABLE_CATEGORIES_DESCRIPTION . "
+                          WHERE categories_id = $single_cID
+                            AND language_id = {$this->languages_id}
+                          LIMIT 1";
                     $result = $db->Execute($sql, false, true, 43200);
                     if (!$result->EOF) {
                         $cName = $this->filter($result->fields['cName']);
                     }
                 }
 
-                if (is_array($this->cache)) {
+                if ($cName !== '' && is_array($this->cache)) {
                     $this->cache['CATEGORIES'][$full_cPath] = $cName;
                 }
                 $return = $cName;
@@ -800,7 +802,7 @@ class usu
     protected function get_manufacturer_name($mID) 
     {
         global $db;
-
+        $mID = (int)$mID;
         switch (true) {
             case (defined('MANUFACTURER_NAME_' . $mID)):
                 $return = constant('MANUFACTURER_NAME_' . $mID);
@@ -811,14 +813,15 @@ class usu
                 break;
 
             default:
-                $sql = 'SELECT `manufacturers_name` as `mName` ' .
-                    'FROM `' . TABLE_MANUFACTURERS . '` ' .
-                    'WHERE `manufacturers_id` = \':mid:\' LIMIT 1';
-                $sql = $db->bindVars($sql, ':mid:', $mID, 'integer');
+                $sql = 
+                    "SELECT manufacturers_name as `mName`
+                       FROM " . TABLE_MANUFACTURERS . "
+                      WHERE manufacturers_id = $mID
+                      LIMIT 1";
                 $result = $db->Execute($sql, false, true, 43200);
-                $mName = $this->filter($result->fields['mName']);
+                $mName = ($result->EOF) ? '' : $this->filter($result->fields['mName']);
 
-                if (is_array($this->cache)) {
+                if ($mName !== '' && is_array($this->cache)) {
                     $this->cache['MANUFACTURERS'][$mID] = $mName;
                 }
                 $return = $mName;
@@ -836,7 +839,7 @@ class usu
     protected function get_ezpages_name($ezpID) 
     {
         global $db;
-
+        $ezpID = (int)$ezpID;
         switch (true) {
             case (defined('EZPAGES_NAME_' . $ezpID)):
                 $return = constant('EZPAGES_NAME_' . $ezpID);
@@ -853,30 +856,31 @@ class usu
                 // the pre-base plugin's version and finally for the pre-zc156 implementation.
                 //
                 if (defined('TABLE_EZPAGES_TEXT')) {
-                    $sql = 'SELECT `pages_title` AS `ezpName` ' .
-                        'FROM `' . TABLE_EZPAGES_TEXT . '`' .
-                        'WHERE `pages_id`=\':ezpage:\' ' .
-                        'AND `languages_id` = \':language:\' ' .
-                        'LIMIT 1';
-                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+                    $sql = 
+                        "SELECT pages_title AS ezpName
+                           FROM " . TABLE_EZPAGES_TEXT . "
+                          WHERE pages_id = $ezpID
+                            AND languages_id = {$this->languages_id}
+                          LIMIT 1";
                 } elseif (defined('TABLE_EZPAGES_CONTENT')) {
-                    $sql = 'SELECT `pages_title` AS `ezpName` ' .
-                        'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
-                        'WHERE `pages_id`=\':ezpage:\' ' .
-                        'AND `languages_id` = \':language:\' ' .
-                        'LIMIT 1';
-                    $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
-                } else {
-                    $sql = 'SELECT `pages_title` AS `ezpName` ' .
-                        'FROM `' . TABLE_EZPAGES . '` ' .
-                        'WHERE `pages_id`=\':ezpage:\' ' .
-                        'LIMIT 1';
+                    $sql =
+                        "SELECT pages_title AS ezpName
+                           FROM " . TABLE_EZPAGES_CONTENT . "
+                          WHERE pages_id = $ezpID
+                            AND languages_id = {$this->languages_id}
+                          LIMIT 1";
+                 } else {
+                    $sql =
+                        "SELECT pages_title AS ezpName
+                           FROM " . TABLE_EZPAGES . "
+                          WHERE pages_id = $ezpID
+                          LIMIT 1";
                 }
                 $sql = $db->bindVars($sql, ':ezpage:', $ezpID, 'integer');
                 $result = $db->Execute($sql, false, true, 43200);
-                $ezpName = $this->filter($result->fields['ezpName']);
+                $ezpName = ($result->EOF) ? '' : $this->filter($result->fields['ezpName']);
 
-                if (is_array($this->cache)) {
+                if ($ezpName !== '' && is_array($this->cache)) {
                     $this->cache['EZPAGES'][$ezpID] = $ezpName;
                 }
                 $return = $ezpName;
@@ -920,10 +924,12 @@ class usu
     protected function get_parent_categories_id(&$categories, $categories_id) 
     {
         global $db;
+        $categories_id = (int)$categories_id;
 
-        $sql = 'SELECT `parent_id` FROM `' . TABLE_CATEGORIES . '` ' .
-            'WHERE `categories_id`=\':cid:\'';
-        $sql = $db->bindVars($sql, ':cid:', $categories_id, 'integer');
+        $sql = 
+            "SELECT parent_id 
+              FROM " . TABLE_CATEGORIES . "
+             WHERE categories_id = $categories_id";
         $parent_categories = $db->Execute($sql);
 
         while (!$parent_categories->EOF) {
@@ -931,7 +937,7 @@ class usu
                 return true;
             }
 
-            $categories[sizeof($categories)] = $parent_categories->fields['parent_id'];
+            $categories[count($categories)] = $parent_categories->fields['parent_id'];
 
             if ($parent_categories->fields['parent_id'] != $categories_id) {
                 $this->get_parent_categories_id($categories, $parent_categories->fields['parent_id']);
@@ -951,56 +957,42 @@ class usu
     protected function get_parent_categories_path(&$path, $categories_id, &$cPath = array()) 
     {
         global $db;
+        $categories_id = (int)$categories_id;
 
-        $sql = 'SELECT `c`.`parent_id` AS `p_id`, `cd`.`categories_name` AS `name` ' .
-            'FROM `' . TABLE_CATEGORIES . '` AS `c` ' .
-            'LEFT JOIN `' . TABLE_CATEGORIES_DESCRIPTION . '` AS `cd` ' .
-            'ON `c`.`categories_id`=`cd`.`categories_id` ' .
-            'AND `cd`.`language_id`=\':language:\'' .
-            'WHERE `c`.`categories_id`=\':cid:\'';
-        $sql = $db->bindVars($sql, ':cid:', $categories_id, 'integer');
-        $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+        $sql = 
+            "SELECT c.parent_id AS p_id, cd.categories_name AS name
+               FROM " . TABLE_CATEGORIES . " AS c
+                    LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd
+                        ON c.categories_id = cd.categories_id
+                       AND cd.language_id = {$this->languages_id}
+              WHERE c.categories_id = $categories_id";
         $parent = $db->Execute($sql, false, true, 43200);
 
         if (!$parent->EOF) {
-
             // Recurse if the parent id is not empty or equal the passed categories id
             if ($parent->fields['p_id'] != 0 && $parent->fields['p_id'] != $categories_id) {
                 $this->get_parent_categories_path($path, $parent->fields['p_id'], $cPath);
             }
 
             // Add category id to cPath and name to path
-            $cPath[sizeof($cPath)] = $categories_id;
-            $path[sizeof($path)] = $this->filter($parent->fields['name']) . $this->reg_anchors['cPath'] .
-            (sizeof($cPath) > 1 ? implode('_', $cPath) : $categories_id);
+            $cPath[count($cPath)] = $categories_id;
+            $path[count($path)] = $this->filter($parent->fields['name']) . $this->reg_anchors['cPath'] . (count($cPath) > 1 ? implode('_', $cPath) : $categories_id);
         }
     }
 
     protected function is_attribute_string($params)
     {
-        if (preg_match('/products_id=([0-9]+):([a-zA-z0-9]{32})/', $params)) {
-            return true;
-        }
-
-        return false;
+        return (preg_match('/products_id=([0-9]+):([a-zA-z0-9]{32})/', $params)) ? true : false;
     }
 
     protected function is_product_string($params) 
     {
-        if (preg_match('/products_id=/i', $params)) {
-            return true;
-        }
-
-        return false;
+        return (preg_match('/products_id=/i', $params)) ? true : false;
     }
 
     protected function is_cPath_string($params) 
     {
-        if (preg_match('/cPath=/i', $params)) {
-            return true;
-        }
-
-        return false;
+        return (preg_match('/cPath=/i', $params)) ? true : false;
     }
 
     /**
@@ -1015,11 +1007,7 @@ class usu
 
         // First filter using PCRE Rules
         if (is_array($this->filter_pcre)) {
-            $retval = preg_replace(
-                array_keys($this->filter_pcre),
-                array_values($this->filter_pcre),
-                $retval
-            );
+            $retval = preg_replace(array_keys($this->filter_pcre), array_values($this->filter_pcre), $retval);
         }
 
         // Next run character filters over the string
@@ -1046,7 +1034,6 @@ class usu
                     // Each language's punctuation.
                     $pattern = '/[\p{P}\p{S}]/u';
                 }
-
                 break;
         }
         if (function_exists('mb_strtolower')) {
@@ -1139,23 +1126,23 @@ class usu
             // the pre-base plugin's version and finally for the pre-zc156 implementation.
             //
             if (defined('TABLE_EZPAGES_TEXT')) {
-                $sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
-                    'FROM `' .  TABLE_EZPAGES_TEXT . '` ' .
-                    'WHERE `languages_id` = \':language:\'';
-                $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+                $sql = 
+                    "SELECT pages_id AS id, pages_title AS name
+                       FROM " .  TABLE_EZPAGES_TEXT . "
+                      WHERE languages_id = {$this->languages_id}";
             } elseif (defined('TABLE_EZPAGES_CONTENT')) {
-                $sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
-                    'FROM `' . TABLE_EZPAGES_CONTENT . '` ' .
-                    'WHERE `languages_id` = \':language:\'';
-                $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+                $sql = 
+                    "SELECT pages_id AS id, pages_title AS name
+                       FROM " . TABLE_EZPAGES_CONTENT . "
+                      WHERE languages_id = {$this->languages_id}";
             } else {
-                $sql = 'SELECT `pages_id` AS `id`, `pages_title` AS `name` ' .
-                    'FROM `' . TABLE_EZPAGES . '`';
+                $sql = 
+                    "SELECT pages_id AS id, pages_title AS name
+                       FROM " . TABLE_EZPAGES;
             }
-
             $ezpages = $db->Execute($sql, false, true, 43200);
             while (!$ezpages->EOF) {
-                $this->cache['EZPAGES'][(int)$ezpages->fields['id']] = $this->filter($ezpages->fields['name']);
+                $this->cache['EZPAGES'][$ezpages->fields['id']] = $this->filter($ezpages->fields['name']);
                 $ezpages->MoveNext();
             }
             $this->save_cache($this->cache_file . 'ezpages', $this->cache['EZPAGES'], 1 , 1);
@@ -1176,33 +1163,32 @@ class usu
         $this->is_cached($this->cache_file . 'products', $is_cached, $is_expired);
         if(!$is_cached || $is_expired) {
             if (USU_FORMAT == 'parent') {
-                $sql = 'SELECT `p`.`products_id` AS `id`, `ptc`.`categories_id` AS `c_id`, `p`.`master_categories_id` AS `master_id`, `pd`.`products_name` AS `name` ' .
-                    'FROM `' . TABLE_PRODUCTS  . '` AS `p` ' .
-                    'LEFT JOIN `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                    'ON p.products_id=pd.products_id ' .
-                    'LEFT JOIN `' . TABLE_PRODUCTS_TO_CATEGORIES . '` AS `ptc` ' .
-                    'ON `p`.`products_id`=`ptc`.`products_id` ' .
-                    'WHERE `p`.`products_status`=\'1\' ' .
-                    'AND `pd`.`language_id`=\':language:\'';
+                $sql = 
+                    "SELECT p.products_id AS id, ptc.categories_id AS c_id, p.master_categories_id AS master_id, pd.products_name AS name
+                       FROM " . TABLE_PRODUCTS  . " AS p
+                            LEFT JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
+                                ON p.products_id = pd.products_id
+                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
+                                ON p.products_id = ptc.products_id
+                      WHERE p.products_status = 1
+                        AND pd.language_id = {$this->languages_id}";
             } else {
-                $sql = 'SELECT `p`.`products_id` AS `id`, `pd`.`products_name` AS `name` ' .
-                    'FROM `' . TABLE_PRODUCTS  . '` AS `p` ' .
-                    'LEFT JOIN `' . TABLE_PRODUCTS_DESCRIPTION . '` AS `pd` ' .
-                    'ON `p`.`products_id`=`pd`.`products_id` ' .
-                    'WHERE `p`.`products_status`=\'1\' ' .
-                    'AND `pd`.`language_id`=\':language:\'';
+                $sql = 
+                    "SELECT p.products_id AS id, pd.products_name AS name
+                       FROM " . TABLE_PRODUCTS  . " AS p
+                            LEFT JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
+                                ON p.products_id = pd.products_id
+                      WHERE p.products_status = 1
+                        AND pd.language_id = {$this->languages_id}";
             }
-            $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
             $product = $db->Execute($sql, false, true, 43200);
             while (!$product->EOF) {
                 $pName = $this->filter($product->fields['name']);
-
                 if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                    $cID = (int)$product->fields['c_id'];
+                    $cID = $product->fields['c_id'];
                     $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
                 }
-
-                $this->cache['PRODUCTS'][(int)$product->fields['id']] = $pName;
+                $this->cache['PRODUCTS'][$product->fields['id']] = $pName;
                 $product->MoveNext();
             }
 
@@ -1224,15 +1210,15 @@ class usu
         $is_expired = false;
         $this->is_cached($this->cache_file . 'manufacturers', $is_cached, $is_expired);
         if (!$is_cached || $is_expired) { // it's not cached so create it
-            $sql = 'SELECT `m`.`manufacturers_id` AS `id`, `m`.`manufacturers_name` AS `name` ' .
-                'FROM `' . TABLE_MANUFACTURERS . '` AS `m` ' .
-                'LEFT JOIN `' . TABLE_MANUFACTURERS_INFO . '` AS `md` ' .
-                'ON `m`.`manufacturers_id`=`md`.`manufacturers_id` ' .
-                'AND `md`.`languages_id`=\':language:\'';
-            $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+            $sql = 
+                "SELECT m.manufacturers_id AS id, m.manufacturers_name AS name
+                   FROM " . TABLE_MANUFACTURERS . " AS m
+                        LEFT JOIN " . TABLE_MANUFACTURERS_INFO . " AS md
+                            ON m.manufacturers_id = md.manufacturers_id
+                    AND md.languages_id = {$this->languages_id}";
             $manufacturers = $db->Execute($sql, false, true, 43200);
             while (!$manufacturers->EOF) {
-                $this->cache['MANUFACTURERS'][(int)$manufacturers->fields['id']] = $this->filter($manufacturers->fields['name']);
+                $this->cache['MANUFACTURERS'][$manufacturers->fields['id']] = $this->filter($manufacturers->fields['name']);
                 $manufacturers->MoveNext();
             }
             $this->save_cache($this->cache_file . 'manufacturers', $this->cache['MANUFACTURERS'], 1 , 1);
@@ -1253,19 +1239,20 @@ class usu
         $this->is_cached($this->cache_file . 'categories', $is_cached, $is_expired);
         if (!$is_cached || $is_expired) { // it's not cached so create it
             if (USU_FORMAT == 'parent' || USU_CATEGORY_DIR == 'short') {
-                $sql = 'SELECT `c`.`categories_id` AS `id`, `c`.`parent_id`, `cd`.`categories_name` AS `cName`, `cd2`.`categories_name` as `pName` ' .
-                    'FROM `' . TABLE_CATEGORIES . '` AS `c` ' .
-                    'LEFT JOIN `' . TABLE_CATEGORIES_DESCRIPTION . '` AS `cd2` ' .
-                    'ON `c`.`parent_id`=`cd2`.`categories_id` AND `cd2`.`language_id`=\':language:\'' .
-                    ', `' . TABLE_CATEGORIES_DESCRIPTION . '` AS `cd` ' .
-                    'WHERE `c`.`categories_id`=\'cd.categories_id\' ' .
-                    'AND `cd`.`language_id`=\':language:\'';
+                $sql = 
+                    "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as pName
+                       FROM " . TABLE_CATEGORIES . " AS c, " . TABLE_CATEGORIES_DESCRIPTION . " AS cd
+                            LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
+                                ON c.parent_id = cd2.categories_id 
+                               AND cd2.language_id = {$this->languages_id}
+                      WHERE c.categories_id = cd.categories_id
+                        AND cd.language_id = {$this->languages_id}";
             } else {
-                $sql = 'SELECT `categories_id` AS `id`, `categories_name` AS `cName` ' .
-                    'FROM `' . TABLE_CATEGORIES_DESCRIPTION . '` ' .
-                    'WHERE `language_id`=\':language:\'';
+                $sql = 
+                    "SELECT categories_id AS id, categories_name AS cName
+                       FROM " . TABLE_CATEGORIES_DESCRIPTION . "
+                      WHERE language_id = {$this->languages_id}";
             }
-            $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
             $category = $db->Execute($sql, false, true, 43200);
             while (!$category->EOF) {
                 $cName = '';
@@ -1373,38 +1360,32 @@ class usu
     protected function get_cache($name = 'GLOBAL') 
     {
         global $db;
-
         $global = ($name == 'GLOBAL' ? true : false);
 
-        $sql = 'SELECT `cache_id`, `cache_name`, `cache_data`, ' .
-                '`cache_global`, `cache_gzip`, `cache_date`, `cache_expires` ' .
-            'FROM `' . TABLE_USU_CACHE . '` ' .
-            'WHERE `cache_language_id` = \':language:\'';
-        $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
-
+        $sql = 
+            "SELECT cache_id, cache_name, cache_data, cache_global, cache_gzip, cache_date, cache_expires
+               FROM " . TABLE_USU_CACHE . "
+              WHERE cache_language_id = {$this->languages_id}";
         if ($global) {
-            $sql .= 'AND `cache_global` = \'1\'';
+            $sql .= " AND cache_global = 1";
         } else {
-            $sql .= 'AND `cache_id` = :id:';
-            $sql = $db->bindVars($sql, ':id:', md5($name), 'string');
+            $sql .= " AND cache_id = '" . md5($name) . "'";
         }
-
         $cache = $db->Execute($sql);
         if (!$cache->EOF) {
             $container = array();
-            $now = new DateTime();
-            $now = $now->format('Y-m-d H:i:s');
+            $now = date('Y-m-d H:i:s');
             while (!$cache->EOF) {
+                $cache_name = $cache->fields['cache_name'];
                 if ($cache->fields['cache_expires'] <= $now) {
-                    // Remove item from the cache
-                    $sql = 'DELETE FROM `' . TABLE_USU_CACHE . '` WHERE `cache_id` = :id:';
-                    $sql = $db->bindVars($sql, ':id:', $cache->fields['cache_id'], 'string');
-                    $db->Execute($sql);
-
+                    $db->Execute(
+                        "DELETE FROM " . TABLE_USU_CACHE . "
+                          WHERE cache_id = '" . $cache->fields['cache_id'] . "'"
+                    );
                     $container[$cache->fields['cache_name']] = false;
                 } else {
                     $cache_data = $cache->fields['cache_data'];
-                    if ($cache->fields['cache_gzip'] == '1') {
+                    if ($cache->fields['cache_gzip'] == 1) {
                         $cache_data = @gzinflate($cache_data);
                     }
                     $cache_data = unserialize($cache_data);
@@ -1423,7 +1404,6 @@ class usu
                 return $container;
             }
         }
-
         return false;
     }
 
@@ -1433,11 +1413,10 @@ class usu
     protected function cache_gc() 
     {
         global $db;
-
-        $now = new DateTime();
-        $sql = 'DELETE FROM `' . TABLE_USU_CACHE . '` WHERE `cache_expires` <= :date:';
-        $sql = $db->bindVars($sql, ':date:', $now->format('Y-m-d H:i:s'), 'string');
-        $db->Execute($sql);
+        $db->Execute(
+            "DELETE FROM " . TABLE_USU_CACHE . "
+              WHERE cache_expires <= '" . date('Y-m-d H:i:s') . "'"
+        );
     }
 
     /**
@@ -1452,10 +1431,11 @@ class usu
     {
         global $db, $queryCache;
 
-        $sql = 'SELECT `cache_expires` FROM `' . TABLE_USU_CACHE . '` ' .
-            'WHERE `cache_id`=:id: AND `cache_language_id`=\':language:\' LIMIT 1';
-        $sql = $db->bindVars($sql, ':id:', md5($name), 'string');
-        $sql = $db->bindVars($sql, ':language:', $this->languages_id, 'integer');
+        $sql =
+            "SELECT cache_expires
+               FROM " . TABLE_USU_CACHE . "
+              WHERE cache_id = '" . md5($name) . "'
+                AND cache_language_id = {$this->languages_id}";
         $cache = $db->Execute($sql);
         $is_cached = ($cache->RecordCount() > 0) ? true : false;
 
@@ -1465,7 +1445,7 @@ class usu
         }
 
         if ($is_cached) {
-            $is_expired = ($cache->fields['cache_expires'] <= date("Y-m-d H:i:s") ? true : false);
+            $is_expired = ($cache->fields['cache_expires'] <= date('Y-m-d H:i:s') ? true : false);
             unset($cache);
         }
     }
@@ -1501,7 +1481,7 @@ class usu
         $this->real_uri = ltrim(basename($_SERVER['SCRIPT_NAME']) . ($_SERVER['QUERY_STRING'] != '' ? '?' . $_SERVER['QUERY_STRING'] : ''), '/' );
         $this->canonical = null;
 
-        if ($this->filter_page($_GET['main_page']) && isset($_GET['products_id'])) {
+        if (isset($_GET['main_page']) && $this->filter_page($_GET['main_page']) && isset($_GET['products_id'])) {
             $product_page = $this->getInfoPage((int)$_GET['products_id']);
             if ($_GET['main_page'] == $product_page) {
                 // Only add the canonical if one is found
@@ -1597,15 +1577,15 @@ class usu
             }
         } else {
             // See if the parameters match. We do not care about order.
-            $params = explode('&', str_replace('&amp;', '&', $this->redirect_uri['query']));
+            $params = (isset($this->redirect_uri['query'])) ? explode('&', str_replace('&amp;', '&', $this->redirect_uri['query'])) : array();
             asort($params);
-            $old_params = explode('&', $parsed_uri['query']);
+            $old_params = (isset($parsed_uri['query'])) ? explode('&', $parsed_uri['query']) : array();
             asort($old_params);
             if (count($params) != count($old_params)) {
-                $this->log('Number of parameters did not match the requested URI: ' . $this->redirect_uri['query'] . ' vs. ' . $parsed_uri['query']);
+                $this->log('Number of parameters did not match the requested URI: ' . implode('&', $params) . ' vs. ' . implode('&', $old_params));
                 return true;
             } else {
-                for ($i = 0,$n = count($params); $i < $n; $i++) {
+                for ($i = 0, $n = count($params); $i < $n; $i++) {
                     if (urldecode($params[$i]) != urldecode($old_params[$i])) {
                         $this->log('The value of parameters did not match the requested URI. Alternate URL param: ' . urldecode($params[$i]) . ', requested URI param: ' . urldecode($old_params[$i]));
                         return true;
