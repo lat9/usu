@@ -1241,10 +1241,10 @@ class usu
             if (USU_FORMAT == 'parent' || USU_CATEGORY_DIR == 'short') {
                 $sql = 
                     "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as pName
-                       FROM " . TABLE_CATEGORIES . " AS c, " . TABLE_CATEGORIES_DESCRIPTION . " AS cd
+                       FROM " . TABLE_CATEGORIES . " AS c
                             LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
                                 ON c.parent_id = cd2.categories_id 
-                               AND cd2.language_id = {$this->languages_id}
+                               AND cd2.language_id = {$this->languages_id}, " . TABLE_CATEGORIES_DESCRIPTION . " AS cd
                       WHERE c.categories_id = cd.categories_id
                         AND cd.language_id = {$this->languages_id}";
             } else {

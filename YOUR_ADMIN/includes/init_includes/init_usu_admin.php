@@ -14,8 +14,8 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.0.3');
-define('USU_CURRENT_UPDATE_DATE', '2019-11-06');
+define('USU_CURRENT_VERSION', '3.0.4');
+define('USU_CURRENT_UPDATE_DATE', '2019-11-08');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
