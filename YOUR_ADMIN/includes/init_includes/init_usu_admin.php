@@ -15,7 +15,7 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // the current update-date.
 //
 define('USU_CURRENT_VERSION', '3.0.4');
-define('USU_CURRENT_UPDATE_DATE', '2019-11-08');
+define('USU_CURRENT_UPDATE_DATE', '2019-11-09');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
