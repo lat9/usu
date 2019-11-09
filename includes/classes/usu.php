@@ -198,7 +198,7 @@ class usu
 
         // The base URL for the request
         if (IS_ADMIN_FLAG === true) {
-            if ($connection == 'SSL' && ENABLE_SSL == 'true') {
+            if ($connection == 'SSL' && ENABLE_SSL_CATALOG == 'true') {
                 $link = HTTPS_CATALOG_SERVER;
                 if ($use_dir_ws_catalog) {
                     $link .= DIR_WS_HTTPS_CATALOG;
