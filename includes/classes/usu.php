@@ -279,12 +279,20 @@ class usu
      * Parses the parameters for a page to generate a valid url for the page.
      *
      * @param string $page the name of the page
-     * @param string $params any paramaters for the page
-     * @param string $separator the separator to use between the link and this paramater (if needed)
-     * @return Ambigous <string, unknown>
+     * @param string $params any parameters for the page
+     * @param string $separator the separator to use between the link and this parameter (if needed)
+     * @return Ambiguous <string, unknown>
      */
     protected function parse_parameters($page, $params, &$separator) 
     {
+        // -----
+        // Strip any leading 'amp;' and change any '&amp;' to '&'.
+        //
+        if (strpos($params, 'amp;') === 0) {
+            $params = substr($params, 4);
+        }
+        $params = str_replace('&amp;', '&', $params);
+        
         // We always need cPath to be first, so find and extract
         $cPath = false;
         if (1 === preg_match('/(?:^|&)c[Pp]ath=([^&]+)/', $params, $path)) {
@@ -1610,8 +1618,10 @@ class usu
             case 'true':
                 header('HTTP/1.1 301 Moved Permanently');
                 header('Location: ' . $new_url);
+                exit;
                 break;
             default:
+                break;
         }
     }
 
