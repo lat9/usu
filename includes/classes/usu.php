@@ -3,7 +3,7 @@
  * Part of Ultimate URLs for Zen Cart. Originally derived from Ultimate SEO URLs
  * v2.1 for osCommerce by Chemo.
  *
- * @copyright Copyright 2019        Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019-2020 Cindy Merkin (vinosdefrutastropicales.com)
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
  * @copyright Portions Copyright 2003 - 2015 Zen Cart Development Team
  * @copyright Portions Copyright 2005 Joshua Dechant
@@ -250,14 +250,16 @@ class usu
     {
         global $request_type, $http_domain, $https_domain, $session_started;
 
-        $_sid = null;
+        $_sid = '';
         if ($add_session_id == true && $session_started && SESSION_FORCE_COOKIE_USE == 'False') {
-            if (defined('SID') && zen_not_null(constant('SID'))) {
+            if (defined('SID') && !empty(constant('SID'))) {
                 $_sid = constant('SID');
-            } elseif(($request_type == 'NONSSL' && $connection == 'SSL' && ENABLE_SSL == 'true') || ($request_type == 'SSL' && $connection == 'NONSSL')) {
-                if ($http_domain != $https_domain) {
-                    $_sid = zen_session_name() . '=' . zen_session_id();
-                }
+            } else {
+                $ssl_enabled = (IS_ADMIN_FLAG === true) ? ENABLE_SSL_CATALOG : ENABLE_SSL;
+                if (($request_type == 'NONSSL' && $connection == 'SSL' && $ssl_enabled == 'true') || ($request_type == 'SSL' && $connection == 'NONSSL')) {
+                    if ($http_domain != $https_domain) {
+                        $_sid = zen_session_name() . '=' . zen_session_id();
+                    }
             }
         }
 
@@ -265,7 +267,7 @@ class usu
             case (!isset($_SESSION['customer_id']) && defined('ENABLE_PAGE_CACHE') && ENABLE_PAGE_CACHE == 'true' && class_exists('page_cache')):
                 $return = $link . $separator . '<zensid>';
                 break;
-            case (zen_not_null($_sid)):
+            case (!empty($_sid)):
                 $return = $link . $separator . $_sid;
                 break;
             default:
