@@ -260,6 +260,7 @@ class usu
                     if ($http_domain != $https_domain) {
                         $_sid = zen_session_name() . '=' . zen_session_id();
                     }
+                }
             }
         }
 
