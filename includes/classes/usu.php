@@ -981,7 +981,7 @@ class usu
      */
     protected function filter($string)
     {
-        $retval = zen_clean_html($string);
+        $retval = trim(zen_clean_html($string));
 
         // First filter using PCRE Rules
         if (is_array($this->filter_pcre)) {
