@@ -1014,7 +1014,7 @@ class usu
      */
     protected function filter($string)
     {
-        $retval = $string;
+        $retval = zen_clean_html($string);
 
         // First filter using PCRE Rules
         if (is_array($this->filter_pcre)) {
@@ -1025,17 +1025,6 @@ class usu
         $pattern = '';
         // Remove Special Characters from the strings
         switch (USU_REMOVE_CHARS) {
-            default:
-            case 'non-alphanumerical':
-                // Remove all non alphanumeric characters
-                if (!self::$unicodeEnabled) {
-                    // POSIX named classes are not supported by preg_replace
-                    $pattern = '/[^a-zA-Z0-9\s]/';
-                } else {
-                    // Each language's alphabet.
-                    $pattern = '/[^\p{L}\p{N}\s]/u';
-                }
-                break;
             case 'punctuation':
                 // Remove all punctuation
                 if (!self::$unicodeEnabled) {
@@ -1044,6 +1033,18 @@ class usu
                 } else {
                     // Each language's punctuation.
                     $pattern = '/[\p{P}\p{S}]/u';
+                }
+                break;
+
+            case 'non-alphanumerical':
+            default:
+                // Remove all non alphanumeric characters
+                if (!self::$unicodeEnabled) {
+                    // POSIX named classes are not supported by preg_replace
+                    $pattern = '/[^a-zA-Z0-9\s]/';
+                } else {
+                    // Each language's alphabet.
+                    $pattern = '/[^\p{L}\p{N}\s]/u';
                 }
                 break;
         }
