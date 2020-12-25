@@ -367,7 +367,7 @@ class usu
                         // A product's details' page, e.g. product_info.
                         //
                         case ($page == $this->getInfoPage($prid)):
-                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), $p2[0], $prid, USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), $p2[0], $prid, USU_END);
                             
                             // -----
                             // Note: The (string) cast is needed, otherwise the (now integer) $prid will be a match
@@ -382,14 +382,14 @@ class usu
                         // A listing of a product's reviews.
                         //
                         case ($page == FILENAME_PRODUCT_REVIEWS):
-                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review', $prid, USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review', $prid, USU_END);
                             break;
 
                         // -----
                         // The display of a product's review details.
                         //
                         case ($page == FILENAME_PRODUCT_REVIEWS_INFO):
-                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_info', $prid, USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_info', $prid, USU_END);
                             break;
 
                         // -----
@@ -428,9 +428,9 @@ class usu
 
                             $category = $this->get_category_name($p2[1]);
                             if (USU_CATEGORY_DIR == 'off') {
-                                $url = $this->make_url($page, $category, $p2[0], $p2[1], USU_END, $separator);
+                                $url = $this->make_url($page, $category, $p2[0], $p2[1], USU_END);
                             } else {
-                                $url = $this->make_url($page, $category, $p2[0], $p2[1], '/', $separator);
+                                $url = $this->make_url($page, $category, $p2[0], $p2[1], '/');
                             }
                             unset($category);
                             break;
@@ -444,7 +444,7 @@ class usu
                 case 'manufacturers_id':
                     switch (true) {
                         case ($page == FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
-                            $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
                         // -----
@@ -462,7 +462,7 @@ class usu
                 case 'pID':
                     switch (true) {
                         case ($page == FILENAME_POPUP_IMAGE):
-                            $url = $this->make_url($page, $this->get_product_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_product_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
                         default:
@@ -474,7 +474,7 @@ class usu
                 case 'id':    // EZ-Pages
                     switch (true) {
                         case ($page == FILENAME_EZPAGES):
-                            $url = $this->make_url($page, $this->get_ezpages_name($p2[1]), $p2[0], $p2[1], USU_END, $separator);
+                            $url = $this->make_url($page, $this->get_ezpages_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
                         default:
@@ -555,10 +555,9 @@ class usu
      * @param string $anchor_type the last paramater parsed type (products_id, cPath, etc.)
      * @param string $id the last paramater parsed id (or cPath)
      * @param string $extension Default =
-     * @param string $separator NOTE: passed by reference
      * @return string the final generated url
      */
-    protected function make_url($page, $link, $anchor_type, $id, $extension = USU_END, &$separator)
+    protected function make_url($page, $link, $anchor_type, $id, $extension = USU_END)
     {
         // In the future there may be additional methods here in the switch
         switch (USU_ENGINE){
@@ -1467,19 +1466,16 @@ class usu
                 // Only add the canonical if one is found
                 $this->canonical = $this->get_product_canonical((int)$_GET['products_id']);
                 if ($this->canonical !== null) {
-                    $separator = '?';
                     $this->canonical = $this->make_url(
                         $product_page,
                         $this->canonical,
                         'products_id', (int)$_GET['products_id'],
-                        USU_END,
-                        $separator
+                        USU_END
                     );
                     $this->canonical = ($request_type == 'SSL' ? HTTPS_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_SERVER . DIR_WS_CATALOG) . htmlspecialchars($this->canonical, ENT_QUOTES, CHARSET, false);
-                    unset($separator);
                 }
             }
-            unset($product_page, $separator);
+            unset($product_page);
         }
     }
 
