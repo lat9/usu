@@ -22,18 +22,19 @@ class usu
 {
     public $canonical;
 
-    protected $cache;
-    protected $languages_id;
-    protected $reg_anchors;
-    protected $cache_file;
-    protected $uri;
-    protected $real_uri;
-    protected $redirect_uri;
+    protected $cache,
+              $languages_id,
+              $reg_anchors,
+              $cache_file,
+              $uri,
+              $real_uri,
+              $redirect_uri;
+
     protected static $unicodeEnabled;
 
-    private $filter_pcre;
-    private $filter_char;
-    private $filter_page;
+    private $filter_pcre,
+            $filter_char,
+            $filter_page;
 
     function __construct($languages_id = '') 
     {
@@ -687,7 +688,7 @@ class usu
                             $retval .= constant('PRODUCT_NAME_' . $pID);
                             break;
 
-                        case (USU_CACHE_GLOBAL == 'true' && isset($this->cache['PRODUCTS'][$pID])):
+                        case (is_array($this->cache) && isset($this->cache['PRODUCTS'][$pID])):
                             $retval .= $this->cache['PRODUCTS'][$pID];
                             break;
 
@@ -701,7 +702,7 @@ class usu
                                             LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
                                                 ON ptc.products_id = pd.products_id
                                       WHERE pd.products_id = $pID
-                                        AND pd.language_id = {$this->languages_id}" . $categories_clause . "
+                                        AND pd.language_id = {$this->languages_id}
                                       LIMIT 1";
                             } else {
                                 $sql = 
@@ -900,63 +901,30 @@ class usu
         return $return;
     }
 
-/**
- * Function to retrieve full cPath from category ID
- * @author Bobby Easland
- * @version 1.1
- * @param mixed $cID Could contain cPath or single category_id
- * @param integer $original Single category_id passed back by reference
- * @return string Full cPath string
- */
+    /**
+     * Function to retrieve full cPath from category ID
+     * @author Bobby Easland
+     * @version 1.1
+     * @param mixed $cID Could contain cPath or single category_id
+     * @param integer $original Single category_id passed back by reference
+     * @return string Full cPath string
+     */
     protected function get_full_cPath($cID, &$original)
     {
-        if (is_numeric(strpos($cID, '_')) ) {
-            $temp = @explode('_', $cID);
-            $original = $temp[sizeof($temp)-1];
+        if (strpos($cID, '_') !== false) {
+            $temp = explode('_', $cID);
+            $original = array_pop($temp);
             return $cID;
         } else {
             $c = array();
-            $this->get_parent_categories_id($c, $cID);
+            zen_get_parent_categories($c, $cID);
             $c = array_reverse($c);
             $c[] = $cID;
             $original = $cID;
-            $cID = sizeof($c) > 1 ? implode('_', $c) : $cID;
+            $cID = implode('_', $c);
             return $cID;
         }
     } # end function
-
-/**
- * Recursion function to retrieve parent categories from category ID
- * @author Bobby Easland
- * @version 1.0
- * @param mixed $categories Passed by reference
- * @param integer $categories_id
- */
-    protected function get_parent_categories_id(&$categories, $categories_id) 
-    {
-        global $db;
-        $categories_id = (int)$categories_id;
-
-        $sql = 
-            "SELECT parent_id 
-              FROM " . TABLE_CATEGORIES . "
-             WHERE categories_id = $categories_id";
-        $parent_categories = $db->Execute($sql);
-
-        while (!$parent_categories->EOF) {
-            if ($parent_categories->fields['parent_id'] == 0) {
-                return true;
-            }
-
-            $categories[count($categories)] = $parent_categories->fields['parent_id'];
-
-            if ($parent_categories->fields['parent_id'] != $categories_id) {
-                $this->get_parent_categories_id($categories, $parent_categories->fields['parent_id']);
-            }
-
-            $parent_categories->MoveNext();
-        }
-    }
 
     /**
      * Recursion function to retrieve parent categories from category ID.
@@ -986,8 +954,8 @@ class usu
             }
 
             // Add category id to cPath and name to path
-            $cPath[count($cPath)] = $categories_id;
-            $path[count($path)] = $this->filter($parent->fields['name']) . $this->reg_anchors['cPath'] . (count($cPath) > 1 ? implode('_', $cPath) : $categories_id);
+            $cPath[] = $categories_id;
+            $path[] = $this->filter($parent->fields['name']) . $this->reg_anchors['cPath'] . implode('_', $cPath);
         }
     }
 
@@ -1252,7 +1220,7 @@ class usu
         if (!$is_cached || $is_expired) { // it's not cached so create it
             if (USU_FORMAT == 'parent' || USU_CATEGORY_DIR == 'short') {
                 $sql = 
-                    "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as pName
+                    "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as cNameParent
                        FROM " . TABLE_CATEGORIES . " AS c
                             LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
                                 ON c.parent_id = cd2.categories_id 
@@ -1283,7 +1251,7 @@ class usu
                     }
                     unset($path);
                 } elseif (USU_FORMAT == 'parent') {
-                    $cName = zen_not_null($category->fields['pName']) ? $this->filter($category->fields['pName'] . ' ' . $category->fields['cName']) : $this->filter($category->fields['cName']);
+                    $cName = zen_not_null($category->fields['cNameParent']) ? $this->filter($category->fields['cNameParent'] . ' ' . $category->fields['cName']) : $this->filter($category->fields['cName']);
                 } else {
                     $cName = $this->filter($category->fields['cName']);
                 }
