@@ -1540,10 +1540,10 @@ class usu
         }
 
         // We need to redirect if the paths do not match
-        if ($parsed_uri['path'] != $this->redirect_uri['path'] && rawurldecode($parsed_uri['path']) != $this->redirect_uri['path']) {
+        if (!isset($parsed_uri['path']) || ($parsed_uri['path'] != $this->redirect_uri['path'] && rawurldecode($parsed_uri['path']) != $this->redirect_uri['path'])) {
             if ($this->canonical !== null) {
                 $canonical = parse_url($this->canonical);
-                if ($parsed_uri['path'] != $canonical['path']) {
+                if (!isset($parsed_uri['path'])) || $parsed_uri['path'] != $canonical['path']) {
                     $this->log('Generated path for the canonical did not match the requested URI.');
                     return true;
                 }
