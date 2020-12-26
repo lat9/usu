@@ -664,70 +664,56 @@ class usu
         $pID = (int)$pID;
         // Only need to add the canonicals if different paths exist
         if (USU_CATEGORY_DIR != 'off') {
+            // -----
+            // Selecting the specified product's master-category-id (which defines its canonical
+            // path for the link) as well as the product's name.  Using 'INNER JOIN's since the
+            // product's name must be present and the product 'should' map to its master-category
+            // in the products_to_categories table.
+            //
+            // If either don't map, we'll return 'null' which will result in the product's canonical
+            // link being generated without any specific category information.
+            //
             $sql = 
-                "SELECT ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                "SELECT p.master_categories_id AS master_id, pd.products_name as pName
                    FROM " . TABLE_PRODUCTS . " AS p
-                        LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
+                        INNER JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
                             ON p.products_id = ptc.products_id
+                           AND ptc.categories_id = p.master_categories_id
+                        INNER JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
+                            ON pd.products_id = p.products_id
+                           AND pd.language_id = {$this->languages_id}
                   WHERE p.products_id = $pID
                   LIMIT 1";
             $result = $db->Execute($sql, false, true, 43200);
             if (!$result->EOF) {
-                $cID = (int)$result->fields['c_id'];
                 $masterID = (int)$result->fields['master_id'];
 
-                // Master category and product category do not match. This
-                // product will need a canonical.
-                if ($cID != $masterID) {
-                    $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
+                $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
 
-                    // Get the product name
-                    switch (true) {
-                        case (USU_CACHE_GLOBAL == 'true' && defined('PRODUCT_NAME_' . $pID)):
-                            $retval .= constant('PRODUCT_NAME_' . $pID);
-                            break;
+                // Get the product name
+                switch (true) {
+                    case (USU_CACHE_GLOBAL == 'true' && defined('PRODUCT_NAME_' . $pID)):
+                        $retval .= constant('PRODUCT_NAME_' . $pID);
+                        break;
 
-                        case (is_array($this->cache) && isset($this->cache['PRODUCTS'][$pID])):
-                            $retval .= $this->cache['PRODUCTS'][$pID];
-                            break;
+                    case (is_array($this->cache) && isset($this->cache['PRODUCTS'][$pID])):
+                        $retval .= $this->cache['PRODUCTS'][$pID];
+                        break;
 
-                        default:
-                            if (USU_FORMAT == 'parent') {
-                                $sql =
-                                    "SELECT pd.products_name AS pName, ptc.categories_id AS c_id, p.master_categories_id AS master_id
-                                       FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
-                                            LEFT JOIN " . TABLE_PRODUCTS . " p
-                                                ON p.products_id = pd.products_id
-                                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
-                                                ON ptc.products_id = pd.products_id
-                                      WHERE pd.products_id = $pID
-                                        AND pd.language_id = {$this->languages_id}
-                                      LIMIT 1";
-                            } else {
-                                $sql = 
-                                    "SELECT pd.products_name as pName
-                                       FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
-                                      WHERE pd.products_id = $pID
-                                        AND pd.language_id = {$this->languages_id}
-                                      LIMIT 1";
-                            }
-                            $result = $db->Execute($sql, false, true, 43200);
-                            $pName = $this->filter($result->fields['pName']);
+                    default:
+                        $pName = $this->filter($result->fields['pName']);
 
-                            if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                                $cID = $result->fields['c_id'];
-                                $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
-                            }
+                        if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
+                            $pName = $this->get_category_name($masterID, 'original') . '-' . $pName;
+                        }
 
-                            $retval .= $pName;
-                            unset($pName);
-                            break;
-                    }
+                        $retval .= $pName;
+                        unset($pName);
+                        break;
                 }
             }
             unset($sql, $result);
         }
-
         return $retval;
     }
 
@@ -757,7 +743,7 @@ class usu
                 if (USU_CATEGORY_DIR == 'full') {
                     $path = array();
                     $this->get_parent_categories_path($path, $single_cID);
-                    if (sizeof($path) > 0) {
+                    if (count($path) > 0) {
                         $cName = implode('/', $path);
                         $cut = strrpos($cName, $this->reg_anchors['cPath']);
                         if ($cut !== false) {
@@ -768,7 +754,7 @@ class usu
                     unset($path);
                 } elseif ($format == 'parent') {
                     $sql = 
-                        "SELECT c.categories_id, c.parent_id, cd.categories_name AS cName, cd2.categories_name AS pName
+                        "SELECT c.categories_id, c.parent_id, cd.categories_name AS cName, cd2.categories_name AS cNameParent
                            FROM " . TABLE_CATEGORIES_DESCRIPTION . " AS cd, " . TABLE_CATEGORIES . " AS c
                                 LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
                                     ON c.parent_id = cd2.categories_id 
@@ -779,7 +765,7 @@ class usu
                           LIMIT 1";
                     $result = $db->Execute($sql, false, true, 43200);
                     if (!$result->EOF) {
-                        $cName = zen_not_null($result->fields['pName']) ? $this->filter($result->fields['pName'] . ' ' . $result->fields['cName']) : $this->filter($result->fields['cName']);
+                        $cName = !empty($result->fields['cNameParent']) ? $this->filter($result->fields['cNameParent'] . ' ' . $result->fields['cName']) : $this->filter($result->fields['cName']);
                     }
                 } else {
                     $sql = 
@@ -965,12 +951,12 @@ class usu
 
     protected function is_product_string($params) 
     {
-        return (preg_match('/products_id=/i', $params)) ? true : false;
+        return (strpos($params, 'products_id=') !== false);
     }
 
     protected function is_cPath_string($params) 
     {
-        return (preg_match('/cPath=/i', $params)) ? true : false;
+        return (strpos($params, 'cPath=') !== false);
     }
 
     /**
@@ -1059,19 +1045,20 @@ class usu
         }
     }
 
-/**
- * Function to return the short word filtered string
- * @author Bobby Easland
- * @version 1.0
- * @param string $str
- * @param integer $limit
- * @return string Short word filtered
- */
+    /**
+     * Function to return the short word filtered string
+     * @author Bobby Easland
+     * @version 1.0
+     * @param string $str
+     * @param integer $limit
+     * @return string Short word filtered
+     */
     protected function short_name($str, $limit = 3)
     {
         if (defined('USU_FILTER_SHORT_WORDS')) {
-            $limit = (int)USU_FILTER_SHORT_WORDS;
+            $limit = USU_FILTER_SHORT_WORDS;
         }
+        $limit = (int)$limit;
         
         $str = (string)$str;
         if (empty($str)) {
@@ -1085,7 +1072,7 @@ class usu
                 $container[] = $value;
             }
         }
-        return (count($container) > 1) ? implode('-', $container) : $str;
+        return implode('-', $container);
     }
 
     /**
@@ -1240,7 +1227,7 @@ class usu
                 if (USU_CATEGORY_DIR == 'full') {
                     $path = array();
                     $this->get_parent_categories_path($path, $single_cID);
-                    if (sizeof($path) > 0) {
+                    if (count($path) > 0) {
                         $cName = implode('/', $path);
                         $cut = strrpos($cName, $this->reg_anchors['cPath']);
                         if ($cut !== false) {
@@ -1250,7 +1237,7 @@ class usu
                     }
                     unset($path);
                 } elseif (USU_FORMAT == 'parent') {
-                    $cName = zen_not_null($category->fields['cNameParent']) ? $this->filter($category->fields['cNameParent'] . ' ' . $category->fields['cName']) : $this->filter($category->fields['cName']);
+                    $cName = !empty($category->fields['cNameParent']) ? $this->filter($category->fields['cNameParent'] . ' ' . $category->fields['cName']) : $this->filter($category->fields['cName']);
                 } else {
                     $cName = $this->filter($category->fields['cName']);
                 }
@@ -1543,7 +1530,7 @@ class usu
         if (!isset($parsed_uri['path']) || ($parsed_uri['path'] != $this->redirect_uri['path'] && rawurldecode($parsed_uri['path']) != $this->redirect_uri['path'])) {
             if ($this->canonical !== null) {
                 $canonical = parse_url($this->canonical);
-                if (!isset($parsed_uri['path'])) || $parsed_uri['path'] != $canonical['path']) {
+                if (!isset($parsed_uri['path']) || $parsed_uri['path'] != $canonical['path']) {
                     $this->log('Generated path for the canonical did not match the requested URI.');
                     return true;
                 }
