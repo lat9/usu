@@ -55,7 +55,6 @@ class usu
             'id' => '-ezp-',
         );
 
-
         if (null === self::$unicodeEnabled) {
             self::$unicodeEnabled = (@preg_match('/\pL/u', 'a')) ? true : false;
         }
@@ -609,21 +608,9 @@ class usu
 
         // Add the category
         if (USU_CATEGORY_DIR != 'off') {
-            $sql = 
-                "SELECT ptc.categories_id AS c_id, p.master_categories_id AS master_id
-                   FROM " . TABLE_PRODUCTS . " p
-                        LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
-                            ON ptc.products_id = p.products_id
-                  WHERE p.products_id = $pID" . $categories_clause . "
-                  LIMIT 1";
-
-
-            $result = $db->Execute($sql, false, true, 43200);
-            $category = '';
-            if (!$result->EOF) {
-                $cID = ($cID !== null ? $cID : (int)$result->fields['master_id']);
-                $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
-            }
+            $masterCatID = (int)zen_get_products_category_id($pID);
+            $cID = ($cID !== null ? $cID : $masterCatID);
+            $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
 
             $return = $category . $return;
         }
