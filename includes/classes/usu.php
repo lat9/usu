@@ -55,6 +55,7 @@ class usu
             'id' => '-ezp-',
         );
 
+
         if (null === self::$unicodeEnabled) {
             self::$unicodeEnabled = (@preg_match('/\pL/u', 'a')) ? true : false;
         }
@@ -592,30 +593,11 @@ class usu
                 break;
 
             default:
-                if (USU_FORMAT == 'parent') {
-                    $sql =
-                        "SELECT pd.products_name AS pName, ptc.categories_id AS c_id, p.master_categories_id AS master_id
-                           FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
-                                LEFT JOIN " . TABLE_PRODUCTS . " p
-                                    ON p.products_id = pd.products_id
-                                LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
-                                    ON ptc.products_id = pd.products_id
-                          WHERE pd.products_id = $pID
-                            AND pd.language_id = {$this->languages_id}" . $categories_clause . "
-                          LIMIT 1";
-                } else {
-                    $sql = 
-                        "SELECT pd.products_name as pName
-                           FROM " . TABLE_PRODUCTS_DESCRIPTION . " pd
-                          WHERE pd.products_id = $pID
-                            AND pd.language_id = {$this->languages_id}
-                          LIMIT 1";
-                }
-                $result = $db->Execute($sql, false, true, 43200);
-                $pName = $this->filter($result->fields['pName']);
+                $pName = $this->filter(zen_get_products_name($pID));
 
-                if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                    $pName = $this->get_category_name($cID !== null ? $cID : (int)$result->fields['master_id'], 'original') . '-' . $pName;
+	            if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
+		            $masterCatID = (int)zen_get_products_category_id($pID);
+		            $pName = $this->get_category_name($cID !== null ? $cID : $masterCatID, 'original') . '-' . $pName;
                 }
 
                 if (is_array($this->cache)) {
@@ -673,21 +655,10 @@ class usu
             // If either don't map, we'll return 'null' which will result in the product's canonical
             // link being generated without any specific category information.
             //
-            $sql = 
-                "SELECT p.master_categories_id AS master_id, pd.products_name as pName
-                   FROM " . TABLE_PRODUCTS . " AS p
-                        INNER JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
-                            ON p.products_id = ptc.products_id
-                           AND ptc.categories_id = p.master_categories_id
-                        INNER JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
-                            ON pd.products_id = p.products_id
-                           AND pd.language_id = {$this->languages_id}
-                  WHERE p.products_id = $pID
-                  LIMIT 1";
-            $result = $db->Execute($sql, false, true, 43200);
-            if (!$result->EOF) {
-                $masterID = (int)$result->fields['master_id'];
+            $pName = zen_get_products_name($pID);
+            if (!empty($pName)) {
 
+                $masterID = zen_get_products_category_id($pID);
                 $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
 
                 // Get the product name
@@ -701,8 +672,6 @@ class usu
                         break;
 
                     default:
-                        $pName = $this->filter($result->fields['pName']);
-
                         if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
                             $pName = $this->get_category_name($masterID, 'original') . '-' . $pName;
                         }
@@ -712,7 +681,6 @@ class usu
                         break;
                 }
             }
-            unset($sql, $result);
         }
         return $retval;
     }
@@ -1117,6 +1085,25 @@ class usu
         }
     }
 
+	protected function products_sql_result()
+	{
+		global $db;
+		if (USU_FORMAT == 'parent') {
+			$sql =
+				"SELECT p.products_id AS id, ptc.categories_id AS c_id, p.master_categories_id AS master_id
+                       FROM " . TABLE_PRODUCTS . " AS p
+                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
+                                ON p.products_id = ptc.products_id
+                      WHERE p.products_status = 1";
+		} else {
+			$sql =
+				"SELECT p.products_id AS id
+                       FROM " . TABLE_PRODUCTS . " AS p
+                      WHERE p.products_status = 1";
+		}
+		return $db->Execute($sql, false, true, 43200);
+	}
+
     /**
      * Function to generate products cache entries
      */
@@ -1128,28 +1115,9 @@ class usu
         $is_expired = false;
         $this->is_cached($this->cache_file . 'products', $is_cached, $is_expired);
         if(!$is_cached || $is_expired) {
-            if (USU_FORMAT == 'parent') {
-                $sql = 
-                    "SELECT p.products_id AS id, ptc.categories_id AS c_id, p.master_categories_id AS master_id, pd.products_name AS name
-                       FROM " . TABLE_PRODUCTS  . " AS p
-                            LEFT JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
-                                ON p.products_id = pd.products_id
-                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
-                                ON p.products_id = ptc.products_id
-                      WHERE p.products_status = 1
-                        AND pd.language_id = {$this->languages_id}";
-            } else {
-                $sql = 
-                    "SELECT p.products_id AS id, pd.products_name AS name
-                       FROM " . TABLE_PRODUCTS  . " AS p
-                            LEFT JOIN " . TABLE_PRODUCTS_DESCRIPTION . " AS pd
-                                ON p.products_id = pd.products_id
-                      WHERE p.products_status = 1
-                        AND pd.language_id = {$this->languages_id}";
-            }
-            $product = $db->Execute($sql, false, true, 43200);
+            $product = $this->products_sql_result();
             while (!$product->EOF) {
-                $pName = $this->filter($product->fields['name']);
+                $pName = $this->filter(zen_get_products_name($product->fields['id']));
                 if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
                     $cID = $product->fields['c_id'];
                     $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
