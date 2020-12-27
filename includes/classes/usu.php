@@ -580,7 +580,6 @@ class usu
     {
         global $db;
         $pID = (int)$pID;
-        $categories_clause = ($cID !== null) ? (' AND ptc.categories_id = ' . (int)$cID) : '';
         // Handle generating the product name
         switch (true) {
             case (defined('PRODUCT_NAME_' . $pID)):
@@ -606,14 +605,19 @@ class usu
                 break;
         }
 
-        // Add the category
-        if (USU_CATEGORY_DIR != 'off') {
-            $masterCatID = (int)zen_get_products_category_id($pID);
-            $cID = ($cID !== null ? $cID : $masterCatID);
-            $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
-
-            $return = $category . $return;
-        }
+	    // Add the category
+	    $category = '';
+	    if (USU_CATEGORY_DIR != 'off') {
+		    if (empty($cID)) {
+			    $masterCatID = (int)zen_get_products_category_id($pID);
+			    $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $masterCatID . '/';
+		    } else {
+			    if (zen_product_in_category($pID, $cID)) {
+				    $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
+			    }
+		    }
+		    $return = $category . $return;
+	    }
 
         return $return;
     }
