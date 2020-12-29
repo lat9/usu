@@ -55,6 +55,44 @@ function usu_reset_cache_data($value)
     return 'false';
 }
 
+if (!function_exists('zen_product_in_category')) {
+
+	function zen_product_in_category($product_id, $cat_id)
+	{
+		global $db;
+		$in_cat = false;
+		$category_query_raw = "select categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . "
+                           where products_id = '" . (int)$product_id . "'";
+
+		$category = $db->Execute($category_query_raw);
+
+		while (!$category->EOF) {
+			if ($category->fields['categories_id'] == $cat_id) {
+				$in_cat = true;
+			}
+			if (!$in_cat) {
+				$parent_categories_query = "select parent_id from " . TABLE_CATEGORIES . "
+                                    where categories_id = '" . $category->fields['categories_id'] . "'";
+
+				$parent_categories = $db->Execute($parent_categories_query);
+//echo 'cat='.$category->fields['categories_id'].'#'. $cat_id;
+
+				while (!$parent_categories->EOF) {
+					if (($parent_categories->fields['parent_id'] != 0)) {
+						if (!$in_cat) {
+							$in_cat = zen_product_in_parent_category($product_id, $cat_id,
+								$parent_categories->fields['parent_id']);
+						}
+					}
+					$parent_categories->MoveNext();
+				}
+			}
+			$category->MoveNext();
+		}
+		return $in_cat;
+	}
+}
+
 // =======================================
 // ==> NOTE: All the following functions are deprecated as of v3.0.1 and will be removed in a future USU release.
 // =======================================
