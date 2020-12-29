@@ -595,7 +595,8 @@ class usu
 
 	            if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
 		            $masterCatID = (int)zen_get_products_category_id($pID);
-		            $pName = $this->get_category_name($cID !== null ? $cID : $masterCatID, 'original') . '-' . $pName;
+		            $category_id = ($cID !== null ? $cID : $masterCatID);
+		            $pName = $this->get_category_name($category_id, 'original') . '-' . $pName;
                 }
 
                 if (is_array($this->cache)) {
@@ -610,7 +611,7 @@ class usu
 	    if (USU_CATEGORY_DIR != 'off') {
 		    if (empty($cID)) {
 			    $masterCatID = (int)zen_get_products_category_id($pID);
-			    $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $masterCatID . '/';
+			    $category = $this->get_category_name($masterCatID) . $this->reg_anchors['cPath'] . $masterCatID . '/';
 		    } else {
 			    if (zen_product_in_category($pID, $cID)) {
 				    $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
