@@ -2,7 +2,7 @@
 /**
  * Part of Ultimate URLs, v3.0.0+, for Zen Cart.
  *
- * @copyright Copyright 2019        Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019 - 2021 Cindy Merkin (vinosdefrutastropicales.com)
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
@@ -56,41 +56,66 @@ function usu_reset_cache_data($value)
 }
 
 if (!function_exists('zen_product_in_category')) {
-
-	function zen_product_in_category($product_id, $cat_id)
-	{
-		global $db;
-		$in_cat = false;
-		$category_query_raw = "select categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . "
+    function zen_product_in_category($product_id, $cat_id)
+    {
+        global $db;
+        $in_cat = false;
+        $category_query_raw = "select categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . "
                            where products_id = '" . (int)$product_id . "'";
 
-		$category = $db->Execute($category_query_raw);
+        $category = $db->Execute($category_query_raw);
 
-		while (!$category->EOF) {
-			if ($category->fields['categories_id'] == $cat_id) {
-				$in_cat = true;
-			}
-			if (!$in_cat) {
-				$parent_categories_query = "select parent_id from " . TABLE_CATEGORIES . "
+        while (!$category->EOF) {
+            if ($category->fields['categories_id'] == $cat_id) {
+                $in_cat = true;
+            }
+            if (!$in_cat) {
+                $parent_categories_query = "select parent_id from " . TABLE_CATEGORIES . "
                                     where categories_id = '" . $category->fields['categories_id'] . "'";
 
-				$parent_categories = $db->Execute($parent_categories_query);
-//echo 'cat='.$category->fields['categories_id'].'#'. $cat_id;
+                $parent_categories = $db->Execute($parent_categories_query);
 
-				while (!$parent_categories->EOF) {
-					if (($parent_categories->fields['parent_id'] != 0)) {
-						if (!$in_cat) {
-							$in_cat = zen_product_in_parent_category($product_id, $cat_id,
-								$parent_categories->fields['parent_id']);
-						}
-					}
-					$parent_categories->MoveNext();
-				}
-			}
-			$category->MoveNext();
-		}
-		return $in_cat;
-	}
+                while (!$parent_categories->EOF) {
+                    if (($parent_categories->fields['parent_id'] != 0)) {
+                        if (!$in_cat) {
+                            $in_cat = zen_product_in_parent_category($product_id, $cat_id,
+                                $parent_categories->fields['parent_id']);
+                        }
+                    }
+                    $parent_categories->MoveNext();
+                }
+            }
+            $category->MoveNext();
+        }
+        return $in_cat;
+    }
+}
+
+if (!function_exists('zen_product_in_parent_category')) {
+    function zen_product_in_parent_category($product_id, $cat_id, $parent_cat_id) 
+    {
+        global $db;
+
+        $in_cat = false;
+        if ($cat_id == $parent_cat_id) {
+            $in_cat = true;
+        } else {
+            $parent_categories_query = 
+                "SELECT parent_id 
+                   FROM " . TABLE_CATEGORIES . "
+                  WHERE categories_id = " . (int)$parent_cat_id;
+
+            $parent_categories = $db->Execute($parent_categories_query);
+
+            while (!$parent_categories->EOF) {
+                if ($parent_categories->fields['parent_id'] != 0 && !$in_cat) {
+                    $in_cat = zen_product_in_parent_category($product_id, $cat_id, $parent_categories->fields['parent_id']);
+                }
+                $parent_categories->MoveNext();
+            }
+        }
+        return $in_cat;
+    }
 }
 
 // =======================================

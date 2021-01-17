@@ -25,7 +25,7 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <div id="body">
-            <h1>Ultimate URLs v3.0.7</h1>
+            <h1>Ultimate URLs v3.0.8</h1>
             <div id="top-links">
                 <a href="https://www.zen-cart.com" target="_blank">​Zen Cart</a>
                 <a href="https://www.zen-cart.com/showthread.php?199064" target="_blank">Support thread</a>
@@ -254,6 +254,13 @@
                 <div id="changelog">
                     <h2>Change History</h2>
                     <ul>
+                       <li>v3.0.8, 2021-01-17 (lat9):<ul>
+                            <li>BUGFIX: Correct PHP error, missing <code>zen_product_in_parent_category</code> during admin processing.</li>
+                            <li>The following files were changed:<ol>
+                                <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                                <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                            </ol></li>
+                        </ul></li>
                        <li>v3.0.7, 2021-01-01 (lat9/prosela):<ul>
                             <li>CHANGE: Filter-out unwanted HTML from the to-be-generated links.</li>
                             <li>CHANGE: Refactoring for improved readability.</li>
