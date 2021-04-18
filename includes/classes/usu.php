@@ -20,7 +20,7 @@
  */
 class usu 
 {
-    public $canonical;
+    public $canonical = null;
 
     protected $cache,
               $languages_id,
@@ -95,9 +95,6 @@ class usu
                 $GLOBALS['messageStack']->add(sprintf(USU_PLUGIN_WARNING_TABLE, TABLE_USU_CACHE), 'warning');
             }
         }
-
-        // Determine canonical (if needed)
-        $this->canonical();
 
         // Start logging
         $this->debug = false;
@@ -232,7 +229,18 @@ class usu
 
         $link = $this->add_sid($link, $add_session_id, $connection, $separator);
 
-        $generated_url = htmlspecialchars($link, ENT_QUOTES, CHARSET, false);
+        // -----
+        // As of v3.0.9, the USU class is instantiated _prior to_ the init_sanitize.php load to prevent
+        // a redirect-loop if an invalid/deleted product is associated with a 'products_id' variable in
+        // the requested link.
+        //
+        // Unfortunately, that initialization file is loaded _prior to_ the language-file loads,
+        // which is where the CHARSET definition occurs.  We'll need to default to a 'utf-8' character
+        // set if that initialization processing is the point at which this href_link is being
+        // requested.
+        //
+        $charset = (defined('CHARSET')) ? CHARSET : 'utf-8';
+        $generated_url = htmlspecialchars($link, ENT_QUOTES, $charset, false);
         $this->log("Generated URL: $generated_url");
         return $generated_url;
     }
@@ -1399,7 +1407,7 @@ class usu
      * The canonical URI will be placed in $this->canonical if a special
      * canonical is needed, otherwise $this->canonical will be null.
      */
-    protected function canonical() 
+    public function canonical() 
     {
         global $db, $request_type;
 
@@ -1495,7 +1503,7 @@ class usu
                     return true;
                 }
             } else {
-                $this->log('Generated path did not match the requested URI.');
+                $this->log('Generated path did not match the requested URI.' . PHP_EOL . json_encode($parsed_uri) . PHP_EOL . json_encode($this->redirect_uri));
                 return true;
             }
         } else {
