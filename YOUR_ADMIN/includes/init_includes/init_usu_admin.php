@@ -14,8 +14,8 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.0.9-beta1');
-define('USU_CURRENT_UPDATE_DATE', '2021-04-18');
+define('USU_CURRENT_VERSION', '3.0.9-beta2');
+define('USU_CURRENT_UPDATE_DATE', '2021-04-20');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
@@ -112,6 +112,15 @@ $usu_action_pages = array(
     FILENAME_PRODUCT,
     FILENAME_CATEGORIES,
     FILENAME_CATEGORY_PRODUCT_LISTING,
+    
+    // -----
+    // Adding product-specific handlers whose filenames aren't 'registered' in
+    // /includes/filenames.php.
+    //
+    'product_music',
+    'product_free_shipping',
+    'document_product',
+    'document_general',
 );
 if (in_array($usu_current_page, $usu_action_pages) && !empty($_GET['action'])) {
     switch ($usu_current_page) {
@@ -128,7 +137,15 @@ if (in_array($usu_current_page, $usu_action_pages) && !empty($_GET['action'])) {
             break;
             
         case FILENAME_PRODUCT:
-            if ($_GET['action'] == 'update_product') {
+        // -----
+        // Adding product-specific handlers whose filenames aren't 'registered' in
+        // /includes/filenames.php.
+        //
+        case 'product_music':
+        case 'product_free_shipping':
+        case 'document_product':
+        case 'document_general':
+            if (in_array($_GET['action'], array('update_product', 'delete_product_confirm'))) {
                 usu_reset_cache_data('products');
             }
             break;
@@ -142,6 +159,7 @@ if (in_array($usu_current_page, $usu_action_pages) && !empty($_GET['action'])) {
                     
                 case 'update_category':
                 case 'update_category_status':
+                case 'delete_category_confirm':
                     usu_reset_cache_data('categories');
                     break;
                     
