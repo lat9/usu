@@ -254,12 +254,14 @@
                 <div id="changelog">
                     <h2>Change History</h2>
                     <ul>
-                        <li>v3.0.9, 2021-04-18 (lat9):<ul>
+                        <li>v3.0.9, 2021-04-20 (lat9):<ul>
                             <li>BUGFIX: Correct redirect-loop detected by browsers when an invalid 'products_id' is present in the URL.</li>
+                            <li>BUGFIX: Changes to products, categories, manufacturers and EZ-pages not properly cached during admin processing.</li>
                             <li>The following files were changed:<ol>
                                 <li>/includes/auto_loaders/config.usu.php</li>
                                 <li>/includes/classes/usu.php</li>
                                 <li>/includes/classes/observers/UsuObserver.php</li>
+                                <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
                                 <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
                             </ol></li>
                         </ul></li>

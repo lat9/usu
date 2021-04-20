@@ -24,6 +24,7 @@ class usu
 
     protected $cache,
               $languages_id,
+              $parameters_valid,
               $reg_anchors,
               $cache_file,
               $uri,
@@ -108,13 +109,6 @@ class usu
                 $this->logpage = (isset($_GET['main_page'])) ? $_GET['main_page'] : 'index';
             }
         }
-
-        // Redirect if enabled and neccessary
-        if (defined('USU_REDIRECT') && USU_REDIRECT == 'true') {
-            if ($this->needs_redirect()) {
-                $this->redirect();
-            }
-        }
     }
 
     /**
@@ -166,7 +160,6 @@ class usu
         // of claiming a link is "static" when it is not. So we ignore the value
         // of "static" if the page starts with "index.php?"
         if (strstr($page, 'index.php?') !== false) {
-
             // If we find the main_page parse the URL
             $result = array();
             if (preg_match('/[?&]main_page=([^&]*)/', $page, $result) === 1) {
@@ -219,12 +212,28 @@ class usu
             }
         }
 
+        // -----
+        // Indicate that, so far, no issues have been found with the link's
+        // parameters.  That might be changed during the parse_parameters method's
+        // processing, if an invalid products_id, cPath or EZ-Pages' id parameter is
+        // found.
+        //
+        $this->parameters_valid = true;
+
         // We start with no separator, so define one.
         $separator = '?';
         if (zen_not_null($parameters)) {
             $link .= $this->parse_parameters($page, $parameters, $separator);
         } else {
             $link .= (($page != FILENAME_DEFAULT && $page != '') ? $page . USU_END : '');
+        }
+
+        // -----
+        // If the parameters supplied for the link aren't valid, don't regenerate a USU-formatted
+        // link.
+        //
+        if (!$this->parameters_valid) {
+            return null;
         }
 
         $link = $this->add_sid($link, $add_session_id, $connection, $separator);
@@ -315,8 +324,8 @@ class usu
         // Cleanup parameters and convert to initial array
         $params = trim($params, "?& \t\n\r\0\x0B");
         $p = array();
-        if (!empty($params)) {
-            $p = @explode('&', $params);
+        if (!empty($params) && is_string($params)) {
+            $p = explode('&', $params);
         }
 
         // Add the cPath to the start of the parameters if present
@@ -601,14 +610,22 @@ class usu
             default:
                 $pName = $this->filter(zen_get_products_name($pID));
 
-                if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                    $masterCatID = (int)zen_get_products_category_id($pID);
-                    $category_id = ($cID !== null ? $cID : $masterCatID);
-                    $pName = $this->get_category_name($category_id, 'original') . '-' . $pName;
-                }
+                // -----
+                // If the products's name wasn't found, indicate that there's a link
+                // parameter issue so that the requested URL won't be generated.
+                //
+                if ($pName === '') {
+                    $this->parameters_valid = false;
+                } else {
+                    if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
+                        $masterCatID = (int)zen_get_products_category_id($pID);
+                        $category_id = ($cID !== null ? $cID : $masterCatID);
+                        $pName = $this->get_category_name($category_id, 'original') . '-' . $pName;
+                    }
 
-                if (is_array($this->cache)) {
-                    $this->cache['PRODUCTS'][$pID] = $pName;
+                    if (is_array($this->cache)) {
+                        $this->cache['PRODUCTS'][$pID] = $pName;
+                    }
                 }
                 $return = $pName;
                 break;
@@ -657,7 +674,6 @@ class usu
             //
             $pName = zen_get_products_name($pID);
             if (!empty($pName)) {
-
                 $masterID = zen_get_products_category_id($pID);
                 $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
 
@@ -748,7 +764,13 @@ class usu
                     }
                 }
 
-                if ($cName !== '' && is_array($this->cache)) {
+                // -----
+                // If the category's name wasn't found, indicate that there's a link
+                // parameter issue so that the requested URL won't be generated.
+                //
+                if ($cName === '') {
+                    $this->parameters_valid = false;
+                } elseif (is_array($this->cache)) {
                     $this->cache['CATEGORIES'][$full_cPath] = $cName;
                 }
                 $return = $cName;
@@ -786,7 +808,13 @@ class usu
                 $result = $db->Execute($sql, false, true, 43200);
                 $mName = ($result->EOF) ? '' : $this->filter($result->fields['mName']);
 
-                if ($mName !== '' && is_array($this->cache)) {
+                // -----
+                // If the manufacturer's name wasn't found, indicate that there's a link
+                // parameter issue so that the requested URL won't be generated.
+                //
+                if ($mName === '') {
+                    $this->parameters_valid = false;
+                } elseif (is_array($this->cache)) {
                     $this->cache['MANUFACTURERS'][$mID] = $mName;
                 }
                 $return = $mName;
@@ -845,7 +873,13 @@ class usu
                 $result = $db->Execute($sql, false, true, 43200);
                 $ezpName = ($result->EOF) ? '' : $this->filter($result->fields['ezpName']);
 
-                if ($ezpName !== '' && is_array($this->cache)) {
+                // -----
+                // If the EZ-Page's name wasn't found, indicate that there's a link
+                // parameter issue so that the requested URL won't be generated.
+                //
+                if ($ezpName === '') {
+                    $this->parameters_valid = false;
+                } elseif (is_array($this->cache)) {
                     $this->cache['EZPAGES'][$ezpID] = $ezpName;
                 }
                 $return = $ezpName;
@@ -1432,6 +1466,13 @@ class usu
             }
             unset($product_page);
         }
+
+        // Redirect if enabled and necessary
+        if (defined('USU_REDIRECT') && USU_REDIRECT == 'true') {
+            if ($this->needs_redirect()) {
+                $this->redirect();
+            }
+        }
     }
 
     /**
@@ -1503,8 +1544,12 @@ class usu
                     return true;
                 }
             } else {
+                // -----
+                // If the requested URI contained invalid per-page parameters, e.g. an invalid 'id'
+                // for an EZ-page request, the request is not redirected.
+                //
                 $this->log('Generated path did not match the requested URI.' . PHP_EOL . json_encode($parsed_uri) . PHP_EOL . json_encode($this->redirect_uri));
-                return true;
+                return $this->parameters_valid;
             }
         } else {
             // See if the parameters match. We do not care about order.
