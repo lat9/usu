@@ -674,7 +674,7 @@ class usu
             //
             $pName = zen_get_products_name($pID);
             if (!empty($pName)) {
-                $masterID = zen_get_products_category_id($pID);
+                $masterID = (int)zen_get_products_category_id($pID);
                 $retval = $this->get_category_name($masterID) . $this->reg_anchors['cPath'] . $masterID . '/';
 
                 // Get the product name
