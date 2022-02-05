@@ -3,7 +3,7 @@
  * Part of Ultimate URLs for Zen Cart, v3.0.0 and later. This script is loaded by admin/init_includes/init_usu_admin.php 
  * on a change (i.e. update or install) to the plugin.
  *
- * @copyright Copyright 2019 Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019-2022 Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
@@ -22,7 +22,14 @@ switch (true) {
         if (!zen_page_key_exists('usuUninstall')) {
             zen_register_admin_page('usuUninstall', 'BOX_CONFIGURATION_USU_UNINSTALL', 'FILENAME_USU_UNINSTALL', '', 'extras', 'Y');
         }
-    default:                //-Fall through from above processing
+    // -----
+    // v3.0.10:
+    // - Remove the configuration page associated with older USU versions.
+    //
+    case version_compare(USU_VERSION, '3.0.10', '<'):               //-Fall through from above processing
+        zen_deregister_admin_pages('configUSU');
+
+    default:                                                        //-Fall through from above processing
         break;
 }
 
