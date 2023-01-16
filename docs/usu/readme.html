@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate URLs</title>
+    <link rel="icon" href="../vinos_favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+a, a:active, a:visited { color: #006666; text-decoration: none; }
+a:hover { color:#00CC99; text-decoration: underline; }
+body, p, h1, h2, h3, h4, h5, h6, li, td, dd, img, dt, dl, table { font-family: Roboto, verdana, avantgarde, tahoma, arial, sans-serif; font-size: 12pt; color: black; padding: 0px; margin: 10px 20px; line-height: 1.75em; }
+h1, h2, h3, h4 { font-weight: bold; padding: 5px; }
+h1 { font-size: 20px; text-align: center; border-bottom: 1px solid #666; }
+h2 { font-size: 16px; }
+h2, h3 { border: 1px solid #666; background-color: #eee; }
+ol li, ol li p { margin-left: 0; }
+.corefile, .red { color: red; }
+.template { color: green; }
+.added, .ph { color: blue; }
+.removed { text-decoration: line-through; }
+ol li, ul li { margin-top: 5px; margin-bottom: 5px; }
+ul li ul { padding-left: 0; }
+.clearBoth { clear: both; }
+.smaller { font-size: smaller; }
+
+.etabs { margin: 0; padding: 0; }
+.tab { display: inline-block; zoom:1; *display:inline; background: #eee; border: solid 1px #999; border-bottom: none; border-radius: 4px 4px 0 0; margin: 0; }
+.tab a { font-size: 14px; line-height: 2em; display: block; padding: 0 10px; outline: none; }
+.tab a:hover { text-decoration: underline; }
+.tab.active { background: #fff; padding-top: 6px; position: relative; top: 1px; border-color: #666; }
+.tab a.active { font-weight: bold; }
+.tab-container .panel-container { background: #fff; border: solid #666 1px; padding: 10px; border-radius: 0 4px 4px 4px; }
+.panel-container { margin-bottom: 10px; }
+    </style>
+    <script src="../jquery-3.5.1.min.js"></script> 
+    <script src="../jquery.easytabs.min.js"></script>
+</head>
+<body>
+    <h1>Ultimate URLs</h1>
+    <p>Version 3.1.0 Copyright &copy; 2015-2023, <a href="https://vinosdefrutastropicales.com" target="_blank">Vinos de Frutas Tropicales</a>.</p>
+    <p>Current Support Thread on the Zen Cart forums: <a href="https://www.zen-cart.com/showthread.php?199064" target="_blank">https://www.zen-cart.com/showthread.php?199064</a></p>
+    <p>Current Zen Cart Download is <a href="https://www.zen-cart.com/downloads.php?do=file&id=132" target="_blank">here</a>.</p>
+    <p>See the plugin's <a href="https://github.com/lat9/usu/issues">GitHub repository</a> for upcoming changes and bugfixes.</p>
+
+    <hr>
+    <p>Ultimate URLs (<em>USU</em>) allows store owners to use alternate URLs. The URLs generated will include &quot;human friendly&quot; names in the current browser's requested language and contain shortened versions of certain parameters.</p>
+    <p><b>Note:</b> If you are updating <em>USU</em> from a <b>version prior to v3.0.0</b>, additional care must be taken to ensure that the previous version's changes have been fully removed from your store's file-system &hellip; <b class="red">before</b> you copy the updated <em>USU</em> files to your store's file-system.  Refer to the <em>Installation</em> tab for details.</p>
+    <hr>
+    <p><em>Ultimate URLs</em> is released under the General Public License (see the file named LICENSE in the distribution archive for full details).</p>
+    <p>This script is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
+    <p>Always backup your shop and database before making changes.</p>
+
+    <div class="tab-container" id="outer-container">
+        <ul class="etabs">
+            <li class="tab"><a href="#features">Features and Requirements</a></li>
+            <li class="tab"><a href="#installation">Install or Uninstall</a></li>
+            <li class="tab"><a href="#history">Change History</a></li>
+            <li class="tab"><a href="#files">Supplied Files</a></li>
+        </ul>
+        <div class="panel-container">
+            <!-- start features section -->
+            <div id="features">
+                <noscript><h2>Features and Requirements</h2></noscript>
+                <h3>Features</h3>
+                <ul>
+                    <li>Both the stock Zen Cart and alternative URLs can be used to access the pages.</li>
+                    <li>One can enable automatic 301 redirects from older URLs (both stock and alternative) to the new URLs (both updated stock and alternative).</li>
+                    <li>Support is included for generating URLs in the native language requested by the browser / customer.</li>
+                    <li>For category, product, and review pages: one can choose to show just the product / category name or optionally prepend the name with the parent category's name (original or parent).</li>
+                    <li>For category pages: one can choose to display the categories as directories (off, short, or full).</li>
+                    <li>For EZ-Pages: the title of the EZ-Page is be used.</li>
+                    <li>For all other pages: the page type will be used as the name (replaces &quot;main_page=xyz&quot; with &quot;xyz&quot;).</li>
+                    <li>One can optionally chose to have all alternate URLS end with a specific extension (.html, .htm).</li>
+                    <li>One can configure sitewide string replacements using PCRE rules (regular expressions / preg_replace).</li>
+                    <li>One can choose to strip all non-alphanumerical characters or just "special" characters (dash is excluded).</li>
+                    <li>One can choose to "filter" out short words.</li>
+                    <li>One can select which page types (main_page=xyz) will have rewritten URLs.</li>
+                    <li>One can choose to have generated URLs cached. Caching is supported at multiple levels including the use of memory and database storage.</li>
+                    <li>If one chooses to remove Ultimate URLs and switch back to the stock Zen Cart URLs in the future, leaving the .htaccess rules in place will allow both stock and alternative URLs to continue functioning.</li>
+                </ul>
+                <h3>Requirements</h3>
+                <ul>
+                    <li>Working installation of Zen Cart 1.5.7<b>a</b> or later.  <b>Note:</b> Zen Cart 1.5.7 (unsuffixed) has issues (if unpatched) with multiple observers watching the same event.</li>
+                    <li>Supports PHP versions 5.6 through 8.2.</li>
+                    <li>Secure FTP access to the Zen Cart installation (while you can use plain FTP it is not recommended)</li>
+                    <li>An account to access Zen Cart's administrative interface</li>
+                    <li>Knowledge of regular expressions if filtering names in URLs</li>
+                    <li>Read and agree to the <a href="#license">License</a></li>
+                </ul>
+            </div>
+            <!-- end features section -->
+
+            <!-- start installation section -->
+            <div id="installation">
+                <noscript><h2>Install or Uninstall</h2></noscript>
+                <h3>Plugin File Structure</h3>
+                <ul>
+                    <li><code>.htaccess</code> (Apache configuration directives)</li>
+                    <li><code>/includes</code> (storefront processing)</li>
+                    <li><code>/YOUR_ADMIN</code> (admin-level processing)</li>
+                    <li><code>/docs</code> readme (documentation)</li>
+                </ul>
+                <h3>Important Notes</h3>
+                <p>Starting with v3.0.0, <em>Ultimate URLs</em> is, from a PHP-standpoint, a <b>drop-in</b> plugin! You <em class="red">do</em> need to merge <em>USU</em>'s <code>.htaccess</code> contents with your store's current file-contents.</p>
+                <p>Simply follow the instructions below to install or update <em>USU</em> for your store.  This version of the plugin provides an additional tool to allow you to easily remove <em>USU</em>'s files and database updates.</p>
+
+                <p><b>Note:</b> If you are upgrading from a version of <em>USU</em> <b style="color: red;">prior to</b> v3.0.0, follow the steps outlined <a href="https://github.com/lat9/usu/blob/master/pages/upgrade_from_v2.md" target="_blank">here</a> to remove previous versions' changes to Zen Cart <b>core-files</b>, <em>then</em> proceed to <b>Installation and Upgrades</b>.</p>
+                <div class="tab-container" id="inner-container1">
+                    <p>This section identifies the processes you'll use to initially install <em>USU</em> or uninstall <em>USU</em> entirely.</p>
+                    <ul class="etabs">
+                        <li class="tab"><a href="#initial">Installation and Upgrades</a></li>
+                        <li class="tab"><a href="#uninstall">Uninstalling</a></li>
+                    </ul>
+
+                    <div class="panel-container">
+                        <div id="initial">
+                            <noscript><h3>Installation and Upgrades</h3></noscript>
+                            <p>There are neither <span class="corefile">core-file overwrites</span> nor <span class="template">template-overrides</span> used by this plugin; you should <strong>always</strong> backup your cart's database and files prior to making any changes. Unzip the plugin's package file and then:</p>
+                            <ol type="A">
+                                <li>Rename the YOUR_ADMIN directory to match your custom admin directory's name.</li>
+                                <li>Sign into your Zen Cart's admin panel.</li>
+                                <li>Copy the plugin's <code>.php</code> files to your store's root directory structure:<ol>
+                                    <li>/includes/auto_loaders/config.usu.php</li>
+                                    <li>/includes/classes/usu.php</li>
+                                    <li>/includes/classes/observers/UsuObserver.php</li>
+                                    <li>/includes/extra_datafiles/usu.php</li>
+                                    <li>/includes/init_includes/init_usu.php</li>
+                                    <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                                    <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
+                                    <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                                    <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
+                                    <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                                    <li>/YOUR_ADMIN/includes/languages/english/usu_configuration.php</li>
+                                    <li>/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</li>
+                                    <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</li>
+                                </ol><b>Note:</b> The list above includes only the <em>required</em> files in <em>USU</em>'s distribution.  See the <a href="#files" class="side-link">Supplied Files</a> tab for additional information.</li>
+                                <li>If you are <em>upgrading</em> the plugin from a previous version, you've already incorporated the plugin's required changes to your site's <code>.htaccess</code> file; continue to the next step.  Otherwise:<ul>
+                                    <li>The <code>.htaccess</code> file in the root of <em>USU</em>'s distribution contains directives for Apache web servers on how to handle incoming requests for URLs including those generated by Ultimate URLs. If your webhost uses an Apple OSX-, UNIX-, or BSD-based operating system you may need to change some settings to allow you to see the files in this folder. Look for an option to &quot;show hidden files&quot;. By default, these operating systems can be configured to hide files that start with a dot.</li>
+                                    <li>Edit the supplied sample <code>.htaccess</code> file with a plaintext editor (such as notepad). Adjust the Apache directives (especially RewriteBase) as needed for the host where your Zen Cart is installed &mdash; pay particular attention to the notes and comments inside the sample <code>.htaccess</code> file.</li>
+                                    <li>If an existing <code>.htaccess</code> file exists at the root of your Zen Cart installation, you should <em>merge</em> the directives from that pre-existing file with those required for <em>USU</em>.</li>
+                                    <li>Make a copy of any pre-existing <code>.htaccess</code> for your records.</li>
+                                    <li>Upload the edited <code>.htaccess</code> file to the root of your Zen Cart installation.</li>
+                                </ul></li>
+                                <li>Click the &quot;Admin Home&quot; link in your Zen Cart's top admin menu.  This action will cause the plugin's installation script to run.  You'll see an addition to your Zen Cart's <code>Configuration</code> menu entitled <code>Ultimate URLs</code>.  The plugin will not become active until you set the plugin's <b>Enable alternate URLs?</b> setting to <em>true</em>.</li>
+                            </ol>
+                        </div>
+                        <div id="uninstall">
+                            <noscript><h3>Uninstall</h3></noscript>
+                            <p>Navigate to your Zen Cart admin's <code>Extras :: Uninstall Ultimate URLs</code> tool and follow the instructions.  That tool will delete all the plugin's added files and database changes &hellip; leaving the site's <code>.htaccess</code> intact, since you might have other customizations that would be lost upon delete.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end installation section -->
+
+            <!-- start history section -->
+            <div id="history">
+                <noscript><h2>Change History</h2></noscript>
+                <p>You can view the details of these changes on the plugin's <a href="https://github.com/lat9/usu/issues" target="_blank">GitHub repository.</a></p>
+                <ul>
+                    <li>v3.1.0-beta1, 2023-01-16 (lat9):<ul>
+                        <li>CHANGE: Drop support for Zen Cart versions prior to 1.5.7<b>a</b>.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/auto_loaders/config.usu.php</li>
+                            <li>/includes/classes/observers/UsuObserver.php</li>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                            <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
+                            <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                            <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.11, 2022-03-10 (lat9/proseLA):<ul>
+                        <li>BUGFIX: Don't include admin session ID on links generated for the catalog.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.10, 2022-02-09 (lat9/proseLA):<ul>
+                        <li>BUGFIX: Correct MySQL error logged when a site has misconfigured products.</li>
+                        <li>BUGFIX: Remove duplicate configuration entry associated with older versions of USU.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.9, 2021-04-23 (lat9):<ul>
+                        <li>BUGFIX: Correct redirect-loop detected by browsers when an invalid 'products_id' is present in the URL.</li>
+                        <li>BUGFIX: Changes to products, categories, manufacturers and EZ-pages not properly cached during admin processing.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/auto_loaders/config.usu.php</li>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/includes/classes/observers/UsuObserver.php</li>
+                            <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.8, 2021-01-17 (lat9):<ul>
+                        <li>BUGFIX: Correct PHP error, missing <code>zen_product_in_parent_category</code> during admin processing.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                   <li>v3.0.7, 2021-01-01 (lat9/prosela):<ul>
+                        <li>CHANGE: Filter-out unwanted HTML from the to-be-generated links.</li>
+                        <li>CHANGE: Refactoring for improved readability.</li>
+                        <li>BUGFIX: PHP 8.0 compatibility changes.</li>
+                        <li>BUGFIX: Correct PHP notice on very-malformed URLs.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                   <li>v3.0.6, 2020-04-03 (lat9):<ul>
+                        <li>BUGFIX: Correct PHP Parse error introduced in v3.0.5.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                   <li>v3.0.5, 2020-04-02 (lat9):<ul>
+                        <li>BUGFIX: Sanitize HTML &amp;amp; strings from any to-be-generated href-link.</li>
+                        <li>BUGFIX: Correct &quot;Use of undefined constant ENABLE_SSL&quot; warnings in admin.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.4, 2019-11-09 (lat9):<ul>
+                        <li>BUGFIX: Query updates in v3.0.3 cause admin whitescreen.</li>
+                        <li>BUGFIX: Restore use of ENABLE_SSL<em>_CATALOG</em> when checking admin-generated storefront links.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.3, 2019-11-06 (lat9):<ul>
+                        <li>BUGFIX: Remove hard-coded category indicator from categories URL.</li>
+                        <li>BUGFIX: Correct issues with $_GET array parameters.</li>
+                        <li>BUGFIX: Correct attributed-product-in-cart link back to product page (attribute restoration).</li>
+                        <li>BUGFIX: Don't add 'manufacturers_id' parameter to <em>any</em> product-info type page.</li>
+                        <li>CHANGE: Update various queries, using integer values, for future-proofing.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.2, 2019-07-29 (lat9):<ul>
+                        <li>BUGFIX: Correct PHP Warnings (PHP 7.3).</li>
+                        <li>BUGFIX: 'Reset USU Cache' not honored (or reset in the configuration.</li>
+                        <li>BUGFIX: Correct over-sanitization of the 'PCRE Filter Rules'.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/includes/classes/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_config_changes.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.1, 2019-05-02 (lat9):<ul>
+                        <li>BUGFIX: PHP error logged on upgrade.</li>
+                        <li>CHANGE: Update USU's uninstall procedure to allow <em>only</em> the configuration settings to be removed.</li>
+                        <li>CHANGE: Simplify handling of configuration settings.</li>
+                        <li>The following files were changed:<ol>
+                            <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                            <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_config_changes.php (Added)</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                            <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                            <li>/YOUR_ADMIN/includes/languages/english/usu_configuration.php</li>
+                            <li>/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</li>
+                            <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v3.0.0, 2019-02-29 (lat9, proseLA):<ul>
+                        <li>CHANGE: Use PHP's <code>error_log</code> function for debug-logging.</li>
+                        <li>BUGFIX: Canonical link not being written.</li>
+                        <li>BUGFIX: (zc156) Missing function <code>zen_get_info_page</code> during admin processing.</li>
+                        <li>BUGFIX: <em>USU</em> installer doesn't modify zc156 file contents properly.</li>
+                        <li>CHANGE: Restructure <em>USU</em> distribution zip-file to be a &quot;drop-in&quot; plugin.</li>
+                        <li>The following files were changed:<ol>
+                            <li><b>All of them!</b></li>
+                        </ol></li>
+                    </ul></li>
+                    <li>v2.217, 2019-01-16 (lat9, daniellek, jeking928, proseLA):<ul>
+                        <li>Modify Ez-pages' handling for multi-lingual ez-pages, introduced in zc1.5.6.</li>
+                    </ul></li>
+                    <li>v2.216, 2018-10-31 (lat9):<ul>
+                        <li>Corrected database default value for &quot;datetime&quot; fields.</li>
+                    </ul></li>
+                    <li>v2.215, Feb 2015 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Created new install, upgrade, and removal processes using the &quot;plugin&quot; class and associated files</li>
+                        <li>Fixed the upgrade script to not attempt reading from the admin_page table if not present (Zen Cart 1.3.9h).</li>
+                        <li>Installation, Upgrades, and Removal no longer require modifying core Zen Cart files by hand.</li>
+                        <li>Updated how the URL caches work.<ul>
+                            <li>Reduced the amount of memory consumed.</li>
+                            <li>Better support for showing URLs for multiple languages in the same request.</li>
+                            <li>One cache is used per instance of the class generating URLs.</li>
+                            <li>No longer uses &quot;eval&quot; or constants.</li>
+                            <li>Corrected various spelling errors.</li>
+                        </ul></li>
+                        <li>Refactored all configuration options to have a consistent naming scheme.</li>
+                        <li>Configuration options utilizing dropdowns or radio buttons will have the current setting selected by default.</li>
+                        <li>When configuring &quot;selectable&quot; options which alter the generated URLs, the cache is automatically reset.</li>
+                        <li>Added a configuration option to generate debug logs about alternate URL generation.</li>
+                        <li>The configuration option &quot;remove problematic characters&quot; now defaults to &quot;non-alphanumerical&quot; instead of no filtering when an invalid setting exists in the database.</li>
+                        <li>Updated cPath handling to utilize the cPath (off / auto) setting and be more forgiving of broken templates.</li>
+                        <li>Fixed an issue causing pages unknown to this module and containing a product_id to always generate a link to the product page .</li>
+                        <li>If multi-byte versions of common string functions are available they will be used (better compatibility with multi-byte character encodings).</li>
+                        <li>Updated the code retrieving names to encode characters not allowed by in URI's by RFC 3986.</li>
+                        <li>Updated the code generating &quot;alternative&quot; URIs to not create &quot;alternative&quot; URIs for real files.</li>
+                        <li>Refactored all code related to URIs. The request uri, real uri, and redirect uri are now available as protected variables after the class is constructed.</li>
+                        <li>Refactored the &quot;redirect&quot; code.
+                            <ul>
+                                <li>Will now redirect to the configured URL for both &quot;alternative&quot; and &quot;stock&quot; Zen Cart URLs.</li>
+                                <li>Will &quot;skip&quot; over files which physically exist (fixes compatibility with certain other modules).</li>
+                                <li>Better support for multilingual sites.</li>
+                            </ul>
+                        </li>
+                        <li>Refactored SQL Queries to utilize the bindVars method of queryFactory.</li>
+                        <li>Refactored using a new naming scheme for files (and removed the emphasis on the word SEO).</li>
+                        <li>Included the core &quot;plugin&quot; class and associated files.
+                            <ul>
+                                <li>The class and files are not part of &quot;Ultimate URLs&quot;.</li>
+                                <li>Provides for simplification of the installation / upgrade process.</li>
+                                <li>Provides for simplification of the removal process.</li>
+                                <li>Does some extra checks against Zen Cart's configure.php files.</li>
+                            </ul>
+                        </li>
+                        <li>Updated the readme to provide updated information.<ul>
+                            <li>Is now a HTML5 document with text, syntax highlighting, and images.</li>
+                            <li>Included information on a workaround for Numinex Users.</li>
+                            <li>Included information for multilingual stores.</li>
+                            <li>Included new instructions for installation, upgrades, and removal.</li>
+                        </ul></li>
+                    </ul></li>
+                    <li>v2.212, Dec 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Updated the installation and removal documentation including instructions and notes.</li>
+                        <li>Improved performance during the generation of links and canonical links for products.</li>
+                        <li>Updated language files to clarify usage of the available options.</li>
+                        <li>Updated warning messages used in the configuration menu to provide better feedback.</li>
+                        <li>Better handling of extensions for products and categories during installation or when the plugin has been removed / uninstalled.</li>
+                        <li>No need to edit the .htaccess file when changing the URL Formats.</li>
+                        <li>When changing &quot;non text entry&quot; options the URL cache is reset automatically.</li>
+                        <li>Global URL cache can now be re-enabled in the admin configuration if previously disabled (bug in 2.210+).</li>
+                        <li>Fixed redirect code for URLs containing unicode characters requiring urlencode / urldecode (bug in 2.210+).</li>
+                        <li>All filters are initialized before calling the code to generate the URL caches (bug in 2.210+).</li>
+                    </ul></li>
+                    <li>v2.211, Oct 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>To ensure URLs are W3C compatible, htmlspecialchars is run over all generated URLs with mode and character set (PHP 5.4 compatibility).</li>
+                        <li>Setting &quot;Enable automatic rewrite&quot; to true will automatically issue a 301 redirect for URLs not matching the output from zen_href_link.</li>
+                        <li>For linked products canonical links are generated when needed by using the product's master category id. The generated links are passed to Zen Cart's canonical link system.</li>
+                        <li>Added handling for copy / pasted &quot;Internal URLs&quot; in &quot;EZ-Pages&quot; to make migration to the new version easier for upgraded installations.</li>
+                        <li>Updated README_ENGLISH with more detailed installation steps.</li>
+                        <li>Changed the names of folders and moved some files around to clarify installation steps.</li>
+                        <li>Updated the English language file to clarify the usage of &quot;Enter pages to allow rewrite&quot;.</li>
+                        <li>Added option to disable the EZ-Page cache (bug in 2.210+).</li>
+                        <li>Page not requiring special handling of parameters will now correctly have the &quot;extension&quot; added to the end of the URL (bug in 2.210+).</li>
+                        <li>Cleans up some obsolete configuration options which may still be present when upgrading from a previous version (bug in 2.210+).</li>
+                        <li>New .htaccess sample handles product reviews when &quot;Categories as directories&quot; is enabled (bug in 2.210+).</li>
+                    </ul></li>
+                    <li>v2.210, Oct 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Updated all configuration options to provide better clarity.</li>
+                        <li>Added some additional URL Rewrite modes (including short categories as directories).</li>
+                        <li>New .htaccess sample to support new modes.</li>
+                        <li>Moved the product type code into an init_script to reduce the number of affected core files.</li>
+                        <li>Added the ability to enable the EZ-Pages URL cache.</li>
+                        <li>If the &quot;page&quot; variable contains &quot;index.php?&quot; and &quot;main_page=&quot; the &quot;page variable will be parsed to determine the appropriate destination page and parameters. You no longer need to edit internal links on EZ-Pages.</li>
+                        <li>The generation of the &quot;cPath&quot; parameter is handled automatically.</li>
+                        <li>Moved all language specific items into the language folder.</li>
+                        <li>Simplified the code used in zen_href_link. Fallback operation uses original Zen Cart function.</li>
+                        <li>Created installation, upgrade, and removal scripts. These handle automatically upgrading from older versions without the loss of settings (supports upgrading from version 2.150+).</li>
+                        <li>Added affected files for Zen Cart 1.3.9h.</li>
+                        <li>Removed obsolete language files.</li>
+                        <li>Product links on the shopping_cart strip out the uprid to allow rewritten links to work (bug in 2.200+).</li>
+                        <li>&quot;Buy Now&quot; and &quot;Add Selected Products to Cart&quot; on product listing pages will now work (bug in 2.200+).</li>
+                        <li>some issues with generating the EZ-Pages cache (bug in 2.200+).</li>
+                    </ul></li>
+                    <li>v2.207, Sept 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Support for &quot;Multi-Language EZ Pages&quot; plugin (bug in 2.200+).</li>
+                    </ul></li>
+                    <li>v2.206, Sept 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Included the handler for Custom Product Types.</li>
+                        <li>Updated htaccess_sample to include a line supporting linked products when categories as directories is enabled.</li>
+                        <li>Updated ZC 1.5.1 Query Cache to add the ability to remove an item from the cache before expiration.</li>
+                        <li>Updated ZC 1.5.1 MySQL query_factory to always return a value from the &quot;Execute()&quot; method.</li>
+                        <li>Updated ZC 1.5.1 MySQL query_factory to provide better support for cached values.</li>
+                        <li>Removed hardcoded table names. Installations with database prefixes will now work (bug in 2.200+).</li>
+                        <li>The Product Cache is now generated correctly for non-english language Zen Cart installations (bug in 2.200+).</li>
+                        <li>URLs for EZ-Pages are now generated correctly for non-english language Zen Cart installations (bug in 2.200+).</li>
+                    </ul></li>
+                    <li>v2.205, Aug 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Attempts to cleanup version 2.150 admin page settings (if present).</li>
+                        <li>Added support for generating rewritten urls from admin using zen_catalog_href_link.</li>
+                        <li>Renamed options in admin to provide better clarity.</li>
+                        <li>Using 'ENGINE=MyISAM' instead of 'TYPE=MyISAM' for better MySQL compatibility.</li>
+                        <li>Corrected a bug causing admin configuration to not display (bug in 2.200+)</li>
+                    </ul></li>
+                    <li>v2.200, Jun 2012 (<a class="author" href="https://www.zen-cart.com/member.php?115838">A Ballanger</a>):<ul>
+                        <li>Added support for the detection and utilization of Unicode regular expressions when supported by PHP.</li>
+                        <li>Better compatibility with the Query Cache add-on / plugin</li>
+                        <li>Utilizes cache mechanisms built into Zen Cart 1.5 when configured (SQL_CACHE_METHOD)</li>
+                        <li>Added support for displaying categories as directories.</li>
+                        <li>Added support for defining PCRE based transformations to generated URLs prior to already configured URL filtering.</li>
+                    </ul></li>
+                    <li>v2.150, Mar 2012 (<a class="author" href="https://www.jardar.eu">JardaR</a>):<ul>
+                        <li>Added support for PHP 5.3</li>
+                        <li>Only compatible with Zen Cart 1.5</li>
+                    </ul></li>
+                    <li>v2.110, Aug 2010 (<a class="author" href="https://www.zen-cart.com/member.php?22320-swguy">Scott C Wilson (That Software Guy)</a>):<ul>
+                        <li>Updated 1.3.9 files.</li>
+                    </ul></li>
+                    <li>v2.109, Apr 2010 (Mask):<ul>
+                        <li>Added updated files for Zen cart 1.3.9</li>
+                    </ul></li>
+                    <li>v2.108, Apr 2010 (Ronald Crawford):<ul>
+                        <li>Added support for EZ-Page URLs</li>
+                    </ul></li>
+                    <li>v2.106, Jan 2008 (<a class="author" href="mailto:antz.bin@gmail.com">Anant Bhatia</a>):<ul>
+                        <li>Updated for Zen Cart 1.3.8.</li>
+                    </ul></li>
+                    <li>v2.105, July 2007 (<a class="author" href="https://www.imaginacolombia.com">www.imaginacolombia.com</a>):<ul>
+                        <li>New config option to select what pages are rewritten and redirected.</li>
+                    </ul></li>
+                    <li>v2.104, July 2007 (<a class="author" href="https://www.imaginacolombia.com">www.imaginacolombia.com</a>):<ul>
+                        <li>Updated for Zen Cart 1.3.7.</li>
+                        <li>Added an array to avoid seo in certain pages.</li>
+                    </ul></li>
+                    <li>v2.103, Sept 2006 (DrByte):<ul>
+                        <li>Updated for Zen Cart 1.3.5.</li>
+                    </ul></li>
+                    <li>v2.100, Sept 2005 (<a class="author" href="https://www.dream-scape.com/pub/zencart/Ultimate_SEO_URLs/">DreamScape</a>):<ul>
+                        <li>Initial release.</li>
+                    </ul></li>
+                </ul>
+            </div>
+            <!-- end history section -->
+
+            <!-- start files section -->
+            <div id="files">
+                <noscript><h2>Supplied Files</h2></noscript>
+                <p><em>USU</em>, v3.0.0 and later, provides the following <em>active</em> files in its zip-file distribution.  Many of the files are <span class="ph">place-holders</span> to overwrite content provided by prior versions of the plugin and can be safely removed from your store's file-system.</p>
+                <ol>
+                    <li>.htaccess</li>
+                    <li>/includes/auto_loaders/config.usu.php</li>
+                    <li>/includes/classes/usu.php</li>
+                    <li>/includes/classes/observers/UsuObserver.php</li>
+                    <li>/includes/extra_datafiles/usu.php</li>
+                    <li>/includes/init_includes/init_usu.php</li>
+                    <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                    <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
+                    <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                    <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
+                    <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
+                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                    <li>/YOUR_ADMIN/includes/languages/english/usu_configuration.php</li>
+                    <li>/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</li>
+                    <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</li>
+                </ol>
+                <p>Many of the files are <span class="ph">place-holders</span> to overwrite content provided by prior versions of the plugin and can be safely removed from your store's file-system.</p>
+                <ol>
+                    <li><span class="ph">/includes/auto_loaders/config.seo.php</span></li>
+                    <li><span class="ph">/includes/auto_loaders/config.ultimate_seo.php</span></li>
+                    <li><span class="ph">/includes/classes/seo.install.php</span></li>
+                    <li><span class="ph">/includes/classes/seo.url.php</span></li>
+                    <li><span class="ph">/includes/extra_datafiles/seo.php</span></li>
+                    <li><span class="ph">/includes/init_includes/init_seo_config.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/reset_seo_cache.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/auto_loaders/config.seo.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/extra_datafiles/seo.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/functions/extra_functions/seo.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/init_includes/init_seo_config.php</span></li>
+                    <li><span class="ph">/YOUR_ADMIN/includes/languages/english/extra_definitions/seo.php</span></li>
+                </ol>
+            </div>
+            <!-- end files section -->
+        </div>
+    </div>
+
+    <script>
+    $('#outer-container, #inner-container1, #inner-container2, #inner-container3, #inner-container4').easytabs();
+    $('.side-link').click( function() {
+        window.location.hash = $(this).attr('href');
+        location.reload();
+    });
+    </script>
+</body>
+</html>
