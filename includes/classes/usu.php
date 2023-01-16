@@ -18,7 +18,7 @@
  * product / category / ez-page names, non-cookie sessions (zenid), and caching
  * of generated URLs.
  */
-class usu
+class usu extends base
 {
     public
         $canonical = null;
@@ -73,7 +73,7 @@ class usu
         ];
 
         if (null === self::$unicodeEnabled) {
-            self::$unicodeEnabled = (@preg_match('/\pL/u', 'a')) ? true : false;
+            self::$unicodeEnabled = (preg_match('/\pL/u', 'a')) ? true : false;
         }
 
         $this->filter_pcre = defined('USU_FILTER_PCRE') ? $this->expand(USU_FILTER_PCRE) : 'false';
@@ -124,6 +124,20 @@ class usu
                 $this->logfile = DIR_FS_LOGS . '/usu-' . date('Ymd-His') . '.log';
                 $this->logpage = (isset($_GET['main_page'])) ? $_GET['main_page'] : 'index';
             }
+        }
+
+        // -----
+        // Give a watching observer the opportunity to add additional 'anchors'
+        // to the mix.  The array, on return should be an associative array
+        // where the array element's key is the $_GET variable name and the associated
+        // value identifies the query-string element to which it maps (just like the
+        // as-shipped values above).
+        //
+        $additional_anchors = [];
+        $this->notify('NOTIFY_USU_ADDITIONAL_ANCHORS', '', $additional_anchors);
+        if (!empty($additional_anchors) && is_array($additional_anchors)) {
+            $this->log('--> Additional anchors supplied via observer:' . json_encode($additional_anchors));
+            $this->reg_anchors = array_merge($this->reg_anchors, $additional_anchors);
         }
     }
 
