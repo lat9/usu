@@ -247,7 +247,7 @@ class usu extends base
 
         // We start with no separator, so define one.
         $separator = '?';
-        if (zen_not_null($parameters)) {
+        if ($parameters !== '') {
             $link .= $this->parse_parameters($page, $parameters, $separator);
         } else {
             $link .= ($page !== FILENAME_DEFAULT && $page !== '') ? ($page . USU_END) : '';
@@ -338,7 +338,7 @@ class usu extends base
             $params = substr($params, 4);
         }
         $params = str_replace('&amp;', '&', $params);
-        
+
         // We always need cPath to be first, so find and extract
         $cPath = false;
         if (1 === preg_match('/(?:^|&)c[Pp]ath=([^&]+)/', $params, $path)) {
@@ -348,35 +348,36 @@ class usu extends base
 
         // Cleanup parameters and convert to initial array
         $params = trim($params, "?& \t\n\r\0\x0B");
-        $p = [];
+        $params_array = [];
         if (!empty($params) && is_string($params)) {
-            $p = explode('&', $params);
+            $params_array = explode('&', $params);
         }
 
         // Add the cPath to the start of the parameters if present
         if ($cPath !== false) {
-            array_unshift($p, 'cPath=' . $cPath);
+            array_unshift($params_array, 'cPath=' . $cPath);
         }
 
-        $this->log('Parsing Parameters for ' . $page);
-        $this->log(var_export($p, true));
+        $this->log('Parsing Parameters for ' . $page . PHP_EOL . var_export($params_array, true));
 
         $link_params = [];
-        foreach ($p as $valuepair) {
+        foreach ($params_array as $valuepair) {
             // -----
-            // No '=' separating the key from its value?  Set it, so that the array has at least
-            // two elements.
+            // No '=' separating the key from its value?  Use an empty string for the value
             //
             if (strpos($valuepair, '=') === false) {
-                $p2 = [$valuepair, ''];
+                $key = $value_pair;
+                $value = '';
             } else {
-                $p2 = explode('=', $valuepair);
+                $vp_array = explode('=', $valuepair);
+                $key = $vp_array[0];
+                $value = $vp_array[1];
             }
 
             // -----
             // Determine if the to-be-generated URL is for one of the 'encoded' pages.
             //
-            switch ($p2[0]) {
+            switch ($key) {
                 // -----
                 // If the 'products_id' variable is present, it could be for a product's details page or
                 // a product's reviews listing or detailed review.
@@ -385,8 +386,8 @@ class usu extends base
                     // -----
                     // Make sure if uprid is passed it is converted to the correct pid
                     //
-                    $prid = (int)zen_get_prid($p2[1]);
-                    
+                    $prid = (int)zen_get_prid($value);
+
                     // -----
                     // If a cPath was supplied for the link, grab the immediate parent 'category'.
                     //
@@ -409,13 +410,13 @@ class usu extends base
                         // A product's details' page, e.g. product_info.
                         //
                         case ($page === $this->getInfoPage($prid)):
-                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), $p2[0], $prid, USU_END);
-                            
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), $key, $prid, USU_END);
+
                             // -----
                             // Note: The (string) cast is needed, otherwise the (now integer) $prid will be a match
                             // to its uprid (if supplied)!
                             //
-                            if (((string)$prid) != $p2[1]) {
+                            if (((string)$prid) != $value) {
                                 $link_params[] = $valuepair;
                             }
                             break;
@@ -457,22 +458,22 @@ class usu extends base
                 //
                 case 'cPath':
                     switch (true) {
-                        case ($p2[1] === ''):
+                        case ($value === ''):
                             // Do nothing if cPath is empty
                             break;
 
                         case ($page === FILENAME_DEFAULT):
-                            // Change $p2[1] to the actual category id
-                            $tmp = strrpos($p2[1], '_');
+                            // Change $value to the actual category id
+                            $tmp = strrpos($value, '_');
                             if ($tmp !== false) {
-                                $p2[1] = substr($p2[1], $tmp+1);
+                                $value = substr($value, $tmp + 1);
                             }
 
-                            $category = $this->get_category_name($p2[1]);
+                            $category = $this->get_category_name($value);
                             if (USU_CATEGORY_DIR === 'off') {
-                                $url = $this->make_url($page, $category, $p2[0], $p2[1], USU_END);
+                                $url = $this->make_url($page, $category, $key, $value, USU_END);
                             } else {
-                                $url = $this->make_url($page, $category, $p2[0], $p2[1], '/');
+                                $url = $this->make_url($page, $category, $key, $value, '/');
                             }
                             unset($category);
                             break;
@@ -486,7 +487,7 @@ class usu extends base
                 case 'manufacturers_id':
                     switch (true) {
                         case ($page === FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
-                            $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END);
+                            $url = $this->make_url($page, $this->get_manufacturer_name($value), $key, $value, USU_END);
                             break;
 
                         // -----
@@ -504,7 +505,7 @@ class usu extends base
                 case 'pID':
                     switch (true) {
                         case ($page === FILENAME_POPUP_IMAGE):
-                            $url = $this->make_url($page, $this->get_product_name($p2[1]), $p2[0], $p2[1], USU_END);
+                            $url = $this->make_url($page, $this->get_product_name($value), $key, $value, USU_END);
                             break;
 
                         default:
@@ -516,7 +517,7 @@ class usu extends base
                 case 'id':    // EZ-Pages
                     switch (true) {
                         case ($page === FILENAME_EZPAGES):
-                            $url = $this->make_url($page, $this->get_ezpages_name($p2[1]), $p2[0], $p2[1], USU_END);
+                            $url = $this->make_url($page, $this->get_ezpages_name($value), $key, $value, USU_END);
                             break;
 
                         default:
@@ -536,24 +537,25 @@ class usu extends base
             $url .= $separator . zen_output_string(implode('&', $link_params));
             $separator = '&';
         }
-
         return $url;
     }
-    
+
     protected function getInfoPage($products_id)
     {
+        global $db;
+
         // -----
         // Quick return if the zen_get_info_page function exists, noting that when
-        // run in the zc156 and earlier admin that it isn't!
+        // run in the zc157 and earlier admin that it isn't!
         //
         if (function_exists('zen_get_info_page')) {
             return zen_get_info_page($products_id);
         }
-        
+
         // -----
         // If the function doesn't exist, emulate its output.
         //
-        $check = $GLOBALS['db']->Execute(
+        $check = $db->Execute(
             "SELECT pt.type_handler
                FROM " . TABLE_PRODUCTS . " p
                     INNER JOIN " . TABLE_PRODUCT_TYPES . " pt
@@ -618,6 +620,7 @@ class usu extends base
     protected function get_product_name($pID, $cID = null)
     {
         global $db;
+
         $pID = (int)$pID;
         // Handle generating the product name
         switch (true) {
@@ -1065,12 +1068,12 @@ class usu extends base
             $limit = USU_FILTER_SHORT_WORDS;
         }
         $limit = (int)$limit;
-        
+
         $str = (string)$str;
         if (empty($str)) {
             return $str;
         }
-        
+
         $foo = explode('-', $str);
         $container = [];
         foreach ($foo as $index => $value) {
@@ -1601,11 +1604,7 @@ class usu extends base
     }
 
     /**
-     * Logs the requested string to a temporary stream (file). The stream
-     * will not be written to a file or closed until this instance is garbage
-     * collected or the running PHP process ends.
-     *
-     * In the event of a PHP fatal error, this log may be lost.
+     * Logs the requested string to a session-specific file.
      *
      * @param string $string the string to log.
      * @param bool $eol true to add an End Of Line character to the string,
