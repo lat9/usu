@@ -1,8 +1,8 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart, v3.0.0+.
+ * Part of Ultimate URLs for Zen Cart, v3.1.0+.
  *
- * @copyright Copyright 2019        Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019, 2023  Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 require 'includes/application_top.php';
@@ -10,7 +10,7 @@ require 'includes/application_top.php';
 // -----
 // If the admin has confirmed the removal of "Ultimate SEO URLs" ...
 //
-if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
+if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
     // -----
     // Honor the admin's choice of 'only database settings'.
     //
@@ -18,8 +18,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
         // -----
         // Build up a list of files to be removed.
         //
-        $files_to_remove = array(
-            'storefront' => array(
+        $files_to_remove = [
+            'storefront' => [
                 'auto_loaders/config.seo.php',
                 'auto_loaders/config.ultimate_seo.php',
                 'auto_loaders/config.usu.php',
@@ -31,8 +31,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
                 'extra_datafiles/usu.php',
                 'init_includes/init_seo_config.php',
                 'init_includes/init_usu.php',
-            ),
-           'admin_includes' => array(
+            ],
+           'admin_includes' => [
                 'reset_seo_cache.php',
                 'auto_loaders/config.seo.php',
                 'auto_loaders/config.usu.php',
@@ -54,11 +54,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
                 'languages/english/extra_definitions/seo.php',
                 'languages/english/extra_definitions/usu.php',
                 'languages/english/modules/plugins/usu.php',
-            ),
-            'admin_root' => array(
+            ],
+            'admin_root' => [
                 'usu_uninstall.php',
-            ),
-        );
+            ],
+        ];
 
         // -----
         // Remove those files ...
@@ -118,7 +118,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'uninstall') {
 // first form-submittal, the admin is asked to confirm their removal request and on the next
 // form-submittal, the file/configuration removal is actually performed.
 //
-if (!isset($_POST['action']) || $_POST['action'] != 'confirm') {
+if (!isset($_POST['action']) || $_POST['action'] !== 'confirm') {
     $next_action = 'confirm';
     $current_message = TEXT_ARE_YOU_SURE;
 } else {
@@ -126,67 +126,41 @@ if (!isset($_POST['action']) || $_POST['action'] != 'confirm') {
     $current_message = TEXT_CONFIRMATION;
 }
 ?>
-<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!doctype html>
 <html <?php echo HTML_PARAMS; ?>>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=<?php echo CHARSET; ?>">
-<title><?php echo TITLE; ?></title>
-<link rel="stylesheet" type="text/css" href="includes/stylesheet.css">
-<link rel="stylesheet" type="text/css" href="includes/cssjsmenuhover.css" media="all" id="hoverJS">
-<script type="text/javascript" src="includes/menu.js"></script>
-<script type="text/javascript" src="includes/general.js"></script>
-<script type="text/javascript">
-  <!--
-  function init()
-  {
-    cssjsmenu('navbar');
-    if (document.getElementById)
-    {
-      var kill = document.getElementById('hoverJS');
-      kill.disabled = true;
-    }
-  }
-  // -->
-</script>
+    <?php require DIR_WS_INCLUDES . 'admin_html_head.php'; ?>
+    <?php if ($action != 'edit_category_meta_tags') { // bof: disable editor for meta tags ?>
+      <?php if ($editor_handler != '') {
+            include($editor_handler);
+        } ?>
+    <?php } // eof: disable editor for meta tags  ?>
 </head>
-<body onload="init()">
-<!-- header //-->
-<?php require(DIR_WS_INCLUDES . 'header.php'); ?>
-<!-- header_eof //-->
-<!-- body //-->
-<table border="0" width="100%" cellspacing="2" cellpadding="2">
-  <tr>
-    <!-- body_text //-->
-    <td width="100%" valign="top"><table border="0" width="100%" cellspacing="0" cellpadding="2">
-        <tr>
-            <td class="pageHeading"><?php echo HEADING_TITLE; ?></td>
-        <tr>
-            <td><?php echo zen_draw_form('remove', FILENAME_USU_UNINSTALL) . zen_draw_hidden_field('action', $next_action);?>
-                <p><?php echo $current_message; ?></p>
+<body>
+    <!-- header //-->
+    <?php require(DIR_WS_INCLUDES . 'header.php'); ?>
+    <!-- header_eof //-->
+    <h1><?php echo HEADING_TITLE; ?></h1>
+    <?php echo zen_draw_form('remove', FILENAME_USU_UNINSTALL) . zen_draw_hidden_field('action', $next_action);?>
+       <p><?php echo $current_message; ?></p>
 <?php
-if ($next_action == 'confirm') {
+if ($next_action === 'confirm') {
 ?>
-                <p><?php echo zen_draw_checkbox_field('db_only') . LABEL_DATABASE_ONLY; ?></p>
+        <p><?php echo zen_draw_checkbox_field('db_only') . LABEL_DATABASE_ONLY; ?></p>
 <?php
 } else {
 ?>
-                <p><?php echo (!isset($_POST['db_only'])) ? TEXT_DB_AND_FILES : (TEXT_ONLY_DB_SETTINGS . zen_draw_hidden_field('db_only', '1')); ?></p>
+        <p><?php echo (!isset($_POST['db_only'])) ? TEXT_DB_AND_FILES : (TEXT_ONLY_DB_SETTINGS . zen_draw_hidden_field('db_only', '1')); ?></p>
 <?php
 }
 ?>
-                <p><a href="<?php echo zen_href_link(FILENAME_DEFAULT); ?>"><?php echo zen_image_button('button_cancel.gif', IMAGE_CANCEL); ?></a>&nbsp;&nbsp;<?php echo zen_image_submit('button_go.gif', IMAGE_GO); ?></p>
-            </form></td>
-        </tr>
-    </table></td>
-  </tr>
-</table>
-<!-- body_eof //-->
-<!-- footer //-->
-<?php 
-require DIR_WS_INCLUDES . 'footer.php'; 
-?>
-<!-- footer_eof //-->
-<br>
+        <p><a href="<?php echo zen_href_link(FILENAME_DEFAULT); ?>"><?php echo zen_image_button('button_cancel.gif', IMAGE_CANCEL); ?></a>&nbsp;&nbsp;<?php echo zen_image_submit('button_go.gif', IMAGE_GO); ?></p>
+    <?php echo '</form>'; ?>
+    <!-- footer //-->
+    <?php 
+    require DIR_WS_INCLUDES . 'footer.php'; 
+    ?>
+    <!-- footer_eof //-->
 </body>
 </html>
 <?php 

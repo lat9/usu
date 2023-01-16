@@ -1,9 +1,9 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart. Originally derived from Ultimate SEO URLs
+ * Part of Ultimate URLs for Zen Cart, v3.1.0+. Originally derived from Ultimate SEO URLs
  * v2.1 for osCommerce by Chemo.
  *
- * @copyright Copyright 2019-2021 Cindy Merkin (vinosdefrutastropicales.com), @prosela
+ * @copyright Copyright 2019-2023 Cindy Merkin (vinosdefrutastropicales.com), @prosela
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
  * @copyright Portions Copyright 2003 - 2015 Zen Cart Development Team
  * @copyright Portions Copyright 2005 Joshua Dechant
@@ -18,35 +18,51 @@
  * product / category / ez-page names, non-cookie sessions (zenid), and caching
  * of generated URLs.
  */
-class usu 
+class usu
 {
-    public $canonical = null;
+    public
+        $canonical = null;
 
-    protected $cache,
-              $languages_id,
-              $parameters_valid,
-              $reg_anchors,
-              $cache_file,
-              $uri,
-              $real_uri,
-              $redirect_uri;
+    protected
+        $enabled,
+        $cache,
+        $languages_id,
+        $parameters_valid,
+        $reg_anchors,
+        $cache_file,
+        $uri,
+        $real_uri,
+        $redirect_uri,
+        $first_access,
+        $debug,
+        $logfile,
+        $logpage;
 
-    protected static $unicodeEnabled;
+    protected static
+        $unicodeEnabled;
 
-    private $filter_pcre,
-            $filter_char,
-            $filter_page;
+    private
+        $filter_pcre,
+        $filter_char,
+        $filter_page;
 
-    function __construct($languages_id = '') 
+    public function __construct($languages_id = '')
     {
-        if ($languages_id == '') {
+        global $sniffer, $messageStack;
+
+        $this->enabled = (defined('USU_ENABLED') && USU_ENABLED === 'true');
+        if ($this->enabled === false) {
+            return;
+        }
+
+        if ($languages_id === '') {
             $languages_id = $_SESSION['languages_id'];
         }
         $this->languages_id = (int)$languages_id;
 
         $this->cache = false;
 
-        $this->reg_anchors = array(
+        $this->reg_anchors = [
             'products_id' => '-p-',
             'cPath' => '-c-',
             'manufacturers_id' => '-m-',
@@ -54,54 +70,54 @@ class usu
             'products_id_review' => '-pr-',
             'products_id_review_info' => '-pri-',
             'id' => '-ezp-',
-        );
+        ];
 
         if (null === self::$unicodeEnabled) {
             self::$unicodeEnabled = (@preg_match('/\pL/u', 'a')) ? true : false;
         }
 
         $this->filter_pcre = defined('USU_FILTER_PCRE') ? $this->expand(USU_FILTER_PCRE) : 'false';
-        $this->filter_page = defined('USU_FILTER_PAGES') && zen_not_null(USU_FILTER_PAGES) ? explode(',', str_replace(' ', '', USU_FILTER_PAGES)) : array();
+        $this->filter_page = (defined('USU_FILTER_PAGES') && USU_FILTER_PAGES !== '') ? explode(',', str_replace(' ', '', USU_FILTER_PAGES)) : [];
 
-        if (defined('USU_CACHE_GLOBAL') && USU_CACHE_GLOBAL == 'true') {
+        if (defined('USU_CACHE_GLOBAL') && USU_CACHE_GLOBAL === 'true') {
             // Prepare in memory cache
-            $this->cache = array(
-                'PRODUCTS' => array(),
-                'CATEGORIES' => array(),
-                'MANUFACTURERS' => array(),
-                'EZPAGES' => array()
-            );
+            $this->cache = [
+                'PRODUCTS' => [],
+                'CATEGORIES' => [],
+                'MANUFACTURERS' => [],
+                'EZPAGES' => [],
+            ];
 
             // Handle the SQL cache options if the table exists
-            if ($GLOBALS['sniffer']->table_exists(TABLE_USU_CACHE)) {
+            if ($sniffer->table_exists(TABLE_USU_CACHE)) {
                 // Cleanup the SQL caches
                 $this->cache_file = 'usu_v3_';
                 $this->cache_gc(); // Cleanup Cache
 
                 // Load or generate enabled SQL caches
-                if (USU_CACHE_PRODUCTS == 'true') {
+                if (USU_CACHE_PRODUCTS === 'true') {
                     $this->generate_products_cache();
                 }
-                if (USU_CACHE_CATEGORIES == 'true') {
+                if (USU_CACHE_CATEGORIES === 'true') {
                     $this->generate_categories_cache();
                 }
-                if (USU_CACHE_MANUFACTURERS == 'true') {
+                if (USU_CACHE_MANUFACTURERS === 'true') {
                     $this->generate_manufacturers_cache();
                 }
-                if (USU_CACHE_EZ_PAGES == 'true') {
+                if (USU_CACHE_EZ_PAGES === 'true') {
                     $this->generate_ezpages_cache();
                 }
-            } elseif (IS_ADMIN_FLAG) {
+            } elseif (IS_ADMIN_FLAG === true) {
                 // Message Stack will be available when loaded from the admin
-                $GLOBALS['messageStack']->add(sprintf(USU_PLUGIN_WARNING_TABLE, TABLE_USU_CACHE), 'warning');
+                $messageStack->add(sprintf(USU_PLUGIN_WARNING_TABLE, TABLE_USU_CACHE), 'warning');
             }
         }
 
         // Start logging
         $this->debug = false;
-        if (defined('USU_DEBUG') && USU_DEBUG == 'true') {
+        if (defined('USU_DEBUG') && USU_DEBUG === 'true') {
             $this->debug = true;
-            if (IS_ADMIN_FLAG) {
+            if (IS_ADMIN_FLAG === true) {
                 $this->logfile = DIR_FS_LOGS . '/usu-adm-' . date('Ymd-His') . '.log';
                 $this->logpage = $_SERVER['SCRIPT_NAME'];
             } else {
@@ -127,10 +143,10 @@ class usu
     public function href_link($page = '', $parameters = '', $connection = 'NONSSL', $add_session_id = true, $search_engine_safe = true, $static = false, $use_dir_ws_catalog = true) 
     {
         // Do not create an alternate URI when disabled
-        if (!defined('USU_ENABLED') || USU_ENABLED == 'false') {
+        if ($this->enabled === false) {
             return null;
         }
-        
+
         // -----
         // If this is the first href-link generated for the current page's rendering, include some information
         // regarding which page (storefront vs. admin) that the request is being generated for.
@@ -140,16 +156,11 @@ class usu
             $this->log("=====> URL Generation Log Started, for page: {$this->uri}.");
         }
 
-        $this->log(PHP_EOL .
-            'Request sent to href_link(' . var_export($page, true) . ', ' .
-            var_export($parameters, true) . ', ' . var_export($connection, true) . ', ' .
-            var_export($add_session_id, true) . ', ' . var_export($search_engine_safe, true) . ', ' .
-            var_export($static, true) . ', ' . var_export($use_dir_ws_catalog, true) . ')'
-        );
+        $this->log(PHP_EOL . 'Request sent to href_link(' . $page . ', ' . $parameters . ', ' . $connection . ', ' . $add_session_id . ', ' . $search_engine_safe . ', ' . $static . ', ' . $use_dir_ws_catalog . ')');
 
         // If the request was for a real file (which called application_top)
         // We should not create an alternate URI (such as ipn_main_handler.php).
-        if (zen_not_null($page) && $page != FILENAME_DEFAULT && $this->is_physical_file($page)) {
+        if ($page !== '' && $page !== FILENAME_DEFAULT && $this->is_physical_file($page)) {
             $this->log('Request was to a physical file, URI not generated!');
             return null;
         }
@@ -159,9 +170,9 @@ class usu
         // static and passes no params. Much of the code also has the bad habit
         // of claiming a link is "static" when it is not. So we ignore the value
         // of "static" if the page starts with "index.php?"
-        if (strstr($page, 'index.php?') !== false) {
+        if (strpos($page, 'index.php?') !== false) {
             // If we find the main_page parse the URL
-            $result = array();
+            $result = [];
             if (preg_match('/[?&]main_page=([^&]*)/', $page, $result) === 1) {
                 $temp = parse_url($page);
 
@@ -170,7 +181,7 @@ class usu
                 $page = $result[1];
 
                 $temp['query'] = preg_replace('/main_page=' . $result[1] . '/', '', $temp['query']);
-                $parameters = $temp['query'] . ($parameters != '' ? '&' . $parameters : '');
+                $parameters = $temp['query'] . ($parameters !== '' ? ('&' . $parameters) : '');
             }
         }
 
@@ -189,7 +200,7 @@ class usu
 
         // The base URL for the request
         if (IS_ADMIN_FLAG === true) {
-            if ($connection == 'SSL' && ENABLE_SSL_CATALOG == 'true') {
+            if ($connection === 'SSL' && ENABLE_SSL_CATALOG === 'true') {
                 $link = HTTPS_CATALOG_SERVER;
                 if ($use_dir_ws_catalog) {
                     $link .= DIR_WS_HTTPS_CATALOG;
@@ -200,7 +211,7 @@ class usu
                     $link .= DIR_WS_CATALOG;
                 }
             }
-        } elseif ($connection == 'SSL' && ENABLE_SSL == 'true') {
+        } elseif ($connection === 'SSL' && ENABLE_SSL === 'true') {
             $link = HTTPS_SERVER;
             if ($use_dir_ws_catalog) {
                 $link .= DIR_WS_HTTPS_CATALOG;
@@ -225,7 +236,7 @@ class usu
         if (zen_not_null($parameters)) {
             $link .= $this->parse_parameters($page, $parameters, $separator);
         } else {
-            $link .= (($page != FILENAME_DEFAULT && $page != '') ? $page . USU_END : '');
+            $link .= ($page !== FILENAME_DEFAULT && $page !== '') ? ($page . USU_END) : '';
         }
 
         // -----
@@ -269,13 +280,13 @@ class usu
         global $request_type, $http_domain, $https_domain, $session_started;
 
         $_sid = '';
-        if ($add_session_id == true && $session_started && SESSION_FORCE_COOKIE_USE == 'False') {
+        if ($add_session_id === true && $session_started && SESSION_FORCE_COOKIE_USE === 'False') {
             if (defined('SID') && !empty(constant('SID'))) {
                 $_sid = constant('SID');
             } else {
                 $ssl_enabled = (IS_ADMIN_FLAG === true) ? ENABLE_SSL_CATALOG : ENABLE_SSL;
-                if (($request_type == 'NONSSL' && $connection == 'SSL' && $ssl_enabled == 'true') || ($request_type == 'SSL' && $connection == 'NONSSL')) {
-                    if ($http_domain != $https_domain) {
+                if (($request_type === 'NONSSL' && $connection === 'SSL' && $ssl_enabled === 'true') || ($request_type === 'SSL' && $connection === 'NONSSL')) {
+                    if ($http_domain !== $https_domain) {
                         $_sid = zen_session_name() . '=' . zen_session_id();
                     }
                 }
@@ -283,7 +294,7 @@ class usu
         }
 
         switch (true) {
-            case (!isset($_SESSION['customer_id']) && defined('ENABLE_PAGE_CACHE') && ENABLE_PAGE_CACHE == 'true' && class_exists('page_cache')):
+            case (!isset($_SESSION['customer_id']) && defined('ENABLE_PAGE_CACHE') && ENABLE_PAGE_CACHE === 'true' && class_exists('page_cache')):
                 $return = $link . $separator . '<zensid>';
                 break;
             case (!empty($_sid)):
@@ -323,7 +334,7 @@ class usu
 
         // Cleanup parameters and convert to initial array
         $params = trim($params, "?& \t\n\r\0\x0B");
-        $p = array();
+        $p = [];
         if (!empty($params) && is_string($params)) {
             $p = explode('&', $params);
         }
@@ -336,14 +347,14 @@ class usu
         $this->log('Parsing Parameters for ' . $page);
         $this->log(var_export($p, true));
 
-        $link_params = array();
+        $link_params = [];
         foreach ($p as $valuepair) {
             // -----
             // No '=' separating the key from its value?  Set it, so that the array has at least
             // two elements.
             //
             if (strpos($valuepair, '=') === false) {
-                $p2 = array($valuepair, '');
+                $p2 = [$valuepair, ''];
             } else {
                 $p2 = explode('=', $valuepair);
             }
@@ -374,7 +385,7 @@ class usu
                             $cID = $cPath;
                         }
                     }
-                    
+
                     // -----
                     // Now, check for various pages whose URLs are encoded by USU.
                     //
@@ -383,7 +394,7 @@ class usu
                         // -----
                         // A product's details' page, e.g. product_info.
                         //
-                        case ($page == $this->getInfoPage($prid)):
+                        case ($page === $this->getInfoPage($prid)):
                             $url = $this->make_url($page, $this->get_product_name($prid, $cID), $p2[0], $prid, USU_END);
                             
                             // -----
@@ -398,14 +409,14 @@ class usu
                         // -----
                         // A listing of a product's reviews.
                         //
-                        case ($page == FILENAME_PRODUCT_REVIEWS):
+                        case ($page === FILENAME_PRODUCT_REVIEWS):
                             $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review', $prid, USU_END);
                             break;
 
                         // -----
                         // The display of a product's review details.
                         //
-                        case ($page == FILENAME_PRODUCT_REVIEWS_INFO):
+                        case ($page === FILENAME_PRODUCT_REVIEWS_INFO):
                             $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_info', $prid, USU_END);
                             break;
 
@@ -417,12 +428,12 @@ class usu
                             $link_params[] = $valuepair;
                             break;
                     }
-                    
+
                     // -----
                     // If a product-specific URL was created and the store's configuration indicates that no cPath parameter should
                     // be included, remove it from the current link parameters.
                     //
-                    if ($url_created && $cPath !== false && (USU_CATEGORY_DIR != 'off' || USU_CPATH != 'auto')) {
+                    if ($url_created === true && $cPath !== false && (USU_CATEGORY_DIR !== 'off' || USU_CPATH !== 'auto')) {
                         unset($link_params[0]);
                     }
                     break;
@@ -432,11 +443,11 @@ class usu
                 //
                 case 'cPath':
                     switch (true) {
-                        case ($p2[1] == ''):
+                        case ($p2[1] === ''):
                             // Do nothing if cPath is empty
                             break;
 
-                        case ($page == FILENAME_DEFAULT):
+                        case ($page === FILENAME_DEFAULT):
                             // Change $p2[1] to the actual category id
                             $tmp = strrpos($p2[1], '_');
                             if ($tmp !== false) {
@@ -444,7 +455,7 @@ class usu
                             }
 
                             $category = $this->get_category_name($p2[1]);
-                            if (USU_CATEGORY_DIR == 'off') {
+                            if (USU_CATEGORY_DIR === 'off') {
                                 $url = $this->make_url($page, $category, $p2[0], $p2[1], USU_END);
                             } else {
                                 $url = $this->make_url($page, $category, $p2[0], $p2[1], '/');
@@ -460,7 +471,7 @@ class usu
 
                 case 'manufacturers_id':
                     switch (true) {
-                        case ($page == FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
+                        case ($page === FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
                             $url = $this->make_url($page, $this->get_manufacturer_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
@@ -478,7 +489,7 @@ class usu
 
                 case 'pID':
                     switch (true) {
-                        case ($page == FILENAME_POPUP_IMAGE):
+                        case ($page === FILENAME_POPUP_IMAGE):
                             $url = $this->make_url($page, $this->get_product_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
@@ -490,7 +501,7 @@ class usu
 
                 case 'id':    // EZ-Pages
                     switch (true) {
-                        case ($page == FILENAME_EZPAGES):
+                        case ($page === FILENAME_EZPAGES):
                             $url = $this->make_url($page, $this->get_ezpages_name($p2[1]), $p2[0], $p2[1], USU_END);
                             break;
 
@@ -545,22 +556,19 @@ class usu
      *
      * @param array the array of query parameters
      */
-    protected function build_query($parameters) 
+    protected function build_query($parameters)
     {
-        if (version_compare(PHP_VERSION, '5.4.0') >= 0) {
-            $parameters = http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
-        } else {
-            $compile = array();
-            foreach ($parameters as $key => $value) {
-                if ($key !== null && $key != '') {
-                    // Prior to PHP 5.3, tildes might be encoded per RFC 1738
-                    // This should not impact functionality for 99% of users.
-                    $compile[] = rawurlencode($key) . '=' . rawurlencode($value);
-                }
+        $compile = [];
+        foreach ($parameters as $key => $value) {
+            if ($key !== null && $key !== '') {
+                // Prior to PHP 5.3, tildes might be encoded per RFC 1738
+                // This should not impact functionality for 99% of users.
+                $compile[] = rawurlencode($key) . '=' . rawurlencode($value);
             }
-            $parameters = implode('&', $compile);
-            unset($compile);
         }
+        $parameters = implode('&', $compile);
+        unset($compile);
+
         return $parameters;
     }
 
@@ -593,7 +601,7 @@ class usu
      * @param integer $pID
      * @return string product name
      */
-    protected function get_product_name($pID, $cID = null) 
+    protected function get_product_name($pID, $cID = null)
     {
         global $db;
         $pID = (int)$pID;
@@ -617,9 +625,9 @@ class usu
                 if ($pName === '') {
                     $this->parameters_valid = false;
                 } else {
-                    if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
+                    if (USU_FORMAT === 'parent' && USU_CATEGORY_DIR === 'off') {
                         $masterCatID = (int)zen_get_products_category_id($pID);
-                        $category_id = ($cID !== null ? $cID : $masterCatID);
+                        $category_id = ($cID !== null) ? $cID : $masterCatID;
                         $pName = $this->get_category_name($category_id, 'original') . '-' . $pName;
                     }
 
@@ -633,7 +641,7 @@ class usu
 
         // Add the category
         $category = '';
-        if (USU_CATEGORY_DIR != 'off') {
+        if (USU_CATEGORY_DIR !== 'off') {
             if (empty($cID)) {
                 $masterCatID = (int)zen_get_products_category_id($pID);
                 $category = $this->get_category_name($masterCatID) . $this->reg_anchors['cPath'] . $masterCatID . '/';
@@ -655,14 +663,14 @@ class usu
      * @param integer $pID
      * @return string product canonical
      */
-    protected function get_product_canonical($pID) 
+    protected function get_product_canonical($pID)
     {
         global $db;
 
         $retval = null;
         $pID = (int)$pID;
         // Only need to add the canonicals if different paths exist
-        if (USU_CATEGORY_DIR != 'off') {
+        if (USU_CATEGORY_DIR !== 'off') {
             // -----
             // Selecting the specified product's master-category-id (which defines its canonical
             // path for the link) as well as the product's name.  Using 'INNER JOIN's since the
@@ -679,7 +687,7 @@ class usu
 
                 // Get the product name
                 switch (true) {
-                    case (USU_CACHE_GLOBAL == 'true' && defined('PRODUCT_NAME_' . $pID)):
+                    case (USU_CACHE_GLOBAL === 'true' && defined('PRODUCT_NAME_' . $pID)):
                         $retval .= constant('PRODUCT_NAME_' . $pID);
                         break;
 
@@ -688,7 +696,7 @@ class usu
                         break;
 
                     default:
-                        if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
+                        if (USU_FORMAT === 'parent' && USU_CATEGORY_DIR === 'off') {
                             $pName = $this->get_category_name($masterID, 'original') . '-' . $pName;
                         }
 
@@ -714,18 +722,18 @@ class usu
         $single_cID = (int)$cID;
         $full_cPath = $this->get_full_cPath($cID, $single_cID); // full cPath needed for uniformity
         switch (true) {
-            case (defined('CATEGORY_NAME_' . $full_cPath) && $format == USU_FORMAT):
+            case (defined('CATEGORY_NAME_' . $full_cPath) && $format === USU_FORMAT):
                 $return = constant('CATEGORY_NAME_' . $full_cPath);
                 break;
 
-            case (is_array($this->cache) && isset($this->cache['CATEGORIES'][$full_cPath]) && $format == USU_FORMAT):
+            case (is_array($this->cache) && isset($this->cache['CATEGORIES'][$full_cPath]) && $format === USU_FORMAT):
                 $return = $this->cache['CATEGORIES'][$full_cPath];
                 break;
 
             default:
                 $cName = '';
-                if (USU_CATEGORY_DIR == 'full') {
-                    $path = array();
+                if (USU_CATEGORY_DIR === 'full') {
+                    $path = [];
                     $this->get_parent_categories_path($path, $single_cID);
                     if (count($path) > 0) {
                         $cName = implode('/', $path);
@@ -736,8 +744,8 @@ class usu
                         unset($cut);
                     }
                     unset($path);
-                } elseif ($format == 'parent') {
-                    $sql = 
+                } elseif ($format === 'parent') {
+                    $sql =
                         "SELECT c.categories_id, c.parent_id, cd.categories_name AS cName, cd2.categories_name AS cNameParent
                            FROM " . TABLE_CATEGORIES_DESCRIPTION . " AS cd, " . TABLE_CATEGORIES . " AS c
                                 LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
@@ -752,7 +760,7 @@ class usu
                         $cName = !empty($result->fields['cNameParent']) ? $this->filter($result->fields['cNameParent'] . ' ' . $result->fields['cName']) : $this->filter($result->fields['cName']);
                     }
                 } else {
-                    $sql = 
+                    $sql =
                         "SELECT categories_name AS cName
                            FROM " . TABLE_CATEGORIES_DESCRIPTION . "
                           WHERE categories_id = $single_cID
@@ -786,9 +794,10 @@ class usu
      * @param integer $mID
      * @return string manufacturer name
      */
-    protected function get_manufacturer_name($mID) 
+    protected function get_manufacturer_name($mID)
     {
         global $db;
+
         $mID = (int)$mID;
         switch (true) {
             case (defined('MANUFACTURER_NAME_' . $mID)):
@@ -800,7 +809,7 @@ class usu
                 break;
 
             default:
-                $sql = 
+                $sql =
                     "SELECT manufacturers_name as `mName`
                        FROM " . TABLE_MANUFACTURERS . "
                       WHERE manufacturers_id = $mID
@@ -829,9 +838,10 @@ class usu
      * @param integer $ezpID
      * @return string expage name
      */
-    protected function get_ezpages_name($ezpID) 
+    protected function get_ezpages_name($ezpID)
     {
         global $db;
+
         $ezpID = (int)$ezpID;
         switch (true) {
             case (defined('EZPAGES_NAME_' . $ezpID)):
@@ -843,32 +853,12 @@ class usu
                 break;
 
             default:
-                // -----
-                // Note: The ez-pages' database structure changed in zc156, incorporating
-                // multi-lingual ez-pages.  First, check for the zc156 implementation, then for
-                // the pre-base plugin's version and finally for the pre-zc156 implementation.
-                //
-                if (defined('TABLE_EZPAGES_TEXT')) {
-                    $sql = 
-                        "SELECT pages_title AS ezpName
-                           FROM " . TABLE_EZPAGES_TEXT . "
-                          WHERE pages_id = $ezpID
-                            AND languages_id = {$this->languages_id}
-                          LIMIT 1";
-                } elseif (defined('TABLE_EZPAGES_CONTENT')) {
-                    $sql =
-                        "SELECT pages_title AS ezpName
-                           FROM " . TABLE_EZPAGES_CONTENT . "
-                          WHERE pages_id = $ezpID
-                            AND languages_id = {$this->languages_id}
-                          LIMIT 1";
-                 } else {
-                    $sql =
-                        "SELECT pages_title AS ezpName
-                           FROM " . TABLE_EZPAGES . "
-                          WHERE pages_id = $ezpID
-                          LIMIT 1";
-                }
+                $sql =
+                    "SELECT pages_title AS ezpName
+                       FROM " . TABLE_EZPAGES_CONTENT . "
+                      WHERE pages_id = $ezpID
+                        AND languages_id = {$this->languages_id}
+                      LIMIT 1";
                 $sql = $db->bindVars($sql, ':ezpage:', $ezpID, 'integer');
                 $result = $db->Execute($sql, false, true, 43200);
                 $ezpName = ($result->EOF) ? '' : $this->filter($result->fields['ezpName']);
@@ -903,7 +893,7 @@ class usu
             $original = array_pop($temp);
             return $cID;
         } else {
-            $c = array();
+            $c = [];
             zen_get_parent_categories($c, $cID);
             $c = array_reverse($c);
             $c[] = $cID;
@@ -920,11 +910,11 @@ class usu
      * @param mixed $path Passed by reference
      * @param integer $categories_id
      */
-    protected function get_parent_categories_path(&$path, $categories_id, &$cPath = array()) 
+    protected function get_parent_categories_path(&$path, $categories_id, &$cPath = [])
     {
         global $db;
-        $categories_id = (int)$categories_id;
 
+        $categories_id = (int)$categories_id;
         $sql = 
             "SELECT c.parent_id AS p_id, cd.categories_name AS name
                FROM " . TABLE_CATEGORIES . " AS c
@@ -936,7 +926,7 @@ class usu
 
         if (!$parent->EOF) {
             // Recurse if the parent id is not empty or equal the passed categories id
-            if ($parent->fields['p_id'] != 0 && $parent->fields['p_id'] != $categories_id) {
+            if ($parent->fields['p_id'] !== '0' && (int)$parent->fields['p_id'] !== $categories_id) {
                 $this->get_parent_categories_path($path, $parent->fields['p_id'], $cPath);
             }
 
@@ -951,12 +941,12 @@ class usu
         return (preg_match('/products_id=([0-9]+):([a-zA-z0-9]{32})/', $params)) ? true : false;
     }
 
-    protected function is_product_string($params) 
+    protected function is_product_string($params)
     {
         return (strpos($params, 'products_id=') !== false);
     }
 
-    protected function is_cPath_string($params) 
+    protected function is_cPath_string($params)
     {
         return (strpos($params, 'cPath=') !== false);
     }
@@ -1023,15 +1013,15 @@ class usu
      * @param string $regexp the regexp string from the database
      * @return mixed
      */
-    protected function expand($regexp) 
+    protected function expand(string $regexp)
     {
-        if (zen_not_null($regexp)) {
-            if ($data = @explode(',', $regexp)) {
-                $container = array();
+        if ($regexp !== '') {
+            if ($data = explode(',', $regexp)) {
+                $container = [];
                 foreach ($data as $index => $valuepair) {
-                    $p = @explode('=>', $valuepair);
+                    $p = explode('=>', $valuepair);
 
-                    // Add the neccessary regexp start / end characters
+                    // Add the necessary regexp start / end characters
                     if (preg_match('|^\|.*?\|$|', $p[0]) === 0) {
                         $p[0] = '|' . str_replace('|', '\|', $p[0]) . '|';
                     }
@@ -1068,7 +1058,7 @@ class usu
         }
         
         $foo = explode('-', $str);
-        $container = array();
+        $container = [];
         foreach ($foo as $index => $value) {
             if (strlen($value) > $limit) {
                 $container[] = $value;
@@ -1080,7 +1070,7 @@ class usu
     /**
      * Function to generate EZ-Pages cache entries
      */
-    protected function generate_ezpages_cache() 
+    protected function generate_ezpages_cache()
     {
         global $db;
 
@@ -1088,30 +1078,14 @@ class usu
         $is_expired = false;
         $this->is_cached($this->cache_file . 'ezpages', $is_cached, $is_expired);
         if (!$is_cached || $is_expired) {
-            // -----
-            // Note: The ez-pages' database structure changed in zc156, incorporating
-            // multi-lingual ez-pages.  First, check for the zc156 implementation, then for
-            // the pre-base plugin's version and finally for the pre-zc156 implementation.
-            //
-            if (defined('TABLE_EZPAGES_TEXT')) {
-                $sql = 
-                    "SELECT pages_id AS id, pages_title AS name
-                       FROM " .  TABLE_EZPAGES_TEXT . "
-                      WHERE languages_id = {$this->languages_id}";
-            } elseif (defined('TABLE_EZPAGES_CONTENT')) {
-                $sql = 
-                    "SELECT pages_id AS id, pages_title AS name
-                       FROM " . TABLE_EZPAGES_CONTENT . "
-                      WHERE languages_id = {$this->languages_id}";
-            } else {
-                $sql = 
-                    "SELECT pages_id AS id, pages_title AS name
-                       FROM " . TABLE_EZPAGES;
-            }
+            $sql = 
+                "SELECT pages_id AS id, pages_title AS name
+                   FROM " . TABLE_EZPAGES_CONTENT . "
+                  WHERE languages_id = {$this->languages_id}";
+
             $ezpages = $db->Execute($sql, false, true, 43200);
-            while (!$ezpages->EOF) {
-                $this->cache['EZPAGES'][$ezpages->fields['id']] = $this->filter($ezpages->fields['name']);
-                $ezpages->MoveNext();
+            foreach ($ezpages as $next_page) {
+                $this->cache['EZPAGES'][$next_page['id']] = $this->filter($next_page['name']);
             }
             $this->save_cache($this->cache_file . 'ezpages', $this->cache['EZPAGES'], 1 , 1);
         } else {
@@ -1122,7 +1096,7 @@ class usu
     protected function products_sql_result()
     {
         global $db;
-        if (USU_FORMAT == 'parent') {
+        if (USU_FORMAT === 'parent') {
             $sql =
                 "SELECT p.products_id AS id, ptc.categories_id AS c_id, p.master_categories_id AS master_id
                        FROM " . TABLE_PRODUCTS . " AS p
@@ -1141,7 +1115,7 @@ class usu
     /**
      * Function to generate products cache entries
      */
-    protected function generate_products_cache() 
+    protected function generate_products_cache()
     {
         global $db;
 
@@ -1150,14 +1124,13 @@ class usu
         $this->is_cached($this->cache_file . 'products', $is_cached, $is_expired);
         if(!$is_cached || $is_expired) {
             $product = $this->products_sql_result();
-            while (!$product->EOF) {
-                $pName = $this->filter(zen_get_products_name($product->fields['id']));
-                if (USU_FORMAT == 'parent' && USU_CATEGORY_DIR == 'off') {
-                    $cID = $product->fields['c_id'];
+            foreach ($product as $next_product) {
+                $pName = $this->filter(zen_get_products_name($next_product['id']));
+                if (USU_FORMAT === 'parent' && USU_CATEGORY_DIR === 'off') {
+                    $cID = $next_product['c_id'];
                     $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
                 }
-                $this->cache['PRODUCTS'][$product->fields['id']] = $pName;
-                $product->MoveNext();
+                $this->cache['PRODUCTS'][$next_product['id']] = $pName;
             }
 
             $this->save_cache($this->cache_file . 'products', $this->cache['PRODUCTS'], 1 , 1);
@@ -1170,7 +1143,7 @@ class usu
     /**
      * Function to generate manufacturers cache entries
      */
-    protected function generate_manufacturers_cache() 
+    protected function generate_manufacturers_cache()
     {
         global $db;
 
@@ -1185,9 +1158,8 @@ class usu
                             ON m.manufacturers_id = md.manufacturers_id
                     AND md.languages_id = {$this->languages_id}";
             $manufacturers = $db->Execute($sql, false, true, 43200);
-            while (!$manufacturers->EOF) {
-                $this->cache['MANUFACTURERS'][$manufacturers->fields['id']] = $this->filter($manufacturers->fields['name']);
-                $manufacturers->MoveNext();
+            foreach ($manufacturers as $next_mfgr) {
+                $this->cache['MANUFACTURERS'][$next_mfgr['id']] = $this->filter($next_mfgr['name']);
             }
             $this->save_cache($this->cache_file . 'manufacturers', $this->cache['MANUFACTURERS'], 1 , 1);
         } else {
@@ -1198,7 +1170,7 @@ class usu
     /**
      * Function to generate categories cache entries
      */
-    protected function generate_categories_cache() 
+    protected function generate_categories_cache()
     {
         global $db;
 
@@ -1206,7 +1178,7 @@ class usu
         $is_expired = false;
         $this->is_cached($this->cache_file . 'categories', $is_cached, $is_expired);
         if (!$is_cached || $is_expired) { // it's not cached so create it
-            if (USU_FORMAT == 'parent' || USU_CATEGORY_DIR == 'short') {
+            if (USU_FORMAT === 'parent' || USU_CATEGORY_DIR === 'short') {
                 $sql = 
                     "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as cNameParent
                        FROM " . TABLE_CATEGORIES . " AS c
@@ -1222,14 +1194,14 @@ class usu
                       WHERE language_id = {$this->languages_id}";
             }
             $category = $db->Execute($sql, false, true, 43200);
-            while (!$category->EOF) {
+            foreach ($category as $next_cat) {
                 $cName = '';
                 $single_cID = 0;
-                $cPath = $this->get_full_cPath($category->fields['id'], $single_cID);
-                if (USU_CATEGORY_DIR == 'full') {
-                    $path = array();
+                $cPath = $this->get_full_cPath($next_cat['id'], $single_cID);
+                if (USU_CATEGORY_DIR === 'full') {
+                    $path = [];
                     $this->get_parent_categories_path($path, $single_cID);
-                    if (count($path) > 0) {
+                    if (count($path) !== 0) {
                         $cName = implode('/', $path);
                         $cut = strrpos($cName, $this->reg_anchors['cPath']);
                         if ($cut !== false) {
@@ -1238,14 +1210,13 @@ class usu
                         unset($cut);
                     }
                     unset($path);
-                } elseif (USU_FORMAT == 'parent') {
-                    $cName = !empty($category->fields['cNameParent']) ? $this->filter($category->fields['cNameParent'] . ' ' . $category->fields['cName']) : $this->filter($category->fields['cName']);
+                } elseif (USU_FORMAT === 'parent') {
+                    $cName = !empty($next_cat['cNameParent']) ? $this->filter($next_cat['cNameParent'] . ' ' . $next_cat['cName']) : $this->filter($next_cat['cName']);
                 } else {
-                    $cName = $this->filter($category->fields['cName']);
+                    $cName = $this->filter($next_cat['cName']);
                 }
 
                 $this->cache['CATEGORIES'][$cPath] = $cName;
-                $category->MoveNext();
             }
             $this->save_cache($this->cache_file . 'categories', $this->cache['CATEGORIES'], 1 , 1);
         } else {
@@ -1263,18 +1234,18 @@ class usu
      * @param integer $global Sets whether cache record is global is scope
      * @param string $expires Sets the expiration
      */
-    protected function save_cache($name, $value, $gzip=1, $global=0, $expires = '+30 days')
+    protected function save_cache($name, $value, $gzip = 1, $global = 0, $expires = '+30 days')
     {
         global $db;
 
         // Serialize and Compress
         $value = serialize($value);
         if ($gzip === 1) {
-            $value = @gzdeflate($value, 7);
+            $value = gzdeflate($value, 7);
         }
 
         $now = new DateTime();
-        $sql_data_array = array(
+        $sql_data_array = [
             'cache_id' => md5($name),
             'cache_language_id' => (int)$this->languages_id,
             'cache_name' => $name,
@@ -1282,7 +1253,7 @@ class usu
             'cache_global' => (int)$global,
             'cache_gzip' => (int)$gzip,
             'cache_date' => $now->format("Y-m-d H:i:s")
-        );
+        ];
         if ($now->modify($expires) === false) {
             // Fallback to 30 days in the future
             $now->modify('+30 days');
@@ -1295,7 +1266,7 @@ class usu
         $cache_check = ($is_cached) ? 'true' : 'false';
         switch ($cache_check) {
             case 'true':
-                zen_db_perform(TABLE_USU_CACHE, $sql_data_array, 'update', "cache_id='".md5($name)."'");
+                zen_db_perform(TABLE_USU_CACHE, $sql_data_array, 'update', "cache_id='" . md5($name)."'");
                 break;
             case 'false':
                 // This code avoids a potential race condition by overwriting
@@ -1303,7 +1274,7 @@ class usu
                 $sql = 'INSERT INTO `' . TABLE_USU_CACHE . '` (';
                 $sql2 = ') VALUES (';
                 $sql3 = ') ON DUPLICATE KEY UPDATE ';
-                foreach($sql_data_array as $name => $value) {
+                foreach ($sql_data_array as $name => $value) {
                     $sql .= '`' . $name . '`,';
                     $sql2 .= '\'' . zen_db_input($value) . '\',';
                     $sql3 .= '`' . $name . '`=\'' . zen_db_input($value) . '\',';
@@ -1325,49 +1296,48 @@ class usu
      * @param string $name
      * @return mixed
      */
-    protected function get_cache($name = 'GLOBAL') 
+    protected function get_cache($name = 'GLOBAL')
     {
         global $db;
-        $global = ($name == 'GLOBAL' ? true : false);
+        $global = ($name === 'GLOBAL');
 
         $sql = 
             "SELECT cache_id, cache_name, cache_data, cache_global, cache_gzip, cache_date, cache_expires
                FROM " . TABLE_USU_CACHE . "
               WHERE cache_language_id = {$this->languages_id}";
-        if ($global) {
+        if ($global === true) {
             $sql .= " AND cache_global = 1";
         } else {
             $sql .= " AND cache_id = '" . md5($name) . "'";
         }
         $cache = $db->Execute($sql);
         if (!$cache->EOF) {
-            $container = array();
+            $container = [];
             $now = date('Y-m-d H:i:s');
-            while (!$cache->EOF) {
-                $cache_name = $cache->fields['cache_name'];
-                if ($cache->fields['cache_expires'] <= $now) {
+            foreach ($cache as $next_entry) {
+                $cache_name = $next_entry['cache_name'];
+                if ($next_entry['cache_expires'] <= $now) {
                     $db->Execute(
                         "DELETE FROM " . TABLE_USU_CACHE . "
-                          WHERE cache_id = '" . $cache->fields['cache_id'] . "'"
+                          WHERE cache_id = '" . $next_entry['cache_id'] . "'"
                     );
-                    $container[$cache->fields['cache_name']] = false;
+                    $container[$next_entry['cache_name']] = false;
                 } else {
-                    $cache_data = $cache->fields['cache_data'];
-                    if ($cache->fields['cache_gzip'] == 1) {
-                        $cache_data = @gzinflate($cache_data);
+                    $cache_data = $next_entry['cache_data'];
+                    if ($next_entry['cache_gzip'] === '1') {
+                        $cache_data = gzinflate($cache_data);
                     }
                     $cache_data = unserialize($cache_data);
-                    $container[$cache->fields['cache_name']] = $cache_data;
+                    $container[$next_entry['cache_name']] = $cache_data;
                 }
-                $cache->MoveNext();
             }
             unset($cache_data);
-            if (count($container) == 1) {
+            if (count($container) === 1) {
                 return $container[$cache_name];
-            } elseif ($global) {
-                return array(
+            } elseif ($global === true) {
+                return [
                     'GLOBAL' => $container
-                );
+                ];
             } else {
                 return $container;
             }
@@ -1378,9 +1348,10 @@ class usu
     /**
      * Function to perform basic garbage collection for database cache system
      */
-    protected function cache_gc() 
+    protected function cache_gc()
     {
         global $db;
+
         $db->Execute(
             "DELETE FROM " . TABLE_USU_CACHE . "
               WHERE cache_expires <= '" . date('Y-m-d H:i:s') . "'"
@@ -1395,7 +1366,7 @@ class usu
      * @param boolean $is_cached NOTE: passed by reference
      * @param boolean $is_expired NOTE: passed by reference
      */
-    protected function is_cached($name, &$is_cached, &$is_expired) 
+    protected function is_cached($name, &$is_cached, &$is_expired)
     {
         global $db, $queryCache;
 
@@ -1403,17 +1374,18 @@ class usu
             "SELECT cache_expires
                FROM " . TABLE_USU_CACHE . "
               WHERE cache_id = '" . md5($name) . "'
-                AND cache_language_id = {$this->languages_id}";
+                AND cache_language_id = {$this->languages_id}
+              LIMIT 1";
         $cache = $db->Execute($sql);
-        $is_cached = ($cache->RecordCount() > 0) ? true : false;
+        $is_cached = (!$cache->EOF);
 
         // Fix for query_cache (clear the Zen Cart in memory cache)
         if (isset($queryCache) && $queryCache->inCache($sql)) {
             $queryCache->reset($sql);
         }
 
-        if ($is_cached) {
-            $is_expired = ($cache->fields['cache_expires'] <= date('Y-m-d H:i:s') ? true : false);
+        if ($is_cached === true) {
+            $is_expired = ($cache->fields['cache_expires'] <= date('Y-m-d H:i:s'));
             unset($cache);
         }
     }
@@ -1426,9 +1398,9 @@ class usu
      * @param string $page the Zen Cart page (main_page=xxxx)
      * @return bool true if an alternative URL should be created, false otherwise.
      */
-    protected function filter_page($page) 
+    protected function filter_page($page)
     {
-        return count($this->filter_page) == 0 || in_array($page, $this->filter_page);
+        return (count($this->filter_page) === 0 || in_array($page, $this->filter_page));
     }
 
     /**
@@ -1441,17 +1413,17 @@ class usu
      * The canonical URI will be placed in $this->canonical if a special
      * canonical is needed, otherwise $this->canonical will be null.
      */
-    public function canonical() 
+    public function canonical()
     {
         global $db, $request_type;
 
         $this->uri = ltrim($_SERVER['REQUEST_URI']);
-        $this->real_uri = ltrim(basename($_SERVER['SCRIPT_NAME']) . ($_SERVER['QUERY_STRING'] != '' ? '?' . $_SERVER['QUERY_STRING'] : ''), '/' );
+        $this->real_uri = ltrim(basename($_SERVER['SCRIPT_NAME']) . ($_SERVER['QUERY_STRING'] !== '' ? ('?' . $_SERVER['QUERY_STRING']) : ''), '/' );
         $this->canonical = null;
 
-        if (isset($_GET['main_page']) && $this->filter_page($_GET['main_page']) && isset($_GET['products_id'])) {
+        if (isset($_GET['main_page']) && $this->filter_page($_GET['main_page']) === true && isset($_GET['products_id'])) {
             $product_page = $this->getInfoPage((int)$_GET['products_id']);
-            if ($_GET['main_page'] == $product_page) {
+            if ($_GET['main_page'] === $product_page) {
                 // Only add the canonical if one is found
                 $this->canonical = $this->get_product_canonical((int)$_GET['products_id']);
                 if ($this->canonical !== null) {
@@ -1461,15 +1433,15 @@ class usu
                         'products_id', (int)$_GET['products_id'],
                         USU_END
                     );
-                    $this->canonical = ($request_type == 'SSL' ? HTTPS_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_SERVER . DIR_WS_CATALOG) . htmlspecialchars($this->canonical, ENT_QUOTES, CHARSET, false);
+                    $this->canonical = ($request_type === 'SSL' ? (HTTPS_SERVER . DIR_WS_HTTPS_CATALOG) : (HTTP_SERVER . DIR_WS_CATALOG)) . htmlspecialchars($this->canonical, ENT_QUOTES, CHARSET, false);
                 }
             }
             unset($product_page);
         }
 
         // Redirect if enabled and necessary
-        if (defined('USU_REDIRECT') && USU_REDIRECT == 'true') {
-            if ($this->needs_redirect()) {
+        if (defined('USU_REDIRECT') && USU_REDIRECT === 'true') {
+            if ($this->needs_redirect() === true) {
                 $this->redirect();
             }
         }
@@ -1480,32 +1452,32 @@ class usu
      *
      * @return true if a redirect is needed, false otherwise.
      */
-    protected function needs_redirect() 
+    protected function needs_redirect()
     {
         global $request_type;
 
         // If the current language of the user does not match the language
         // in use by this module, do not redirect.
-        if ($_SESSION['languages_id'] != $this->languages_id) {
+        if ($_SESSION['languages_id'] !== $this->languages_id) {
             $this->log('NO REDIRECT: Language of the URI did not match the current language.');
             return false;
         }
 
         // If we are in the admin we should never redirect
-        if (IS_ADMIN_FLAG == 'true') {
+        if (IS_ADMIN_FLAG === true) {
             $this->log('NO REDIRECT: Request was for an administrative page.');
             return false;
         }
 
         // We should also avoid redirects with post content
-        if (count($_POST) > 0) {
+        if (count($_POST) !== 0) {
             $this->log('NO REDIRECT: Content was present in $_POST.');
             return false;
         }
 
         // If the request was for a real file (which called application_top)
         // We should avoid issuing a redirect.
-        if ($this->is_physical_file($this->real_uri)) {
+        if ($this->is_physical_file($this->real_uri) === true) {
             $this->log('NO REDIRECT: Request was for a physical file (not virtual).');
             return false;
         }
@@ -1515,7 +1487,7 @@ class usu
         // any occurrence of 'cpath' to its 'cPath' form (sometimes broken in previous
         // Zen Cart versions of the shopping cart) and lop off any trailing '&'.
         //
-        $params = zen_get_all_get_params(array('main_page'));
+        $params = zen_get_all_get_params(['main_page']);
         $params = str_replace('cpath=', 'cPath=', $params);
         $params = rtrim($params, '&');
         $this->log('Params from $_GET: ' . $params);
@@ -1525,8 +1497,8 @@ class usu
         if ($this->redirect_uri === null) {
             $this->redirect_uri = zen_href_link($_GET['main_page'], $params, $request_type, false, true, false, true);
         }
-        $this->redirect_uri = @parse_url($this->redirect_uri);
-        $parsed_uri = @parse_url($this->uri);
+        $this->redirect_uri = parse_url($this->redirect_uri);
+        $parsed_uri = parse_url($this->uri);
 
         // If the passed URI is seriously malformed, issue a redirect
         // Outside of hacking attempts, this is rarely encountered
@@ -1536,10 +1508,10 @@ class usu
         }
 
         // We need to redirect if the paths do not match
-        if (!isset($parsed_uri['path']) || ($parsed_uri['path'] != $this->redirect_uri['path'] && rawurldecode($parsed_uri['path']) != $this->redirect_uri['path'])) {
+        if (!isset($parsed_uri['path']) || ($parsed_uri['path'] !== $this->redirect_uri['path'] && rawurldecode($parsed_uri['path']) !== $this->redirect_uri['path'])) {
             if ($this->canonical !== null) {
                 $canonical = parse_url($this->canonical);
-                if (!isset($parsed_uri['path']) || $parsed_uri['path'] != $canonical['path']) {
+                if (!isset($parsed_uri['path']) || $parsed_uri['path'] !== $canonical['path']) {
                     $this->log('Generated path for the canonical did not match the requested URI.');
                     return true;
                 }
@@ -1553,16 +1525,16 @@ class usu
             }
         } else {
             // See if the parameters match. We do not care about order.
-            $params = (isset($this->redirect_uri['query'])) ? explode('&', str_replace('&amp;', '&', $this->redirect_uri['query'])) : array();
+            $params = (isset($this->redirect_uri['query'])) ? explode('&', str_replace('&amp;', '&', $this->redirect_uri['query'])) : [];
             asort($params);
-            $old_params = (isset($parsed_uri['query'])) ? explode('&', $parsed_uri['query']) : array();
+            $old_params = (isset($parsed_uri['query'])) ? explode('&', $parsed_uri['query']) : [];
             asort($old_params);
-            if (count($params) != count($old_params)) {
+            if (count($params) !== count($old_params)) {
                 $this->log('Number of parameters did not match the requested URI: ' . implode('&', $params) . ' vs. ' . implode('&', $old_params));
                 return true;
             } else {
                 for ($i = 0, $n = count($params); $i < $n; $i++) {
-                    if (urldecode($params[$i]) != urldecode($old_params[$i])) {
+                    if (urldecode($params[$i]) !== urldecode($old_params[$i])) {
                         $this->log('The value of parameters did not match the requested URI. Alternate URL param: ' . urldecode($params[$i]) . ', requested URI param: ' . urldecode($old_params[$i]));
                         return true;
                     }
@@ -1577,19 +1549,15 @@ class usu
     /**
      * Issue a 301 redirect to the browser.
      */
-    protected function redirect() 
+    protected function redirect()
     {
-        $new_url = $this->redirect_uri['path'] . (array_key_exists('query', $this->redirect_uri) ? '?' . str_replace('&amp;', '&', $this->redirect_uri['query']) : '');
+        if (USU_REDIRECT === 'true') {
+            $new_url = $this->redirect_uri['path'] . (array_key_exists('query', $this->redirect_uri) ? '?' . str_replace('&amp;', '&', $this->redirect_uri['query']) : '');
 
-        $this->log('REDIRECT: Issued a redirect to: ' . $new_url);
-        switch (USU_REDIRECT) {
-            case 'true':
-                header('HTTP/1.1 301 Moved Permanently');
-                header('Location: ' . $new_url);
-                exit;
-                break;
-            default:
-                break;
+            $this->log('REDIRECT: Issued a redirect to: ' . $new_url);
+            header('HTTP/1.1 301 Moved Permanently');
+            header('Location: ' . $new_url);
+            exit;
         }
     }
 
@@ -1599,7 +1567,7 @@ class usu
      * @param $uri the requested URI.
      * @return true if a physical file (or directory), false otherwise.
      */
-    protected function is_physical_file($uri) 
+    protected function is_physical_file($uri)
     {
         // Search for the first appearance of ? or #
         $real_file = strpos($uri, '?');
@@ -1615,7 +1583,7 @@ class usu
         }
 
         // Do not count the front controller (index.php) as a real file
-        return ($real_file != 'index.php' && file_exists(DIR_FS_CATALOG . $real_file));
+        return ($real_file !== 'index.php' && file_exists(DIR_FS_CATALOG . $real_file));
     }
 
     /**
@@ -1629,9 +1597,9 @@ class usu
      * @param bool $eol true to add an End Of Line character to the string,
      *         false otherwise.
      */
-    protected function log($message) 
+    protected function log($message)
     {
-        if ($this->debug) {
+        if ($this->debug === true) {
             error_log(((string)$message) . PHP_EOL, 3, $this->logfile);
         }
     }

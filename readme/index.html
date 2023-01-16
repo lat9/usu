@@ -25,7 +25,7 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <div id="body">
-            <h1>Ultimate URLs v3.0.11</h1>
+            <h1>Ultimate URLs v3.1.0</h1>
             <div id="top-links">
                 <a href="https://www.zen-cart.com" target="_blank">​Zen Cart</a>
                 <a href="https://www.zen-cart.com/showthread.php?199064" target="_blank">Support thread</a>
@@ -109,7 +109,8 @@
                     </ul>
                     <h2>Requirements</h2>
                     <ul>
-                        <li>Working installation of Zen Cart 1.5.5 or later.  <b>Note:</b> If your site uses Zen Cart 1.5.7 (no alphabetic suffix), be sure that you have applied all the patches currently posted on the Zen Cart forums.</li>
+                        <li>Working installation of Zen Cart 1.5.7<b>a</b> or later.  <b>Note:</b> Zen Cart 1.5.7 (unsuffixed) has issues (if unpatched) with multiple observers watching the same event.</li>
+                        <li>Supports PHP versions 5.6 through 8.2.</li>
                         <li>Secure FTP access to the Zen Cart installation (while you can use plain FTP it is not recommended)</li>
                         <li>An account to access Zen Cart's administrative interface</li>
                         <li>Knowledge of regular expressions if filtering names in URLs</li>
@@ -254,10 +255,26 @@
                 <div id="changelog">
                     <h2>Change History</h2>
                     <ul>
+                        <li>v3.1.0-beta1, 2023-01-16 (lat9):<ul>
+                            <li>CHANGE: Drop support for Zen Cart versions prior to 1.5.7<b>a</b>.</li>
+                            <li>The following files were changed:<ol>
+                                <li>/includes/auto_loaders/config.usu.php</li>
+                                <li>/includes/classes/observers/UsuObserver.php</li>
+                                <li>/includes/classes/usu.php</li>
+                                <li>/YOUR_ADMIN/usu_uninstall.php</li>
+                                <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
+                                <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                                <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
+                                <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
+                                <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                                <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
+                            </ol></li>
+                        </ul></li>
                         <li>v3.0.11, 2022-03-10 (lat9/proseLA):<ul>
                             <li>BUGFIX: Don't include admin session ID on links generated for the catalog.</li>
                             <li>The following files were changed:<ol>
-                                <li>/YOUR_ADMIN/classes/observers/UsuAdminObserver.php</li>
+                                <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
                                 <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
                             </ol></li>
                         </ul></li>

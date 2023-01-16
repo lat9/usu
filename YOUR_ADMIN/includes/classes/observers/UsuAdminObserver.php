@@ -1,6 +1,6 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart.
+ * Part of Ultimate URLs for Zen Cart, v3.1.0+.
  *
  * @copyright Copyright 2019-2022 Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
@@ -11,6 +11,10 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 
 class UsuAdminObserver extends base
 {
+    public
+        $enabled,
+        $usu;
+
     public function __construct()
     {
         $this->enabled = (defined('USU_ENABLED') && USU_ENABLED === 'true');

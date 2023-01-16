@@ -19,8 +19,10 @@
  * @param string $value the current value for the reset URL cache option
  * @return string the value to display for the reset URL cache option
  */
-function usu_reset_cache_data($value) 
+function usu_reset_cache_data($value)
 {
+    global $db, $messageStack;
+
     switch ($value) {
         case 'false':
             break;
@@ -44,462 +46,85 @@ function usu_reset_cache_data($value)
             break;
     }
     if (isset($where_clause)) {
-        zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => 'false'), 'update', "configuration_key = 'USU_CACHE_RESET' LIMIT 1");
-        $GLOBALS['db']->Execute(
+        zen_db_perform(TABLE_CONFIGURATION, ['configuration_value' => 'false'], 'update', "configuration_key = 'USU_CACHE_RESET' LIMIT 1");
+        $db->Execute(
             "DELETE FROM " . TABLE_USU_CACHE . "
               WHERE cache_name $where_clause"
         );
         $cache_type = ($value == 'true') ? 'global' : $value;
-        $GLOBALS['messageStack']->add_session(sprintf(USU_PLUGIN_CACHE_RESET, $cache_type), 'success');
+        $messageStack->add_session(sprintf(USU_PLUGIN_CACHE_RESET, $cache_type), 'success');
     }
     return 'false';
 }
 
+// -----
+// Note, these two functions are present storefront-only in zc157, but are both storefront and
+// admin for zc158 and later.
+//
+// Using the zc158 implementation if the function doesn't exist; the following definition is also
+// present in zc158 and later.
+//
+if (!defined('TOPMOST_CATEGORY_PARENT_ID')) {
+    define('TOPMOST_CATEGORY_PARENT_ID', '0');
+}
 if (!function_exists('zen_product_in_category')) {
     function zen_product_in_category($product_id, $cat_id)
     {
         global $db;
         $in_cat = false;
-        $category_query_raw = "select categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . "
-                           where products_id = '" . (int)$product_id . "'";
+        $sql = "SELECT categories_id
+                FROM " . TABLE_PRODUCTS_TO_CATEGORIES . "
+                WHERE products_id = " . (int)$product_id;
+        $categories = $db->Execute($sql);
 
-        $category = $db->Execute($category_query_raw);
-
-        while (!$category->EOF) {
-            if ($category->fields['categories_id'] == $cat_id) {
-                $in_cat = true;
+        foreach ($categories as $category) {
+            if ($category['categories_id'] == $cat_id) {
+                return true;
             }
-            if (!$in_cat) {
-                $parent_categories_query = "select parent_id from " . TABLE_CATEGORIES . "
-                                    where categories_id = '" . $category->fields['categories_id'] . "'";
+            $sql = "SELECT parent_id
+                        FROM " . TABLE_CATEGORIES . "
+                        WHERE categories_id = " . (int)$category['categories_id'];
 
-                $parent_categories = $db->Execute($parent_categories_query);
+            $parent_categories = $db->Execute($sql);
 
-                while (!$parent_categories->EOF) {
-                    if (($parent_categories->fields['parent_id'] != 0)) {
-                        if (!$in_cat) {
-                            $in_cat = zen_product_in_parent_category($product_id, $cat_id,
-                                $parent_categories->fields['parent_id']);
-                        }
+            foreach ($parent_categories as $parent) {
+                if ($parent['parent_id'] != TOPMOST_CATEGORY_PARENT_ID) {
+                    if (!$in_cat) {
+                        $in_cat = zen_product_in_parent_category($product_id, $cat_id, $parent['parent_id']);
                     }
-                    $parent_categories->MoveNext();
+                    if ($in_cat) {
+                        return $in_cat;
+                    }
                 }
             }
-            $category->MoveNext();
         }
         return $in_cat;
     }
 }
 
 if (!function_exists('zen_product_in_parent_category')) {
-    function zen_product_in_parent_category($product_id, $cat_id, $parent_cat_id) 
+    function zen_product_in_parent_category($product_id, $cat_id, $parent_cat_id)
     {
         global $db;
 
         $in_cat = false;
         if ($cat_id == $parent_cat_id) {
-            $in_cat = true;
-        } else {
-            $parent_categories_query = 
-                "SELECT parent_id 
-                   FROM " . TABLE_CATEGORIES . "
-                  WHERE categories_id = " . (int)$parent_cat_id;
+            return true;
+        }
+        $sql = "SELECT parent_id
+                    FROM " . TABLE_CATEGORIES . "
+                    WHERE categories_id = " . (int)$parent_cat_id;
 
-            $parent_categories = $db->Execute($parent_categories_query);
+        $results = $db->Execute($sql);
 
-            while (!$parent_categories->EOF) {
-                if ($parent_categories->fields['parent_id'] != 0 && !$in_cat) {
-                    $in_cat = zen_product_in_parent_category($product_id, $cat_id, $parent_categories->fields['parent_id']);
-                }
-                $parent_categories->MoveNext();
+        foreach ($results as $result) {
+            if ($result['parent_id'] != TOPMOST_CATEGORY_PARENT_ID && !$in_cat) {
+                $in_cat = zen_product_in_parent_category($product_id, $cat_id, $result['parent_id']);
+            }
+            if ($in_cat) {
+                return $in_cat;
             }
         }
         return $in_cat;
     }
-}
-
-// =======================================
-// ==> NOTE: All the following functions are deprecated as of v3.0.1 and will be removed in a future USU release.
-// =======================================
-
-/**
- * Checks the value of the cPath option. If the value has been changed, the
- * new value will be saved to the database and the URL cache reset.
- *
- * @param string $value the current value for the cPath option
- * @return string the value to display for the cPath option
- */
-function usu_check_cpath_option($value) 
-{
-/*
-    $value_ok = true;
-    switch ($value) {
-        case 'disable':
-            $value = 'off';
-            break;
-        case 'enable-auto':
-            $value = 'auto';
-            break;
-        default:
-            $value_ok = false;
-            break;
-    }
-
-    if ($value_ok) {
-        zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CPATH' LIMIT 1");
-        usu_reset_cache_data('true');
-    }
-*/
-    return $value;
-}
-
-/**
- * Checks the value of the URL format option. If the value has been changed, the
- * new value will checked for compatibility issues. If compatibility issues exist
- * with the category directory option the category directory option will be
- * updated to avoid issues. The new option will be saved to the database and the
- * URL cache reset.
- *
- * @param string $value the current value for the URL format option
- * @return string the value to display for the URL format option
- */
-function usu_check_url_format_option($value) 
-{
-/*
-    switch ($value) {
-        case 'enable-parent':
-            $value = 'parent';
-            if (USU_CATEGORY_DIR == 'full') {
-                zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => 'short'), 'update', "configuration_key = 'USU_CATEGORY_DIR' LIMIT 1");
-                echo '<div><span class="alert">' . USU_PLUGIN_WARNING_CATEGORY_DIR . '</span></div>';
-            }
-            break;
-        case 'enable-original':
-            // Update with the correct setting and reset the cache
-            $value = 'original';
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_FORMAT' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-        default:
-            break;
-    }
-*/
-    return $value;
-}
-
-/**
- * Checks the value of the category directory option. If the value has been
- * changed, the new value will checked for compatibility issues. If compatibility
- * issues exist with the URL format option the URL format option will be
- * updated to avoid issues. The new option will be saved to the database and the
- * URL cache reset.
- *
- * @param string $value the current value for the category directory option
- * @return string the value to display for the category directory option
- */
-function usu_check_category_dir_option($value) 
-{
-/*
-    switch ($value) {
-        case 'disable':
-            $value = 'off';
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CATEGORY_DIR' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-
-        case 'enable-full':
-            $value = 'full';
-            if (USU_FORMAT == 'parent') {
-                zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => 'original'), 'update', "configuration_key = 'USU_FORMAT' LIMIT 1");
-                echo '<div><span class="alert">' . USU_PLUGIN_WARNING_FORMAT . '</span></div>';
-            }
-            break;
-        case 'enable-short':
-            $value = 'short';
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CATEGORY_DIR' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-        default:
-            break;
-    }
-*/
-    return $value;
-}
-
-/**
- * Checks the value of the remove characters option. If the value has been
- * changed, the value will be updated in the database and the URL cache reset.
- *
- * @param string $value the current value for the remove characters option
- * @return string the value to display for the remove characters option
- */
-function usu_check_remove_chars_option($value) 
-{
-/*
-    switch($value) {
-        case 'enable-non-alphanumerical':
-        case 'enable-punctuation':
-            $value = str_replace('enable-', '', $value);
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_REMOVE_CHARS' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-            
-        default:
-            break;
-    }
-*/
-    return $value;
-}
-
-/**
- * Checks the value of the short words option. If the value is not a positive integer,
- * the value will be changed to 0.
- *
- * @param string $value the current value for the short words option
- * @return string the value to display for the short words option
- */
-function usu_check_short_words($value) 
-{
-/*
-    if (!ctype_digit($value) || ((int)$value) < 0) {
-        zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => '0'), 'update', "configuration_key = 'USU_FILTER_SHORT_WORDS' LIMIT 1");
-        
-        echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_SHORT_WORDS, $value) . '</span></div>';
-        $value = '0';
-    }
-*/
-    return $value;
-}
-
-/**
- * Checks the value of the various URL cache options. If the value has been
- * changed, the value will be updated in the database and the URL cache reset.
- *
- * @param string $value the current value for the URL cache option
- * @return string the value to display for the URL cache option
- */
-function usu_check_cache_options($value) 
-{
-/*
-    $temp = explode('-', $value);
-    if (count($temp) < 2) {
-        $temp[] = 'global';
-    }
-    $temp[1] = strtoupper($temp[1]);
-
-    switch ($temp[0]) {
-        case 'enable':
-            $value = 'true';
-            if (USU_CACHE_GLOBAL == 'false' && $temp[1] != 'GLOBAL') {
-                zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CACHE_GLOBAL' LIMIT 1");
-                echo '<div><span class="alert">' . sprintf(USU_PLUGIN_WARNING_CONFIG_ADJUSTED, usu_get_configuration_title('USU_CACHE_' . $temp[1]), usu_get_configuration_title('USU_CACHE_GLOBAL')) . '</span></div>';
-                unset($text, $option_text);
-            }
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CACHE_{$temp[1]}' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-
-        case 'disable':
-            $value = 'false';
-            if ($temp[1] == 'GLOBAL') {
-                echo '<div><span class="alert">' . USU_PLUGIN_WARNING_GLOBAL_DISABLED . '</span></div>';
-            }
-            zen_db_perform(TABLE_CONFIGURATION, array('configuration_value' => $value), 'update', "configuration_key = 'USU_CACHE_{$temp[1]}' LIMIT 1");
-            usu_reset_cache_data('true');
-            break;
-
-        default:
-            break;
-    }
-*/
-    return $value;
-}
-
-/**
- * Sets the HTML to display for changing the cPath option.
- *
- * @param string $value the current value for the cPath option
- * @return string the HTML to display
- */
-function usu_set_cpath_option($value) 
-{
-/*
-    if ($value == 'auto') {
-        $options = array(
-            'auto',
-            'disable'
-        );
-    } else {
-        $value = 'off';
-        $options = array(
-            'enable-auto',
-            'off'
-        );
-    }
-*/
-    $options = array('auto', 'off');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Sets the HTML to display for changing the URL format option.
- *
- * @param string $value the current value for the URL format option
- * @return string the HTML to display
- */
-function usu_set_url_format_option($value) 
-{
-/*
-    if ($value == 'original') {
-        $options = array(
-            'original',
-            'enable-parent'
-        );
-    } else {
-        $value = 'parent';
-        $options = array(
-            'enable-original',
-            'parent'
-        );
-    }
-*/
-    $options = array('original', 'parent');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Sets the HTML to display for changing the category directory option.
- *
- * @param string $value the current value for the category directory option
- * @return string the HTML to display
- */
-function usu_set_category_dir_option($value) 
-{
-/*
-    if ($value == 'off') {
-        $options = array(
-            'off',
-            'enable-short',
-            'enable-full'
-        );
-    } elseif ($value == 'full') {
-        $options = array(
-            'disable',
-            'enable-short',
-            'full'
-        );
-    } else {
-        $value = 'short';
-        $options = array(
-            'disable',
-            'short',
-            'enable-full'
-        );
-    }
-*/
-    $options = array('off', 'short', 'full');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Sets the HTML to display for changing the remove characters option.
- *
- * @param string $value the current value for the remove characters option
- * @return string the HTML to display
- */
-function usu_set_remove_chars_option($value) 
-{
-/*
-    if ($value == 'non-alphanumerical') {
-        $options = array(
-            'non-alphanumerical',
-            'enable-punctuation'
-        );
-    } else {
-        $options = array(
-            'enable-non-alphanumerical',
-            'punctuation'
-        );
-    }
-*/
-    $options = array('non-alphanumerical', 'punctuation');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Sets the HTML to display for changing the global cache option.
- *
- * @param string $value the current value for the global cache option
- * @return string the HTML to display
- */
-function usu_set_global_cache_option($value) 
-{
-/*
-    if ($value == 'true') {
-        $options = array(
-            'true',
-            'disable'
-        );
-    } else {
-        $options = array(
-            'enable',
-            'false'
-        );
-    }
-*/
-    $options = array('true', 'false');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Sets the HTML to display for changing the various cache options.
- *
- * @param string $value the current value for the various cache options
- * @return string the HTML to display
- */
-function usu_set_cache_options($cache, $value) 
-{
-/*
-    $cache = strtolower($cache);
-    $key = 'USU_CACHE_' . strtoupper($cache);
-    if (constant($key) == 'true') {
-        $options = array(
-            'true',
-            'disable-' . $cache
-        );
-    } else {
-        $options = array(
-            'enable-' . $cache,
-            'false'
-        );
-    }
-*/
-    $options = array('true', 'false');
-    return zen_cfg_select_option($options, $value);
-}
-
-/**
- * Retrieve the current configuration title stored in the database for the
- * specified configuration option.
- *
- * @param string $key the configuration key for the option
- * @param string $default text to use if the key cannot be found
- * @return string the configuration title
- */
-function usu_get_configuration_title($key, $default = null) 
-{
-    if ($default === null) {
-        $default = $key;
-    }
-
-    $option_text = $GLOBALS['db']->Execute(
-        "SELECT configuration_title 
-           FROM " . TABLE_CONFIGURATION . "
-          WHERE configuration_key = '$key'
-          LIMIT 1"
-    );
-    if (!$option_text->EOF) {
-        $default = $option_text->fields['configuration_title'];
-    }
-    return $default;
 }
