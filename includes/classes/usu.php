@@ -328,7 +328,7 @@ class usu extends base
             array_unshift($params_array, 'cPath=' . $cPath);
         }
 
-        $this->log('Parsing Parameters for ' . $page . PHP_EOL . var_export($params_array, true));
+        $this->log('Parsing Parameters for ' . $page . ', cPath = ('. json_encode($cPath) . PHP_EOL . var_export($params_array, true));
 
         $link_params = [];
         foreach ($params_array as $valuepair) {
@@ -369,6 +369,7 @@ class usu extends base
                         } else {
                             $cID = $cPath;
                         }
+                        $cID = (int)$cPath;
                     }
 
                     // -----
@@ -438,6 +439,7 @@ class usu extends base
                             if ($tmp !== false) {
                                 $value = substr($value, $tmp + 1);
                             }
+                            $value = (int)$value;
 
                             $category = $this->get_category_name($value);
                             if (USU_CATEGORY_DIR === 'off') {
