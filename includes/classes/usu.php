@@ -74,6 +74,7 @@ class usu extends base
             'products_id_review' => '-pr-',
             'products_id_review_info' => '-pri-',
             'id' => '-ezp-',
+            'pid' => '-aaq-',
         ];
 
         if (null === self::$unicodeEnabled) {
@@ -477,6 +478,18 @@ class usu extends base
                 case 'pID':
                     switch (true) {
                         case ($page === FILENAME_POPUP_IMAGE):
+                            $url = $this->make_url($page, $this->get_product_name($value), $key, $value, USU_END);
+                            break;
+
+                        default:
+                            $link_params[] = $valuepair;
+                            break;
+                    }
+                    break;
+
+                case 'pid':
+                    switch (true) {
+                        case ($page === FILENAME_ASK_A_QUESTION):
                             $url = $this->make_url($page, $this->get_product_name($value), $key, $value, USU_END);
                             break;
 
