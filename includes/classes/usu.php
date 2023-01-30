@@ -29,7 +29,6 @@ class usu extends base
         $languages_id,
         $parameters_valid,
         $reg_anchors,
-        $cache_file,
         $uri,
         $real_uri,
         $redirect_uri,
@@ -60,7 +59,12 @@ class usu extends base
         }
         $this->languages_id = (int)$languages_id;
 
-        $this->cache = false;
+        $this->cache = [
+            'products' => [],
+            'categories' => [],
+            'manufacturers' => [],
+            'ezpages' => [],
+        ];
 
         $this->reg_anchors = [
             'products_id' => '-p-',
@@ -78,40 +82,6 @@ class usu extends base
 
         $this->filter_pcre = defined('USU_FILTER_PCRE') ? $this->expand(USU_FILTER_PCRE) : 'false';
         $this->filter_page = (defined('USU_FILTER_PAGES') && USU_FILTER_PAGES !== '') ? explode(',', str_replace(' ', '', USU_FILTER_PAGES)) : [];
-
-        if (defined('USU_CACHE_GLOBAL') && USU_CACHE_GLOBAL === 'true') {
-            // Prepare in memory cache
-            $this->cache = [
-                'PRODUCTS' => [],
-                'CATEGORIES' => [],
-                'MANUFACTURERS' => [],
-                'EZPAGES' => [],
-            ];
-
-            // Handle the SQL cache options if the table exists
-            if ($sniffer->table_exists(TABLE_USU_CACHE)) {
-                // Cleanup the SQL caches
-                $this->cache_file = 'usu_v3_';
-                $this->cache_gc(); // Cleanup Cache
-
-                // Load or generate enabled SQL caches
-                if (USU_CACHE_PRODUCTS === 'true') {
-                    $this->generate_products_cache();
-                }
-                if (USU_CACHE_CATEGORIES === 'true') {
-                    $this->generate_categories_cache();
-                }
-                if (USU_CACHE_MANUFACTURERS === 'true') {
-                    $this->generate_manufacturers_cache();
-                }
-                if (USU_CACHE_EZ_PAGES === 'true') {
-                    $this->generate_ezpages_cache();
-                }
-            } elseif (IS_ADMIN_FLAG === true) {
-                // Message Stack will be available when loaded from the admin
-                $messageStack->add(sprintf(USU_PLUGIN_WARNING_TABLE, TABLE_USU_CACHE), 'warning');
-            }
-        }
 
         // Start logging
         $this->debug = false;
@@ -628,8 +598,8 @@ class usu extends base
                 $return = constant('PRODUCT_NAME_' . $pID);
                 break;
 
-            case (is_array($this->cache) && isset($this->cache['PRODUCTS'][$pID])):
-                $return = $this->cache['PRODUCTS'][$pID];
+            case isset($this->cache['products'][$pID]):
+                $return = $this->cache['products'][$pID];
                 break;
 
             default:
@@ -647,10 +617,7 @@ class usu extends base
                         $category_id = ($cID !== null) ? $cID : $masterCatID;
                         $pName = $this->get_category_name($category_id, 'original') . '-' . $pName;
                     }
-
-                    if (is_array($this->cache)) {
-                        $this->cache['PRODUCTS'][$pID] = $pName;
-                    }
+                    $this->cache['products'][$pID] = $pName;
                 }
                 $return = $pName;
                 break;
@@ -708,8 +675,8 @@ class usu extends base
                         $retval .= constant('PRODUCT_NAME_' . $pID);
                         break;
 
-                    case (is_array($this->cache) && isset($this->cache['PRODUCTS'][$pID])):
-                        $retval .= $this->cache['PRODUCTS'][$pID];
+                    case isset($this->cache['products'][$pID]):
+                        $retval .= $this->cache['products'][$pID];
                         break;
 
                     default:
@@ -743,8 +710,8 @@ class usu extends base
                 $return = constant('CATEGORY_NAME_' . $full_cPath);
                 break;
 
-            case (is_array($this->cache) && isset($this->cache['CATEGORIES'][$full_cPath]) && $format === USU_FORMAT):
-                $return = $this->cache['CATEGORIES'][$full_cPath];
+            case ($format === USU_FORMAT && isset($this->cache['categories'][$full_cPath])):
+                $return = $this->cache['categories'][$full_cPath];
                 break;
 
             default:
@@ -795,8 +762,8 @@ class usu extends base
                 //
                 if ($cName === '') {
                     $this->parameters_valid = false;
-                } elseif (is_array($this->cache)) {
-                    $this->cache['CATEGORIES'][$full_cPath] = $cName;
+                } else {
+                    $this->cache['categories'][$full_cPath] = $cName;
                 }
                 $return = $cName;
                 break;
@@ -821,8 +788,8 @@ class usu extends base
                 $return = constant('MANUFACTURER_NAME_' . $mID);
                 break;
 
-            case (is_array($this->cache) && isset($this->cache['MANUFACTURERS'][$mID])):
-                $return = $this->cache['MANUFACTURERS'][$mID];
+            case isset($this->cache['manufacturers'][$mID]):
+                $return = $this->cache['manufacturers'][$mID];
                 break;
 
             default:
@@ -840,8 +807,8 @@ class usu extends base
                 //
                 if ($mName === '') {
                     $this->parameters_valid = false;
-                } elseif (is_array($this->cache)) {
-                    $this->cache['MANUFACTURERS'][$mID] = $mName;
+                } else {
+                    $this->cache['manufacturers'][$mID] = $mName;
                 }
                 $return = $mName;
                 break;
@@ -865,8 +832,8 @@ class usu extends base
                 $return = constant('EZPAGES_NAME_' . $ezpID);
                 break;
 
-            case (is_array($this->cache) && isset($this->cache['EZPAGES'][$ezpID])):
-                $return = $this->cache['EZPAGES'][$ezpID];
+            case isset($this->cache['ezpages'][$ezpID]):
+                $return = $this->cache['ezpages'][$ezpID];
                 break;
 
             default:
@@ -886,8 +853,8 @@ class usu extends base
                 //
                 if ($ezpName === '') {
                     $this->parameters_valid = false;
-                } elseif (is_array($this->cache)) {
-                    $this->cache['EZPAGES'][$ezpID] = $ezpName;
+                } else {
+                    $this->cache['ezpages'][$ezpID] = $ezpName;
                 }
                 $return = $ezpName;
                 break;
@@ -1085,329 +1052,6 @@ class usu extends base
     }
 
     /**
-     * Function to generate EZ-Pages cache entries
-     */
-    protected function generate_ezpages_cache()
-    {
-        global $db;
-
-        $is_cached = false;
-        $is_expired = false;
-        $this->is_cached($this->cache_file . 'ezpages', $is_cached, $is_expired);
-        if (!$is_cached || $is_expired) {
-            $sql = 
-                "SELECT pages_id AS id, pages_title AS name
-                   FROM " . TABLE_EZPAGES_CONTENT . "
-                  WHERE languages_id = {$this->languages_id}";
-
-            $ezpages = $db->Execute($sql, false, true, 43200);
-            foreach ($ezpages as $next_page) {
-                $this->cache['EZPAGES'][$next_page['id']] = $this->filter($next_page['name']);
-            }
-            $this->save_cache($this->cache_file . 'ezpages', $this->cache['EZPAGES'], 1 , 1);
-        } else {
-            $this->cache['EZPAGES'] = $this->get_cache($this->cache_file . 'ezpages');
-        }
-    }
-
-    protected function products_sql_result()
-    {
-        global $db;
-        if (USU_FORMAT === 'parent') {
-            $sql =
-                "SELECT p.products_id AS id, ptc.categories_id AS c_id, p.master_categories_id AS master_id
-                       FROM " . TABLE_PRODUCTS . " AS p
-                            LEFT JOIN " . TABLE_PRODUCTS_TO_CATEGORIES . " AS ptc
-                                ON p.products_id = ptc.products_id
-                      WHERE p.products_status = 1";
-        } else {
-            $sql =
-                "SELECT p.products_id AS id
-                       FROM " . TABLE_PRODUCTS . " AS p
-                      WHERE p.products_status = 1";
-        }
-        return $db->Execute($sql, false, true, 43200);
-    }
-
-    /**
-     * Function to generate products cache entries
-     */
-    protected function generate_products_cache()
-    {
-        global $db;
-
-        $is_cached = false;
-        $is_expired = false;
-        $this->is_cached($this->cache_file . 'products', $is_cached, $is_expired);
-        if(!$is_cached || $is_expired) {
-            $product = $this->products_sql_result();
-            foreach ($product as $next_product) {
-                $pName = $this->filter(zen_get_products_name($next_product['id']));
-                if (USU_FORMAT === 'parent' && USU_CATEGORY_DIR === 'off') {
-                    $cID = $next_product['c_id'];
-                    $pName = $this->get_category_name($cID, 'original') . '-' . $pName;
-                }
-                $this->cache['PRODUCTS'][$next_product['id']] = $pName;
-            }
-
-            $this->save_cache($this->cache_file . 'products', $this->cache['PRODUCTS'], 1 , 1);
-            unset($cID, $pName, $sql, $product);
-        } else {
-            $this->cache['PRODUCTS'] = $this->get_cache($this->cache_file . 'products');
-        }
-    }
-
-    /**
-     * Function to generate manufacturers cache entries
-     */
-    protected function generate_manufacturers_cache()
-    {
-        global $db;
-
-        $is_cached = false;
-        $is_expired = false;
-        $this->is_cached($this->cache_file . 'manufacturers', $is_cached, $is_expired);
-        if (!$is_cached || $is_expired) { // it's not cached so create it
-            $sql = 
-                "SELECT m.manufacturers_id AS id, m.manufacturers_name AS name
-                   FROM " . TABLE_MANUFACTURERS . " AS m
-                        LEFT JOIN " . TABLE_MANUFACTURERS_INFO . " AS md
-                            ON m.manufacturers_id = md.manufacturers_id
-                    AND md.languages_id = {$this->languages_id}";
-            $manufacturers = $db->Execute($sql, false, true, 43200);
-            foreach ($manufacturers as $next_mfgr) {
-                $this->cache['MANUFACTURERS'][$next_mfgr['id']] = $this->filter($next_mfgr['name']);
-            }
-            $this->save_cache($this->cache_file . 'manufacturers', $this->cache['MANUFACTURERS'], 1 , 1);
-        } else {
-            $this->cache['MANUFACTURERS'] = $this->get_cache($this->cache_file . 'manufacturers');
-        }
-    }
-
-    /**
-     * Function to generate categories cache entries
-     */
-    protected function generate_categories_cache()
-    {
-        global $db;
-
-        $is_cached = false;
-        $is_expired = false;
-        $this->is_cached($this->cache_file . 'categories', $is_cached, $is_expired);
-        if (!$is_cached || $is_expired) { // it's not cached so create it
-            if (USU_FORMAT === 'parent' || USU_CATEGORY_DIR === 'short') {
-                $sql = 
-                    "SELECT c.categories_id AS id, c.parent_id, cd.categories_name AS cName, cd2.categories_name as cNameParent
-                       FROM " . TABLE_CATEGORIES . " AS c
-                            LEFT JOIN " . TABLE_CATEGORIES_DESCRIPTION . " AS cd2
-                                ON c.parent_id = cd2.categories_id 
-                               AND cd2.language_id = {$this->languages_id}, " . TABLE_CATEGORIES_DESCRIPTION . " AS cd
-                      WHERE c.categories_id = cd.categories_id
-                        AND cd.language_id = {$this->languages_id}";
-            } else {
-                $sql = 
-                    "SELECT categories_id AS id, categories_name AS cName
-                       FROM " . TABLE_CATEGORIES_DESCRIPTION . "
-                      WHERE language_id = {$this->languages_id}";
-            }
-            $category = $db->Execute($sql, false, true, 43200);
-            foreach ($category as $next_cat) {
-                $cName = '';
-                $single_cID = 0;
-                $cPath = $this->get_full_cPath($next_cat['id'], $single_cID);
-                if (USU_CATEGORY_DIR === 'full') {
-                    $path = [];
-                    $this->get_parent_categories_path($path, $single_cID);
-                    if (count($path) !== 0) {
-                        $cName = implode('/', $path);
-                        $cut = strrpos($cName, $this->reg_anchors['cPath']);
-                        if ($cut !== false) {
-                            $cName = substr($cName, 0, $cut);
-                        }
-                        unset($cut);
-                    }
-                    unset($path);
-                } elseif (USU_FORMAT === 'parent') {
-                    $cName = !empty($next_cat['cNameParent']) ? $this->filter($next_cat['cNameParent'] . ' ' . $next_cat['cName']) : $this->filter($next_cat['cName']);
-                } else {
-                    $cName = $this->filter($next_cat['cName']);
-                }
-
-                $this->cache['CATEGORIES'][$cPath] = $cName;
-            }
-            $this->save_cache($this->cache_file . 'categories', $this->cache['CATEGORIES'], 1 , 1);
-        } else {
-            $this->cache['CATEGORIES'] = $this->get_cache($this->cache_file . 'categories');
-        }
-    }
-
-    /**
-     * Function to store cached data in the database. The value will be
-     * serialized before processing. Compression will be applied if requested.
-     *
-     * @param string $name name identifying the cache
-     * @param mixed $value data to be stored.
-     * @param integer $gzip Enables compression
-     * @param integer $global Sets whether cache record is global is scope
-     * @param string $expires Sets the expiration
-     */
-    protected function save_cache($name, $value, $gzip = 1, $global = 0, $expires = '+30 days')
-    {
-        global $db;
-
-        // Serialize and Compress
-        $value = serialize($value);
-        if ($gzip === 1) {
-            $value = gzdeflate($value, 7);
-        }
-
-        $now = new DateTime();
-        $sql_data_array = [
-            'cache_id' => md5($name),
-            'cache_language_id' => (int)$this->languages_id,
-            'cache_name' => $name,
-            'cache_data' => $value,
-            'cache_global' => (int)$global,
-            'cache_gzip' => (int)$gzip,
-            'cache_date' => $now->format("Y-m-d H:i:s")
-        ];
-        if ($now->modify($expires) === false) {
-            // Fallback to 30 days in the future
-            $now->modify('+30 days');
-        }
-        $sql_data_array['cache_expires'] = $now->format("Y-m-d H:i:s");
-
-        $is_cached = false;
-        $is_expired = false;
-        $this->is_cached($name, $is_cached, $is_expired);
-        $cache_check = ($is_cached) ? 'true' : 'false';
-        switch ($cache_check) {
-            case 'true':
-                zen_db_perform(TABLE_USU_CACHE, $sql_data_array, 'update', "cache_id='" . md5($name)."'");
-                break;
-            case 'false':
-                // This code avoids a potential race condition by overwriting
-                // the existing database cache entry if the insert fails.
-                $sql = 'INSERT INTO `' . TABLE_USU_CACHE . '` (';
-                $sql2 = ') VALUES (';
-                $sql3 = ') ON DUPLICATE KEY UPDATE ';
-                foreach ($sql_data_array as $name => $value) {
-                    $sql .= '`' . $name . '`,';
-                    $sql2 .= '\'' . zen_db_input($value) . '\',';
-                    $sql3 .= '`' . $name . '`=\'' . zen_db_input($value) . '\',';
-                }
-                $sql = substr($sql, 0, -1) . substr($sql2, 0, -1) . substr($sql3, 0, -1);
-                unset($sql2, $sql3);
-                $db->Execute($sql);
-                break;
-            default:
-                break;
-        }
-
-        unset($value, $expires, $sql_data_array);
-    }
-
-    /**
-     * Function to retrieve cached data from the database.
-     *
-     * @param string $name
-     * @return mixed
-     */
-    protected function get_cache($name = 'GLOBAL')
-    {
-        global $db;
-        $global = ($name === 'GLOBAL');
-
-        $sql = 
-            "SELECT cache_id, cache_name, cache_data, cache_global, cache_gzip, cache_date, cache_expires
-               FROM " . TABLE_USU_CACHE . "
-              WHERE cache_language_id = {$this->languages_id}";
-        if ($global === true) {
-            $sql .= " AND cache_global = 1";
-        } else {
-            $sql .= " AND cache_id = '" . md5($name) . "'";
-        }
-        $cache = $db->Execute($sql);
-        if (!$cache->EOF) {
-            $container = [];
-            $now = date('Y-m-d H:i:s');
-            foreach ($cache as $next_entry) {
-                $cache_name = $next_entry['cache_name'];
-                if ($next_entry['cache_expires'] <= $now) {
-                    $db->Execute(
-                        "DELETE FROM " . TABLE_USU_CACHE . "
-                          WHERE cache_id = '" . $next_entry['cache_id'] . "'"
-                    );
-                    $container[$next_entry['cache_name']] = false;
-                } else {
-                    $cache_data = $next_entry['cache_data'];
-                    if ($next_entry['cache_gzip'] === '1') {
-                        $cache_data = gzinflate($cache_data);
-                    }
-                    $cache_data = unserialize($cache_data);
-                    $container[$next_entry['cache_name']] = $cache_data;
-                }
-            }
-            unset($cache_data);
-            if (count($container) === 1) {
-                return $container[$cache_name];
-            } elseif ($global === true) {
-                return [
-                    'GLOBAL' => $container
-                ];
-            } else {
-                return $container;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Function to perform basic garbage collection for database cache system
-     */
-    protected function cache_gc()
-    {
-        global $db;
-
-        $db->Execute(
-            "DELETE FROM " . TABLE_USU_CACHE . "
-              WHERE cache_expires <= '" . date('Y-m-d H:i:s') . "'"
-        );
-    }
-
-    /**
-     * Function to check if the cache is in the database and expired
-     * @author Bobby Easland
-     * @version 1.0
-     * @param string $name
-     * @param boolean $is_cached NOTE: passed by reference
-     * @param boolean $is_expired NOTE: passed by reference
-     */
-    protected function is_cached($name, &$is_cached, &$is_expired)
-    {
-        global $db, $queryCache;
-
-        $sql =
-            "SELECT cache_expires
-               FROM " . TABLE_USU_CACHE . "
-              WHERE cache_id = '" . md5($name) . "'
-                AND cache_language_id = {$this->languages_id}
-              LIMIT 1";
-        $cache = $db->Execute($sql);
-        $is_cached = (!$cache->EOF);
-
-        // Fix for query_cache (clear the Zen Cart in memory cache)
-        if (isset($queryCache) && $queryCache->inCache($sql)) {
-            $queryCache->reset($sql);
-        }
-
-        if ($is_cached === true) {
-            $is_expired = ($cache->fields['cache_expires'] <= date('Y-m-d H:i:s'));
-            unset($cache);
-        }
-    }
-
-    /**
      * Determines if the page is in the list of pages where alternative URLs
      * should be generated. If the list is empty all pages should utilize
      * alternative URLs.
@@ -1487,7 +1131,7 @@ class usu extends base
         }
 
         // We should also avoid redirects with post content
-        if (count($_POST) !== 0) {
+        if (!empty($_POST)) {
             $this->log('NO REDIRECT: Content was present in $_POST.');
             return false;
         }

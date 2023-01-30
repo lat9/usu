@@ -14,8 +14,8 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.1.0-beta1');
-define('USU_CURRENT_UPDATE_DATE', '2023-01-15');
+define('USU_CURRENT_VERSION', '3.1.0-beta3');
+define('USU_CURRENT_UPDATE_DATE', '2023-01-30');
 
 // -----
 // Wait until an admin is logged in before seeing if any initialization steps need to be performed.
@@ -94,86 +94,14 @@ if (USU_VERSION !== USU_CURRENT_VERSION) {
 }
 
 // -----
-// Handle cache-resets for Categories, Products, EZ-Pages and Manufacturers.  There's
-// no current notification available for EZ-Pages or manufacturers and the zc156 restructuring
-// has broken the categories' and products' notifications, so we'll "punt" here.
+// Perform some checks for option-dependent USU configuration changes and values.  For versions of USU
+// prior to v3.0.1, these checks were performed within various 'usu_check_*' functions associated
+// with a configuration key's 'use_function' settings.
 //
 // Notes:
 // 1) $current_page is set by init_languages at CP 70.
 //
 $usu_current_page = pathinfo($current_page, PATHINFO_FILENAME);
-$usu_action_pages = [
-    FILENAME_EZPAGES_ADMIN,
-    FILENAME_MANUFACTURERS,
-    FILENAME_PRODUCT,
-    FILENAME_CATEGORIES,
-    FILENAME_CATEGORY_PRODUCT_LISTING,
-
-    // -----
-    // Adding product-specific handlers whose filenames aren't 'registered' in
-    // /includes/filenames.php.
-    //
-    'product_music',
-    'product_free_shipping',
-    'document_product',
-    'document_general',
-];
-if (in_array($usu_current_page, $usu_action_pages) && !empty($_GET['action'])) {
-    switch ($usu_current_page) {
-        case FILENAME_EZPAGES_ADMIN:
-            if (in_array($_GET['action'], ['update', 'deleteconfirm'])) {
-                usu_reset_cache_data('ezpages');
-            }
-            break;
-
-        case FILENAME_MANUFACTURERS:
-            if (in_array($_GET['action'], ['save', 'deleteconfirm'])) {
-                usu_reset_cache_data('manufacturers');
-            }
-            break;
-
-        case FILENAME_PRODUCT:
-        // -----
-        // Adding product-specific handlers whose filenames aren't 'registered' in
-        // /includes/filenames.php.
-        //
-        case 'product_music':
-        case 'product_free_shipping':
-        case 'document_product':
-        case 'document_general':
-            if (in_array($_GET['action'], ['update_product', 'delete_product_confirm'])) {
-                usu_reset_cache_data('products');
-            }
-            break;
-
-        case FILENAME_CATEGORIES:
-        case FILENAME_CATEGORY_PRODUCT_LISTING:
-            switch ($_GET['action']) {
-                case 'setflag':
-                    usu_reset_cache_data('products');
-                    break;
-
-                case 'update_category':
-                case 'update_category_status':
-                case 'delete_category_confirm':
-                    usu_reset_cache_data('categories');
-                    break;
-
-                default:
-                    break;
-            }
-            break;
-
-        default:
-            break;
-    }
-}
-
-// -----
-// Perform some checks for option-dependent USU configuration changes and values.  For versions of USU
-// prior to v3.0.1, these checks were performed within various 'usu_check_*' functions associated
-// with a configuration key's 'use_function' settings.
-//
 if ($usu_current_page === FILENAME_CONFIGURATION && isset($_GET['gID']) && $_GET['gID'] === $cgi && isset($_GET['action']) && $_GET['action'] === 'save') {
     require DIR_WS_INCLUDES . 'init_includes/init_usu_admin_config_changes.php';
 }

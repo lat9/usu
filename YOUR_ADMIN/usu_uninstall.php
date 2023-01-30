@@ -97,12 +97,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
     );
     $db->Execute(
         "DELETE FROM " . TABLE_ADMIN_PAGES . "
-          WHERE page_key IN ('configUltimateSEO')"
+          WHERE page_key IN ('configUltimateSEO', 'usuUninstall')"
     );
     $db->Execute(
         "DROP TABLE " . TABLE_USU_CACHE
     );
-    
+
     // -----
     // Set a message notifying the admin of the removal, note the change in the activity
     // log and redirect back to the admin dashboard.
@@ -130,15 +130,10 @@ if (!isset($_POST['action']) || $_POST['action'] !== 'confirm') {
 <html <?php echo HTML_PARAMS; ?>>
 <head>
     <?php require DIR_WS_INCLUDES . 'admin_html_head.php'; ?>
-    <?php if ($action != 'edit_category_meta_tags') { // bof: disable editor for meta tags ?>
-      <?php if ($editor_handler != '') {
-            include($editor_handler);
-        } ?>
-    <?php } // eof: disable editor for meta tags  ?>
 </head>
 <body>
     <!-- header //-->
-    <?php require(DIR_WS_INCLUDES . 'header.php'); ?>
+    <?php require DIR_WS_INCLUDES . 'header.php'; ?>
     <!-- header_eof //-->
     <h1><?php echo HEADING_TITLE; ?></h1>
     <?php echo zen_draw_form('remove', FILENAME_USU_UNINSTALL) . zen_draw_hidden_field('action', $next_action);?>
@@ -157,9 +152,7 @@ if ($next_action === 'confirm') {
         <p><a href="<?php echo zen_href_link(FILENAME_DEFAULT); ?>"><?php echo zen_image_button('button_cancel.gif', IMAGE_CANCEL); ?></a>&nbsp;&nbsp;<?php echo zen_image_submit('button_go.gif', IMAGE_GO); ?></p>
     <?php echo '</form>'; ?>
     <!-- footer //-->
-    <?php 
-    require DIR_WS_INCLUDES . 'footer.php'; 
-    ?>
+    <?php require DIR_WS_INCLUDES . 'footer.php'; ?>
     <!-- footer_eof //-->
 </body>
 </html>
