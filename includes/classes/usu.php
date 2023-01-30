@@ -73,6 +73,7 @@ class usu extends base
             'pID' => '-pi-',
             'products_id_review' => '-pr-',
             'products_id_review_info' => '-pri-',
+            'products_id_review_write' => '-prw-',
             'id' => '-ezp-',
             'pid' => '-aaq-',
         ];
@@ -405,6 +406,13 @@ class usu extends base
                         //
                         case ($page === FILENAME_PRODUCT_REVIEWS_INFO):
                             $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_info', $prid, USU_END);
+                            break;
+
+                        // -----
+                        // The display of a product's review write page.
+                        //
+                        case ($page === FILENAME_PRODUCT_REVIEWS_WRITE):
+                            $url = $this->make_url($page, $this->get_product_name($prid, $cID), 'products_id_review_write', $prid, USU_END);
                             break;
 
                         // -----

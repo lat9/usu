@@ -110,6 +110,7 @@ RewriteRule ^(.*)-c-([0-9_]+)/(.*)-p-([0-9]+)(.*)$ index\.php?main_page=product_
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-pi-([0-9]+)(.*)$ index\.php?main_page=popup_image&pID=$4&cPath=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-pr-([0-9]+)(.*)$ index\.php?main_page=product_reviews&products_id=$4&cPath=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-pri-([0-9]+)(.*)$ index\.php?main_page=product_reviews_info&products_id=$4&cPath=$2&%{QUERY_STRING} [L]
+RewriteRule ^(.*)-c-([0-9_]+)/(.*)-prw-([0-9]+)(.*)$ index\.php?main_page=product_reviews_write&products_id=$4&cPath=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-aaq-([0-9]+)(.*)$ index\.php?main_page=ask_a_question&pid=$4&cPath=$2&%{QUERY_STRING} [L]
 
 # Original (unchanged) URL formats
@@ -118,6 +119,7 @@ RewriteRule ^(.*)-m-([0-9]+)(.*)$ index\.php?main_page=index&manufacturers_id=$2
 RewriteRule ^(.*)-pi-([0-9]+)(.*)$ index\.php?main_page=popup_image&pID=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-pr-([0-9]+)(.*)$ index\.php?main_page=product_reviews&products_id=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-pri-([0-9]+)(.*)$ index\.php?main_page=product_reviews_info&products_id=$2&%{QUERY_STRING} [L]
+RewriteRule ^(.*)-prw-([0-9]+)(.*)$ index\.php?main_page=product_reviews_write&products_id=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-aaq-([0-9]+)(.*)$ index\.php?main_page=ask_a_question&pid=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-ezp-([0-9]+)(.*)$ index\.php?main_page=page&id=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-c-([0-9_]+)(.*)$ index\.php?main_page=index&cPath=$2&%{QUERY_STRING} [L]
