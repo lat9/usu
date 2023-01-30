@@ -32,6 +32,7 @@ switch (true) {
     // v3.1.0:
     // - Remove the cache-related settings, now cached on-page.
     // - Using 'zen_cfg_read_only' for the plugin's configured version
+    // - Update 'filter pages' to use a textarea field (was a simple input).
     //
     case version_compare(USU_VERSION, '3.1.0', '<'):               //-Fall through from above processing
         $db->Execute(
@@ -42,6 +43,11 @@ switch (true) {
             "UPDATE " . TABLE_CONFIGURATION . "
                 SET set_function = 'zen_cfg_read_only('
               WHERE configuration_key = 'USU_VERSION'"
+        );
+        $db->Execute(
+            "UPDATE " . TABLE_CONFIGURATION . "
+                SET set_function = 'zen_cfg_textarea('
+              WHERE configuration_key = 'USU_FILTER_PAGES'"
         );
 
     default:                                                        //-Fall through from above processing
