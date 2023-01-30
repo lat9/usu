@@ -45,7 +45,11 @@ ul li ul { padding-left: 0; }
 
     <hr>
     <p>Ultimate URLs (<em>USU</em>) allows store owners to use alternate URLs. The URLs generated will include &quot;human friendly&quot; names in the current browser's requested language and contain shortened versions of certain parameters.</p>
-    <p><b>Note:</b> If you are updating <em>USU</em> from a <b>version prior to v3.0.0</b>, additional care must be taken to ensure that the previous version's changes have been fully removed from your store's file-system &hellip; <b class="red">before</b> you copy the updated <em>USU</em> files to your store's file-system.  Refer to the <em>Installation</em> tab for details.</p>
+    <p><b>Notes:</b></p>
+    <ol>
+        <li>If you are updating <em>USU</em> from a <b>version prior to v3.0.0</b>, additional care must be taken to ensure that the previous version's changes have been fully removed from your store's file-system &hellip; <b class="red">before</b> you copy the updated <em>USU</em> files to your store's file-system.  Refer to the <em>Installation</em> tab for details.</li>
+        <li>Ensure that any non-PHP files for your site don't include these (<code>-p-</code>, <code>-m-</code>, <code>-pi-</code>, <code>-pr-</code>, <code>-pri-</code>, <code>-prw-</code>, <code>-aaq-</code>, <code>-ezp-</code> or <code>-c-</code>) character strings!  They'll be rewritten, too, unfortunately!</li>
+    </ol>
     <hr>
     <p><em>Ultimate URLs</em> is released under the General Public License (see the file named LICENSE in the distribution archive for full details).</p>
     <p>This script is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
