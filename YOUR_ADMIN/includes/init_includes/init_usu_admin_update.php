@@ -31,11 +31,17 @@ switch (true) {
     // -----
     // v3.1.0:
     // - Remove the cache-related settings, now cached on-page.
+    // - Using 'zen_cfg_read_only' for the plugin's configured version
     //
     case version_compare(USU_VERSION, '3.1.0', '<'):               //-Fall through from above processing
         $db->Execute(
             "DELETE FROM " . TABLE_CONFIGURATION . "
               WHERE configuration_key LIKE 'USU_CACHE_%'"
+        );
+        $db->Execute(
+            "UPDATE " . TABLE_CONFIGURATION . "
+                SET set_function = 'zen_cfg_read_only('
+              WHERE configuration_key = 'USU_VERSION'"
         );
 
     default:                                                        //-Fall through from above processing

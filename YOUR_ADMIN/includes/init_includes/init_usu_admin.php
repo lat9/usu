@@ -14,7 +14,7 @@ if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
 // last_modified date for the USU_VERSION configuration setting is updated to reflect
 // the current update-date.
 //
-define('USU_CURRENT_VERSION', '3.1.0-beta3');
+define('USU_CURRENT_VERSION', '3.1.0-beta4');
 define('USU_CURRENT_UPDATE_DATE', '2023-01-30');
 
 // -----
