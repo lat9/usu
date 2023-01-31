@@ -371,7 +371,6 @@ class usu extends base
                         } else {
                             $cID = $cPath;
                         }
-                        $cID = (int)$cPath;
                     }
 
                     // -----
@@ -694,7 +693,7 @@ class usu extends base
 
                 // Get the product name
                 switch (true) {
-                    case (USU_CACHE_GLOBAL === 'true' && defined('PRODUCT_NAME_' . $pID)):
+                    case (defined('PRODUCT_NAME_' . $pID)):
                         $retval .= constant('PRODUCT_NAME_' . $pID);
                         break;
 
