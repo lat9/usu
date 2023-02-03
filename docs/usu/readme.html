@@ -47,6 +47,7 @@ ul li ul { padding-left: 0; }
     <p>Ultimate URLs (<em>USU</em>) allows store owners to use alternate URLs. The URLs generated will include &quot;human friendly&quot; names in the current browser's requested language and contain shortened versions of certain parameters.</p>
     <p><b>Notes:</b></p>
     <ol>
+        <li>v3.1.0 of <em>USU</em> supports Zen Cart versions 1.5.7<b>a</b> and later.</li>
         <li>If you are updating <em>USU</em> from a <b>version prior to v3.0.0</b>, additional care must be taken to ensure that the previous version's changes have been fully removed from your store's file-system &hellip; <b class="red">before</b> you copy the updated <em>USU</em> files to your store's file-system.  Refer to the <em>Installation</em> tab for details.</li>
         <li>Ensure that any non-PHP files for your site don't include these (<code>-p-</code>, <code>-m-</code>, <code>-pi-</code>, <code>-pr-</code>, <code>-pri-</code>, <code>-prw-</code>, <code>-aaq-</code>, <code>-ezp-</code> or <code>-c-</code>) character strings!  They'll be rewritten, too, unfortunately!</li>
     </ol>
@@ -168,7 +169,7 @@ ul li ul { padding-left: 0; }
                 <noscript><h2>Change History</h2></noscript>
                 <p>You can view the details of these changes on the plugin's <a href="https://github.com/lat9/usu/issues" target="_blank">GitHub repository.</a></p>
                 <ul>
-                    <li>v3.1.0-beta5, 2023-01-30 (lat9):<ul>
+                    <li>v3.1.0, 2023-02-03 (lat9):<ul>
                         <li>CHANGE: Drop support for Zen Cart versions prior to 1.5.7<b>a</b>.</li>
                         <li>CHANGE: Provide a notification to enable site-specific customizations to add additional <code>reg_anchors</code>.</li>
                         <li>CHANGE: Cache no longer saved in the database, a <em>per-page-load</em> caching scheme is used instead.</li>
