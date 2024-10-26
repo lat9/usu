@@ -1,9 +1,9 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart, v3.0.0 and later. This script is loaded by admin/init_includes/init_usu_admin.php 
+ * Part of Ultimate URLs for Zen Cart, v3.1.0+. This script is loaded by admin/init_includes/init_usu_admin.php 
  * on a change (i.e. update or install) to the plugin.
  *
- * @copyright Copyright 2019-2022 Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019-2023 Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 if (!defined('IS_ADMIN_FLAG') || IS_ADMIN_FLAG !== true) {
@@ -28,6 +28,27 @@ switch (true) {
     //
     case version_compare(USU_VERSION, '3.0.10', '<'):               //-Fall through from above processing
         zen_deregister_admin_pages('configUSU');
+    // -----
+    // v3.1.0:
+    // - Remove the cache-related settings, now cached on-page.
+    // - Using 'zen_cfg_read_only' for the plugin's configured version
+    // - Update 'filter pages' to use a textarea field (was a simple input).
+    //
+    case version_compare(USU_VERSION, '3.1.0', '<'):               //-Fall through from above processing
+        $db->Execute(
+            "DELETE FROM " . TABLE_CONFIGURATION . "
+              WHERE configuration_key LIKE 'USU_CACHE_%'"
+        );
+        $db->Execute(
+            "UPDATE " . TABLE_CONFIGURATION . "
+                SET set_function = 'zen_cfg_read_only('
+              WHERE configuration_key = 'USU_VERSION'"
+        );
+        $db->Execute(
+            "UPDATE " . TABLE_CONFIGURATION . "
+                SET set_function = 'zen_cfg_textarea('
+              WHERE configuration_key = 'USU_FILTER_PAGES'"
+        );
 
     default:                                                        //-Fall through from above processing
         break;

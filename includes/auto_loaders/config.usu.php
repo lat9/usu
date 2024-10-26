@@ -1,6 +1,6 @@
 <?php
 /**
- * Part of Ultimate URLs, v3.0.0+, for Zen Cart.
+ * Part of Ultimate URLs, v3.1.0+, for Zen Cart.
  *
  * @copyright Copyright 2019-2021   Cindy Merkin (vinosdefrutastropicales.com)
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
@@ -11,10 +11,10 @@ if (!defined('IS_ADMIN_FLAG')) {
 }
 
 // sessions are started at 70
-$autoLoadConfig[71][] = array(
+$autoLoadConfig[71][] = [
     'autoType' => 'init_script',
     'loadFile' => 'init_usu.php'
-);
+];
 
 // -----
 // Initial load at 99, since init_sanitize is loaded at CP 100 and, if an invalid
@@ -30,16 +30,16 @@ $autoLoadConfig[71][] = array(
 // main page's header processing.  Note that the init_languages.php file will be
 // re-loaded at CP 110, but will do no 'harm'.
 //
-$autoLoadConfig[99][] = array(
+$autoLoadConfig[99][] = [
     'autoType'=>'init_script',
     'loadFile'=> 'init_languages.php'
-);
-$autoLoadConfig[99][] = array(
+];
+$autoLoadConfig[99][] = [
     'autoType' => 'class',
     'loadFile' => 'observers/UsuObserver.php'
-);
-$autoLoadConfig[99][] = array(
+];
+$autoLoadConfig[99][] = [
     'autoType' => 'classInstantiate',
     'className' => 'UsuObserver',
     'objectName' => 'usu'
-);
+];

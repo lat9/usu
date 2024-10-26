@@ -1,8 +1,8 @@
 <?php
 /**
- * Part of Ultimate URLs, v3.0.1+, for Zen Cart.
+ * Part of Ultimate URLs, v3.1.0+, for Zen Cart.
  *
- * @copyright Copyright 2019 Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019, 2023 Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 // -----
@@ -36,22 +36,13 @@ if (!$usu_check->EOF) {
             }
             break;
         // -----
-        // Some of the settings, when *changed*, require that USU's global cache be reset.
-        //
-        case 'USU_CPATH':
-        case 'USU_REMOVE_CHARS':
-            if ($usu_new_value != $usu_current_value) {
-                $usu_cache_reset = 'true';
-            }
-            break;
-        // -----
         // The 'Format of alternate URLs' setting of 'parent' is incompatible with the 'Display categories as directories' setting
         // of 'full'.  If that condition is found, modify the second setting to use the compatible 'short' value.
         //
         // In all cases, if the setting has changed, reset USU's global cache.
         //
         case 'USU_FORMAT':
-            if ($usu_new_value == 'parent' && USU_CATEGORY_DIR == 'full') {
+            if ($usu_new_value === 'parent' && USU_CATEGORY_DIR === 'full') {
                 $db->Execute(
                     "UPDATE " . TABLE_CONFIGURATION . "
                         SET configuration_value = 'short'
@@ -59,9 +50,6 @@ if (!$usu_check->EOF) {
                       LIMIT 1"
                 );
                 $messageStack->add_session(USU_PLUGIN_WARNING_CATEGORY_DIR, 'error');
-            }
-            if ($usu_new_value != $usu_current_value) {
-                $usu_cache_reset = 'true';
             }
             break;
         // -----
@@ -71,7 +59,7 @@ if (!$usu_check->EOF) {
         // In all cases, if the setting has changed, reset USU's global cache.
         //
         case 'USU_CATEGORY_DIR':
-            if ($usu_new_value == 'full' && USU_FORMAT == 'parent') {
+            if ($usu_new_value === 'full' && USU_FORMAT === 'parent') {
                 $db->Execute(
                     "UPDATE " . TABLE_CONFIGURATION . "
                         SET configuration_value = 'original'
@@ -80,44 +68,6 @@ if (!$usu_check->EOF) {
                 );
                 $messageStack->add_session(USU_PLUGIN_WARNING_FORMAT, 'error');
             }
-            if ($usu_new_value != $usu_current_value) {
-                $usu_cache_reset = 'true';
-            }
-            break;
-        // -----
-        // If the global cache setting is disabled, notify the admin that this will override the enabling of any individual cache-types.
-        //
-        case 'USU_CACHE_GLOBAL':
-            if ($usu_new_value == 'false') {
-                $messageStack->add_session(USU_PLUGIN_WARNING_GLOBAL_DISABLED, 'warning');
-            }
-            if ($usu_new_value != $usu_current_value) {
-                $usu_cache_reset = 'true';
-            }
-            break;
-        // -----
-        // For any individual cache-types, if that individual cache's setting is changed to 'true' (i.e. enabled) while
-        // the global cache is disabled, let the admin know that the setting won't be used.
-        //
-        case 'USU_CACHE_PRODUCTS':
-        case 'USU_CACHE_CATEGORIES':
-        case 'USU_CACHE_MANUFACTURERS':
-        case 'USU_CACHE_EZ_PAGES':
-            if ($usu_new_value == 'true' && USU_CACHE_GLOBAL == 'false') {
-                $messageStack->add_session(USU_PLUGIN_WARNING_GLOBAL_DISABLED, 'warning');
-            }
-            if ($usu_new_value != $usu_current_value) {
-                $usu_cache_reset = strtolower(str_replace(array('USU_CACHE_', '_'), '', $usu_check->fields['configuration_key']));
-            }
-            break;
-        // -----
-        // If the admin has requested that the overall USU cache be reset, ensure that the value
-        // to be stored back for that setting is now 'false' and indicate that the cache should
-        // be fully reset.
-        //
-        case 'USU_CACHE_RESET':
-            $usu_cache_reset = 'true';
-            $_POST['configuration_value'] = 'false';
             break;
         // -----
         // The 'Enter PCRE Filter Rules' value requires that the filters be entered as
@@ -136,5 +86,4 @@ if (!$usu_check->EOF) {
         default:
             break;
     }
-    usu_reset_cache_data($usu_cache_reset);
 }
