@@ -52,7 +52,7 @@ body {
 <section class="py-5 header">
     <div class="container py-4">
         <header class="pb-2">
-            <h1 class="display-4 text-center">Ultimate URLs v3.1.1</h1>
+            <h1 class="display-4 text-center">Ultimate URLs v3.1.2</h1>
             <ul>
                 <li>Zen Cart download link: <a href="https://www.zen-cart.com/downloads.php?do=file&id=132" target="_blank">https://www.zen-cart.com/downloads.php?do=file&id=132</a></li>
                 <li>Zen Cart support thread: <a href="https://www.zen-cart.com/forum/showthread.php?t=199064" target="_blank">https://www.zen-cart.com/forum/showthread.php?t=199064</a></li>
@@ -172,6 +172,13 @@ body {
                         <h4 class="font-italic mb-4">Change History</h4>
                         <p>You can view the details of these changes on the plugin's <a href="https://github.com/lat9/usu/issues" target="_blank">GitHub repository.</a></p>
                         <ul>
+                            <li>v3.1.2-beta1, 2024-11-22 (lat9):<ul>
+                                <li>BUGFIX: Correct PHP when a $_GET parameter has no value.</li>
+                                <li>The following files were changed:<ol>
+                                    <li>/includes/classes/usu.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                </ol></li>
+                            </ul></li>
                             <li>v3.1.1, 2024-10-26 (lat9):<ul>
                                 <li>BUGFIX: Correct PHP Fatal error when <code>$_GET['main_page']</code> is supplied as an array.</li>
                                 <li>The following files were changed:<ol>

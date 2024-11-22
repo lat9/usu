@@ -1,9 +1,9 @@
 <?php
 /**
- * Part of Ultimate URLs for Zen Cart, v3.1.0+. Originally derived from Ultimate SEO URLs
+ * Part of Ultimate URLs for Zen Cart, v3.1.2+. Originally derived from Ultimate SEO URLs
  * v2.1 for osCommerce by Chemo.
  *
- * @copyright Copyright 2019-2023 Cindy Merkin (vinosdefrutastropicales.com), @prosela
+ * @copyright Copyright 2019-2024 Cindy Merkin (vinosdefrutastropicales.com), @prosela
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
  * @copyright Portions Copyright 2003 - 2015 Zen Cart Development Team
  * @copyright Portions Copyright 2005 Joshua Dechant
@@ -338,7 +338,7 @@ class usu extends base
             // No '=' separating the key from its value?  Use an empty string for the value
             //
             if (strpos($valuepair, '=') === false) {
-                $key = $value_pair;
+                $key = $valuepair;
                 $value = '';
             } else {
                 $vp_array = explode('=', $valuepair);
