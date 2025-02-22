@@ -52,7 +52,7 @@ body {
 <section class="py-5 header">
     <div class="container py-4">
         <header class="pb-2">
-            <h1 class="display-4 text-center">Ultimate URLs v3.1.2</h1>
+            <h1 class="display-4 text-center">Ultimate URLs v4.0.0</h1>
             <ul>
                 <li>Zen Cart download link: <a href="https://www.zen-cart.com/downloads.php?do=file&id=132" target="_blank">https://www.zen-cart.com/downloads.php?do=file&id=132</a></li>
                 <li>Zen Cart support thread: <a href="https://www.zen-cart.com/forum/showthread.php?t=199064" target="_blank">https://www.zen-cart.com/forum/showthread.php?t=199064</a></li>
@@ -61,7 +61,7 @@ body {
             <p>Ultimate URLs (<em>USU</em>) allows store owners to use alternate URLs. The URLs generated will include &quot;human friendly&quot; names in the current browser's requested language and contain shortened versions of certain parameters.</p>
             <p><b>Notes:</b></p>
             <ol>
-                <li>v3.1.0 of <em>USU</em> supports Zen Cart versions 1.5.7<b>a</b> and later.</li>
+                <li>v4.0.0 of <em>USU</em> supports Zen Cart versions 1.5.8<b>a</b> and later.</li>
                 <li>If you are updating <em>USU</em> from a <b>version prior to v3.0.0</b>, additional care must be taken to ensure that the previous version's changes have been fully removed from your store's file-system &hellip; <b class="red">before</b> you copy the updated <em>USU</em> files to your store's file-system.  Refer to the <em>Installation</em> tab for details.</li>
                 <li>Ensure that any non-PHP files for your site don't include these (<code>-p-</code>, <code>-m-</code>, <code>-pi-</code>, <code>-pr-</code>, <code>-pri-</code>, <code>-prw-</code>, <code>-aaq-</code>, <code>-ezp-</code> or <code>-c-</code>) character strings!  They'll be rewritten, too, unfortunately!</li>
             </ol>
@@ -108,7 +108,7 @@ body {
                         </ul>
                         <h5>Requirements</h5>
                         <ul>
-                            <li>Working installation of Zen Cart 1.5.7<b>a</b> or later.  <b>Note:</b> Zen Cart 1.5.7 (unsuffixed) has issues (if unpatched) with multiple observers watching the same event.</li>
+                            <li>Working installation of Zen Cart 1.5.8<b>a</b> or later.</li>
                             <li>Supports PHP versions 5.6 through 8.3.</li>
                             <li>Secure FTP access to the Zen Cart installation (while you can use plain FTP it is not recommended)</li>
                             <li>An account to access Zen Cart's administrative interface</li>
@@ -172,6 +172,13 @@ body {
                         <h4 class="font-italic mb-4">Change History</h4>
                         <p>You can view the details of these changes on the plugin's <a href="https://github.com/lat9/usu/issues" target="_blank">GitHub repository.</a></p>
                         <ul>
+                            <li>v4.0.0-beta1, 2025-02-22 (lat9, retched):<ul>
+                                <li>BUGFIX: Additional rules added to <code>.htaccess</code> for clashing image names.</li>
+                                <li>The following files were changed:<ol>
+                                    <li>.htaccess</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                </ol></li>
+                            </ul></li>
                             <li>v3.1.2, 2025-01-11 (lat9):<ul>
                                 <li>BUGFIX: Correct PHP when a $_GET parameter has no value.</li>
                                 <li>The following files were changed:<ol>
