@@ -105,6 +105,17 @@ RewriteRule ^index\.php$ - [L]
 # how it will impact your web site. Mistakes can break things.
 ###############################################################################
 
+# If you notice that your images are not loading despite they exist, uncomment 
+# these pairs of lines out (by removing the # in front of the Rewrite portion).
+
+# Exclude any URI with the /bmz_cache directory for ImageHandler
+#RewriteCond %{REQUEST_URI} ^/bmz_cache/ [NC]
+#RewriteRule .* - [L]
+
+# Exclude any URI with the /images directory in general
+#RewriteCond %{REQUEST_URI} ^/images/ [NC]
+#RewriteRule .* - [L]
+
 # Handles the new URL formats
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-p-([0-9]+)(.*)$ index\.php?main_page=product_info&products_id=$4&cPath=$2&%{QUERY_STRING} [L]
 RewriteRule ^(.*)-c-([0-9_]+)/(.*)-pi-([0-9]+)(.*)$ index\.php?main_page=popup_image&pID=$4&cPath=$2&%{QUERY_STRING} [L]
