@@ -253,7 +253,7 @@ class usu extends base
 
     /**
      * Adds the sid to the end of the URL if needed. If a page cache has been
-     * enabled and no customer is logged in the sid is replaced with '<zinsid>'.
+     * enabled and no customer is logged in the sid is replaced with '<zensid>'.
      *
      * @param string $link current URL.
      * @param bool $add_session_id true if a session id be added to the url, false otherwise
@@ -267,8 +267,8 @@ class usu extends base
 
         $_sid = '';
         if ($add_session_id === true && $session_started && SESSION_FORCE_COOKIE_USE === 'False') {
-            if (defined('SID') && !empty(constant('SID'))) {
-                $_sid = constant('SID');
+            if (PHP_VERSION_ID < 80401 && defined('SID') && !empty(constant('SID'))) {
+                $_sid = zen_output_string(constant('SID'));
             } else {
                 $ssl_enabled = (IS_ADMIN_FLAG === true) ? ENABLE_SSL_CATALOG : ENABLE_SSL;
                 if (($request_type === 'NONSSL' && $connection === 'SSL' && $ssl_enabled === 'true') || ($request_type === 'SSL' && $connection === 'NONSSL')) {
