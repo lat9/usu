@@ -6,8 +6,8 @@ The latest released version is available for download from the Zen Cart site, vi
 
 Ultimate URLs (a.k.a. _USU_) allows store owners to use alternate URLs. The URLs generated will include &quot;human friendly&quot; names in the user's browser's requested language and contain shortened versions of certain parameters.
 
-v3.x.x supports stores based on Zen Cart versions 1.5.7**a** and later and requires **no** core-file overwrites.
+v3.x.x supports stores based on Zen Cart versions 1.5.7**a** through 1.5.8 and requires **no** core-file overwrites.
 
-v4.x.x supports stores based on Zen Cart versions 1.5.8 and later and requires **no** core-file overwrites.
+v4.x.x supports stores based on Zen Cart versions 1.5.8**a** and later and requires **no** core-file overwrites.
 
 **Note**: If you are updating _USU_ from a version _prior to_ v3.0.0, there are, unfortunately, some hand-edits required to remove those previous versions' changes to Zen Cart **core files**.  See [here](./pages/upgrade_from_v2.md) for additional information.
