@@ -7,8 +7,8 @@
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 $define = [
-    'BOX_CONFIGURATION_USU' => 'Ultimate URLs');
-    'BOX_CONFIGURATION_USU_UNINSTALL' => 'Uninstall Ultimate URLs');
+    'BOX_CONFIGURATION_USU' => 'Ultimate URLs',
+    'BOX_CONFIGURATION_USU_UNINSTALL' => 'Uninstall Ultimate URLs',
 
 // Messages used on the configuration page
     'USU_PLUGIN_WARNING_SHORT_WORDS' => 'The value entered for the <em>Filter short words</em> setting (<b>%s</b>) is not a positive integer; the setting has been defaulted to <b>0</b>.',
