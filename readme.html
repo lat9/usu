@@ -142,7 +142,6 @@ body {
                                         <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
                                         <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
                                         <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
-                                        <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
@@ -177,11 +176,14 @@ body {
                                 <li>BUGFIX: Move language-load to prevent <code>Product</code> class warnings.</li>
                                 <li>BUGFIX: Complete conversion to array-based language files, missed in v4.0.0.</li>
                                 <li>INTROP: Using type-hints on class parameters and methods.</li>
+                                <li>INTROP: Clean up files, functions and/or methods no longer needed.</li>
                                 <li>The following files were changed, <span class="added">added</span> or <span class="removed">removed</span>:<ol>
                                     <li>/includes/auto_loaders/config.usu.php</li>
                                     <li>/includes/classes/usu.php</li>
                                     <li>/includes/classes/observers/UsuObserver.php</li>
                                     <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
+                                    <li><span class="removed">/YOUR_ADMIN/includes/functions/extra_functions/usu.php</span></li>
+                                    <li><span class="removed">/YOUR_ADMIN/includes/functions/extra_functions/zen_cfg_read_only.php</span></li>
                                     <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
                                     <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
                                     <li><span class="added">/YOUR_ADMIN/includes/languages/english/lang.usu_uninstall.php</span></li>
@@ -532,7 +534,6 @@ body {
                             <li>/YOUR_ADMIN/includes/auto_loaders/config.usu.php</li>
                             <li>/YOUR_ADMIN/includes/classes/observers/UsuAdminObserver.php</li>
                             <li>/YOUR_ADMIN/includes/extra_datafiles/usu.php</li>
-                            <li>/YOUR_ADMIN/includes/functions/extra_functions/usu.php</li>
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>

@@ -75,9 +75,7 @@ class usu extends base
             'pid' => '-aaq-',
         ];
 
-        if (null === self::$unicodeEnabled) {
-            self::$unicodeEnabled = (preg_match('/\pL/u', 'a')) ? true : false;
-        }
+        self::$unicodeEnabled ??= (preg_match('/\pL/u', 'a')) ? true : false;
 
         $this->filter_pcre = defined('USU_FILTER_PCRE') ? $this->expand(USU_FILTER_PCRE) : 'false';
         $this->filter_page = (defined('USU_FILTER_PAGES') && USU_FILTER_PAGES !== '') ? explode(',', str_replace(' ', '', USU_FILTER_PAGES)) : [];
@@ -143,7 +141,7 @@ class usu extends base
         //
         if (!isset($this->first_access)) {
             $this->first_access = true;
-            $this->log("=====> URL Generation Log Started, for page: {$this->uri}.");
+            $this->log("=====> URL Generation Log Started, for page: $page.");
         }
 
         $this->log("\nRequest sent to href_link($page, $parameters, $connection, $add_session_id, $search_engine_safe, $static, $use_dir_ws_catalog)");
@@ -160,7 +158,7 @@ class usu extends base
         // static and passes no params. Much of the code also has the bad habit
         // of claiming a link is "static" when it is not. So we ignore the value
         // of "static" if the page starts with "index.php?"
-        if (strpos($page, 'index.php?') !== false) {
+        if (str_contains($page, 'index.php?')) {
             // If we find the main_page parse the URL
             $result = [];
             if (preg_match('/[?&]main_page=([^&]*)/', $page, $result) === 1) {
@@ -176,11 +174,13 @@ class usu extends base
         }
 
         // Remove the end from the page if it is present
-        $pos = strrpos($page, USU_END);
-        if ($pos !== false) {
-            $page = substr($page, 0, $pos);
+        if (USU_END !== '') {
+            $pos = strrpos($page, USU_END);
+            if ($pos !== false) {
+                $page = substr($page, 0, $pos);
+            }
+            unset($pos);
         }
-        unset($pos);
 
         // Do not rewrite if page is not in the list of pages to rewrite
         if (!$this->filter_page($page)) {
@@ -310,7 +310,7 @@ class usu extends base
         // -----
         // Strip any leading 'amp;' and change any '&amp;' to '&'.
         //
-        if (strpos($params, 'amp;') === 0) {
+        if (str_starts_with($params, 'amp;')) {
             $params = substr($params, 4);
         }
         $params = str_replace('&amp;', '&', $params);
@@ -341,7 +341,7 @@ class usu extends base
             // -----
             // No '=' separating the key from its value?  Use an empty string for the value
             //
-            if (strpos($valuepair, '=') === false) {
+            if (!str_contains($valuepair, '=')) {
                 $key = $valuepair;
                 $value = '';
             } else {
@@ -385,7 +385,7 @@ class usu extends base
                         // -----
                         // A product's details' page, e.g. product_info.
                         //
-                        case ($page === $this->getInfoPage($prid)):
+                        case ($page === zen_get_info_page($prid)):
                             $url = $this->make_url($page, $this->get_product_name($prid, $cID), $key, $prid, USU_END);
 
                             // -----
@@ -528,38 +528,12 @@ class usu extends base
             }
         }
 
-        $url = isset($url) ? $url : $page . USU_END;
+        $url ??= $page . USU_END;
         if (!empty($link_params)) {
             $url .= $separator . zen_output_string(implode('&', $link_params));
             $separator = '&';
         }
         return $url;
-    }
-
-    protected function getInfoPage($products_id): string
-    {
-        global $db;
-
-        // -----
-        // Quick return if the zen_get_info_page function exists, noting that when
-        // run in the zc157 and earlier admin that it isn't!
-        //
-        if (function_exists('zen_get_info_page')) {
-            return zen_get_info_page($products_id);
-        }
-
-        // -----
-        // If the function doesn't exist, emulate its output.
-        //
-        $check = $db->Execute(
-            "SELECT pt.type_handler
-               FROM " . TABLE_PRODUCTS . " p
-                    INNER JOIN " . TABLE_PRODUCT_TYPES . " pt
-                        ON pt.type_id = p.products_type
-              WHERE p.products_id = " . (int)$products_id . "
-              LIMIT 1"
-        );
-        return ($check->EOF) ? 'product_info' : ($check->fields['type_handler'] . '_info');
     }
 
     /**
@@ -1106,7 +1080,7 @@ class usu extends base
         $this->canonical = null;
 
         if (isset($_GET['main_page']) && $this->filter_page($_GET['main_page']) === true && isset($_GET['products_id'])) {
-            $product_page = $this->getInfoPage((int)$_GET['products_id']);
+            $product_page = zen_get_info_page((int)$_GET['products_id']);
             if ($_GET['main_page'] === $product_page) {
                 // Only add the canonical if one is found
                 $this->canonical = $this->get_product_canonical((int)$_GET['products_id']);
