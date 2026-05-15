@@ -2,7 +2,7 @@
 /**
  * Part of Ultimate URLs for Zen Cart, v3.1.0+.
  *
- * @copyright Copyright 2019, 2023  Cindy Merkin (vinosdefrutastropicales.com)
+ * @copyright Copyright 2019, 2025  Cindy Merkin (vinosdefrutastropicales.com)
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
 require 'includes/application_top.php';
@@ -10,7 +10,7 @@ require 'includes/application_top.php';
 // -----
 // If the admin has confirmed the removal of "Ultimate SEO URLs" ...
 //
-if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
+if (($_POST['action'] ?? '') === 'uninstall') {
     // -----
     // Honor the admin's choice of 'only database settings'.
     //
@@ -51,11 +51,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
                 'init_includes/init_usu_install.php',
                 'languages/english/usu_configuration.php',
                 'languages/english/usu_uninstall.php',
+                'languages/english/lang.usu_uninstall.php',
                 'languages/english/extra_definitions/seo.php',
                 'languages/english/extra_definitions/usu.php',
-                'languages/english/modules/plugins/usu.php',
+                'languages/english/extra_definitions/lang.usu.php',
             ],
             'admin_root' => [
+                'reset_seo_cache.php',
                 'usu_uninstall.php',
             ],
         ];
@@ -76,7 +78,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
                     break;
             }
             foreach ($file_list as $current_file) {
-                if (file_exists($directory . $current_file)) {
+                if (is_file($directory . $current_file)) {
                     unlink($directory . $current_file);
                 }
             }
@@ -88,8 +90,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
     //
     $db->Execute(
         "DELETE FROM " . TABLE_CONFIGURATION . "
-          WHERE configuration_key LIKE 'USU_%'
-             OR configuration_key LIKE 'SEO_%'"
+          WHERE configuration_key LIKE 'USU\_%'
+             OR configuration_key LIKE 'SEO\_%'"
     );
     $db->Execute(
         "DELETE FROM " . TABLE_CONFIGURATION_GROUP . "
@@ -99,8 +101,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'uninstall') {
         "DELETE FROM " . TABLE_ADMIN_PAGES . "
           WHERE page_key IN ('configUltimateSEO', 'usuUninstall')"
     );
+    zen_define_default('TABLE_USU_CACHE', DB_PREFIX . 'usu_cache');
     $db->Execute(
-        "DROP TABLE " . TABLE_USU_CACHE
+        "DROP TABLE IF EXISTS " . TABLE_USU_CACHE
     );
 
     // -----
@@ -127,7 +130,7 @@ if (!isset($_POST['action']) || $_POST['action'] !== 'confirm') {
 }
 ?>
 <!doctype html>
-<html <?php echo HTML_PARAMS; ?>>
+<html <?= HTML_PARAMS ?>>
 <head>
     <?php require DIR_WS_INCLUDES . 'admin_html_head.php'; ?>
 </head>
@@ -135,26 +138,26 @@ if (!isset($_POST['action']) || $_POST['action'] !== 'confirm') {
     <!-- header //-->
     <?php require DIR_WS_INCLUDES . 'header.php'; ?>
     <!-- header_eof //-->
-    <h1><?php echo HEADING_TITLE; ?></h1>
-    <?php echo zen_draw_form('remove', FILENAME_USU_UNINSTALL) . zen_draw_hidden_field('action', $next_action);?>
-       <p><?php echo $current_message; ?></p>
+    <h1><?= HEADING_TITLE ?></h1>
+    <?= zen_draw_form('remove', FILENAME_USU_UNINSTALL) . zen_draw_hidden_field('action', $next_action) ?>
+        <p><?= $current_message ?></p>
 <?php
 if ($next_action === 'confirm') {
 ?>
-        <p><?php echo zen_draw_checkbox_field('db_only') . LABEL_DATABASE_ONLY; ?></p>
+        <p><?= zen_draw_checkbox_field('db_only') . LABEL_DATABASE_ONLY ?></p>
 <?php
 } else {
 ?>
-        <p><?php echo (!isset($_POST['db_only'])) ? TEXT_DB_AND_FILES : (TEXT_ONLY_DB_SETTINGS . zen_draw_hidden_field('db_only', '1')); ?></p>
+        <p><?= (!isset($_POST['db_only'])) ? TEXT_DB_AND_FILES : (TEXT_ONLY_DB_SETTINGS . zen_draw_hidden_field('db_only', '1'))  ?></p>
 <?php
 }
 ?>
-        <p><a href="<?php echo zen_href_link(FILENAME_DEFAULT); ?>"><?php echo zen_image_button('button_cancel.gif', IMAGE_CANCEL); ?></a>&nbsp;&nbsp;<?php echo zen_image_submit('button_go.gif', IMAGE_GO); ?></p>
-    <?php echo '</form>'; ?>
+        <p><a href="<?= zen_href_link(FILENAME_DEFAULT) ?>"><?= zen_image_button('button_cancel.gif', IMAGE_CANCEL) ?></a>&nbsp;&nbsp;<?= zen_image_submit('button_go.gif', IMAGE_GO) ?></p>
+    <?= '</form>' ?>
     <!-- footer //-->
     <?php require DIR_WS_INCLUDES . 'footer.php'; ?>
     <!-- footer_eof //-->
 </body>
 </html>
-<?php 
+<?php
 require DIR_WS_INCLUDES . 'application_bottom.php';

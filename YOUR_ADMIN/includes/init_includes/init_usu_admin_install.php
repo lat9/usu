@@ -93,6 +93,8 @@ $db->Execute(
     "DELETE FROM " . TABLE_CONFIGURATION . "
       WHERE configuration_key LIKE 'USU_%'"
 );
+
+zen_define_default('TABLE_USU_CACHE', DB_PREFIX . 'usu_cache');
 $db->Execute(
     "DROP TABLE IF EXISTS " . TABLE_USU_CACHE
 );
@@ -182,4 +184,3 @@ foreach ($usu_install_config as $key => $data) {
 // Record the plugin's configuration-access in the admin pages.
 //
 zen_register_admin_page('configUltimateSEO', 'BOX_CONFIGURATION_USU', 'FILENAME_CONFIGURATION', "gID=$cgi", 'configuration', 'Y');
-
