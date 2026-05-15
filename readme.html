@@ -147,7 +147,6 @@ body {
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
                                         <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
-                                        <li>/YOUR_ADMIN/includes/languages/english/lang.usu_configuration.php</li>
                                         <li>/YOUR_ADMIN/includes/languages/english/lang.usu_uninstall.php</li>
                                         <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/lang.usu.php</li>
                                     </ol><b>Note:</b> The list above includes only the <em>required</em> files in <em>USU</em>'s distribution.  See the <b>Supplied Files</b> tab for additional information.</li>
@@ -176,9 +175,16 @@ body {
                         <ul>
                             <li>v4.0.1-beta1, 2026-05-15 (lat9):<ul>
                                 <li>BUGFIX: Move language-load to prevent <code>Product</code> class warnings.</li>
+                                <li>BUGFIX: Complete conversion to array-based language files, missed in v4.0.0.</li>
                                 <li>The following files were changed, <span class="added">added</span> or <span class="removed">removed</span>:<ol>
                                     <li>/includes/auto_loaders/config.usu.php</li>
                                     <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin.php</li>
+                                    <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
+                                    <li><span class="added">/YOUR_ADMIN/includes/languages/english/lang.usu_uninstall.php</span></li>
+                                    <li><span class="removed">/YOUR_ADMIN/includes/languages/english/usu_configuration.php</span></li>
+                                    <li><span class="removed">/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</span></li>
+                                    <li><span class="added">/YOUR_ADMIN/includes/languages/english/extra_definitions/lang.usu.php</span></li>
+                                    <li><span class="removed">/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</span></li>
                                 </ol></li>
                             </ul></li>
                             <li>v4.0.0, 2026-03-10 (lat9, retched):<ul>
@@ -527,9 +533,8 @@ body {
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_install.php</li>
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update.php</li>
                             <li>/YOUR_ADMIN/includes/init_includes/init_usu_admin_update_from_ultimate_seo.php</li>
-                            <li>/YOUR_ADMIN/includes/languages/english/usu_configuration.php</li>
-                            <li>/YOUR_ADMIN/includes/languages/english/usu_uninstall.php</li>
-                            <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/usu.php</li>
+                            <li>/YOUR_ADMIN/includes/languages/english/lang.usu_uninstall.php</li>
+                            <li>/YOUR_ADMIN/includes/languages/english/extra_definitions/lang.usu.php</li>
                         </ol>
                         <p>Many of the files are <span class="ph">place-holders</span> to overwrite content provided by prior versions of the plugin and can be safely removed from your store's file-system.</p>
                         <ol>
