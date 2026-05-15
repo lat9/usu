@@ -9,6 +9,8 @@
  * @copyright Portions Copyright 2005 Joshua Dechant
  * @copyright Portions Copyright 2005 Bobby Easland
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
+ *
+ * Last updated: v4.0.1
  */
 
 /**
@@ -20,32 +22,27 @@
  */
 class usu extends base
 {
-    public
-        $canonical = null;
+    public ?string $canonical = null;
 
-    protected
-        $enabled,
-        $cache,
-        $languages_id,
-        $parameters_valid,
-        $reg_anchors,
-        $uri,
-        $real_uri,
-        $redirect_uri,
-        $first_access,
-        $debug,
-        $logfile,
-        $logpage;
+    protected bool $enabled;
+    protected array $cache;
+    protected int $languages_id;
+    protected bool $parameters_valid;
+    protected array $reg_anchors;
+    protected string $uri;
+    protected string $real_uri;
+    protected ?string $redirect_uri;
+    protected bool $first_access;
+    protected bool $debug;
+    protected string $logfile;
+    protected string $logpage;
 
-    protected static
-        $unicodeEnabled;
+    protected static ?bool $unicodeEnabled;
 
-    private
-        $filter_pcre,
-        $filter_char,
-        $filter_page;
+    private array|string $filter_pcre;
+    private array $filter_page;
 
-    public function __construct($languages_id = '')
+    public function __construct(string|int $languages_id = '')
     {
         global $sniffer, $messageStack;
 
@@ -54,8 +51,8 @@ class usu extends base
             return;
         }
 
-        if ($languages_id === '') {
-            $languages_id = $_SESSION['languages_id'];
+        if ((int)$languages_id === 0) {
+            $languages_id = (int)$_SESSION['languages_id'];
         }
         $this->languages_id = (int)$languages_id;
 
@@ -94,7 +91,7 @@ class usu extends base
                 $this->logpage = $_SERVER['SCRIPT_NAME'];
             } else {
                 $this->logfile = DIR_FS_LOGS . '/usu-' . date('Ymd-His') . '.log';
-                $this->logpage = (isset($_GET['main_page'])) ? $_GET['main_page'] : 'index';
+                $this->logpage = $_GET['main_page'] ?? 'index';
             }
         }
 
@@ -126,8 +123,15 @@ class usu extends base
      * @param bool $use_dir_ws_catalog true if we should use the DIR_WS_CATALOG / DIR_WS_HTTPS_CATALOG from the configuration
      * @return NULL|string
      */
-    public function href_link($page = '', $parameters = '', $connection = 'NONSSL', $add_session_id = true, $search_engine_safe = true, $static = false, $use_dir_ws_catalog = true) 
-    {
+    public function href_link(
+        string $page = '',
+        string $parameters = '',
+        string $connection = 'NONSSL',
+        bool $add_session_id = true,
+        bool $search_engine_safe = true,
+        bool $static = false,
+        bool $use_dir_ws_catalog = true
+    ): ?string {
         // Do not create an alternate URI when disabled
         if ($this->enabled === false) {
             return null;
@@ -142,7 +146,7 @@ class usu extends base
             $this->log("=====> URL Generation Log Started, for page: {$this->uri}.");
         }
 
-        $this->log(PHP_EOL . 'Request sent to href_link(' . $page . ', ' . $parameters . ', ' . $connection . ', ' . $add_session_id . ', ' . $search_engine_safe . ', ' . $static . ', ' . $use_dir_ws_catalog . ')');
+        $this->log("\nRequest sent to href_link($page, $parameters, $connection, $add_session_id, $search_engine_safe, $static, $use_dir_ws_catalog)");
 
         // If the request was for a real file (which called application_top)
         // We should not create an alternate URI (such as ipn_main_handler.php).
@@ -261,7 +265,7 @@ class usu extends base
      * @param string $separator the separator to use between the link and this paramater (if added)
      * @return string
      */
-    protected function add_sid($link, $add_session_id, $connection, $separator) 
+    protected function add_sid(string $link, bool $add_session_id, string $connection, string $separator): string
     {
         global $request_type, $http_domain, $https_domain, $session_started;
 
@@ -301,7 +305,7 @@ class usu extends base
      * @param string $separator the separator to use between the link and this parameter (if needed)
      * @return Ambiguous <string, unknown>
      */
-    protected function parse_parameters($page, $params, &$separator) 
+    protected function parse_parameters(string $page, string $params, string &$separator): string
     {
         // -----
         // Strip any leading 'amp;' and change any '&amp;' to '&'.
@@ -467,7 +471,7 @@ class usu extends base
                 case 'manufacturers_id':
                     switch (true) {
                         case ($page === FILENAME_DEFAULT && !$this->is_cPath_string($params) && !$this->is_product_string($params)):
-                            $url = $this->make_url($page, $this->get_manufacturer_name($value), $key, $value, USU_END);
+                            $url = $this->make_url($page, $this->get_manufacturer_name((int)$value), $key, $value, USU_END);
                             break;
 
                         // -----
@@ -509,7 +513,7 @@ class usu extends base
                 case 'id':    // EZ-Pages
                     switch (true) {
                         case ($page === FILENAME_EZPAGES):
-                            $url = $this->make_url($page, $this->get_ezpages_name($value), $key, $value, USU_END);
+                            $url = $this->make_url($page, $this->get_ezpages_name((int)$value), $key, $value, USU_END);
                             break;
 
                         default:
@@ -532,7 +536,7 @@ class usu extends base
         return $url;
     }
 
-    protected function getInfoPage($products_id)
+    protected function getInfoPage($products_id): string
     {
         global $db;
 
@@ -564,7 +568,7 @@ class usu extends base
      *
      * @param array the array of query parameters
      */
-    protected function build_query($parameters)
+    protected function build_query(array $parameters): string
     {
         $compile = [];
         foreach ($parameters as $key => $value) {
@@ -590,7 +594,7 @@ class usu extends base
      * @param string $extension Default =
      * @return string the final generated url
      */
-    protected function make_url($page, $link, $anchor_type, $id, $extension = USU_END)
+    protected function make_url($page, $link, $anchor_type, $id, $extension = USU_END): string
     {
         // In the future there may be additional methods here in the switch
         switch (USU_ENGINE){
@@ -600,6 +604,8 @@ class usu extends base
             default:
                 break;
         }
+
+        $this->log("USU_ENGINE value (" . USU_ENGINE . ") unexpected; should be 'rewrite'.");
     }
 
     /**
@@ -609,7 +615,7 @@ class usu extends base
      * @param integer $pID
      * @return string product name
      */
-    protected function get_product_name($pID, $cID = null)
+    protected function get_product_name(string|int $pID, ?string $cID = null): string
     {
         global $db;
 
@@ -651,10 +657,8 @@ class usu extends base
             if (empty($cID)) {
                 $masterCatID = (int)zen_get_products_category_id($pID);
                 $category = $this->get_category_name($masterCatID) . $this->reg_anchors['cPath'] . $masterCatID . '/';
-            } else {
-                if (zen_product_in_category($pID, $cID)) {
-                    $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
-                }
+            } elseif (zen_product_in_category($pID, $cID)) {
+                $category = $this->get_category_name($cID) . $this->reg_anchors['cPath'] . $cID . '/';
             }
             $return = $category . $return;
         }
@@ -669,7 +673,7 @@ class usu extends base
      * @param integer $pID
      * @return string product canonical
      */
-    protected function get_product_canonical($pID)
+    protected function get_product_canonical(string|int $pID): ?string
     {
         global $db;
 
@@ -721,12 +725,13 @@ class usu extends base
      * @param integer $cID NOTE: passed by reference
      * @return string category name
      */
-    protected function get_category_name(&$cID, $format = USU_FORMAT)
+    protected function get_category_name(string|int &$cID, ?string $format = null): string
     {
         global $db;
 
         $single_cID = (int)$cID;
         $full_cPath = $this->get_full_cPath($cID, $single_cID); // full cPath needed for uniformity
+        $format ??= USU_FORMAT;
         switch (true) {
             case (defined('CATEGORY_NAME_' . $full_cPath) && $format === USU_FORMAT):
                 $return = constant('CATEGORY_NAME_' . $full_cPath);
@@ -800,11 +805,10 @@ class usu extends base
      * @param integer $mID
      * @return string manufacturer name
      */
-    protected function get_manufacturer_name($mID)
+    protected function get_manufacturer_name(int $mID): string
     {
         global $db;
 
-        $mID = (int)$mID;
         switch (true) {
             case (defined('MANUFACTURER_NAME_' . $mID)):
                 $return = constant('MANUFACTURER_NAME_' . $mID);
@@ -844,11 +848,10 @@ class usu extends base
      * @param integer $ezpID
      * @return string expage name
      */
-    protected function get_ezpages_name($ezpID)
+    protected function get_ezpages_name(int $ezpID): string
     {
         global $db;
 
-        $ezpID = (int)$ezpID;
         switch (true) {
             case (defined('EZPAGES_NAME_' . $ezpID)):
                 $return = constant('EZPAGES_NAME_' . $ezpID);
@@ -907,7 +910,7 @@ class usu extends base
             $cID = implode('_', $c);
             return $cID;
         }
-    } # end function
+    }
 
     /**
      * Recursion function to retrieve parent categories from category ID.
@@ -942,19 +945,19 @@ class usu extends base
         }
     }
 
-    protected function is_attribute_string($params)
+    protected function is_attribute_string(string $params): bool
     {
         return (preg_match('/products_id=([0-9]+):([a-zA-z0-9]{32})/', $params)) ? true : false;
     }
 
-    protected function is_product_string($params)
+    protected function is_product_string(string $params): bool
     {
-        return (strpos($params, 'products_id=') !== false);
+        return str_contains($params, 'products_id=');
     }
 
-    protected function is_cPath_string($params)
+    protected function is_cPath_string(string $params): bool
     {
-        return (strpos($params, 'cPath=') !== false);
+        return str_contains($params, 'cPath=');
     }
 
     /**
@@ -963,7 +966,7 @@ class usu extends base
      * @param string $string input text
      * @return string filtered text
      */
-    protected function filter($string)
+    protected function filter(string $string): string
     {
         $retval = trim(zen_clean_html($string));
 
@@ -1019,7 +1022,7 @@ class usu extends base
      * @param string $regexp the regexp string from the database
      * @return mixed
      */
-    protected function expand(string $regexp)
+    protected function expand(string $regexp): string|array
     {
         if ($regexp !== '') {
             if ($data = explode(',', $regexp)) {
@@ -1051,14 +1054,12 @@ class usu extends base
      * @param integer $limit
      * @return string Short word filtered
      */
-    protected function short_name($str, $limit = 3)
+    protected function short_name(string $str, int $limit = 3): string
     {
         if (defined('USU_FILTER_SHORT_WORDS')) {
-            $limit = USU_FILTER_SHORT_WORDS;
+            $limit = (int)USU_FILTER_SHORT_WORDS;
         }
-        $limit = (int)$limit;
 
-        $str = (string)$str;
         if (empty($str)) {
             return $str;
         }
@@ -1081,7 +1082,7 @@ class usu extends base
      * @param string $page the Zen Cart page (main_page=xxxx)
      * @return bool true if an alternative URL should be created, false otherwise.
      */
-    protected function filter_page($page)
+    protected function filter_page(string $page): bool
     {
         return (count($this->filter_page) === 0 || in_array($page, $this->filter_page));
     }
@@ -1096,7 +1097,7 @@ class usu extends base
      * The canonical URI will be placed in $this->canonical if a special
      * canonical is needed, otherwise $this->canonical will be null.
      */
-    public function canonical()
+    public function canonical(): void
     {
         global $db, $request_type;
 
@@ -1135,7 +1136,7 @@ class usu extends base
      *
      * @return true if a redirect is needed, false otherwise.
      */
-    protected function needs_redirect()
+    protected function needs_redirect(): bool
     {
         global $request_type;
 
@@ -1232,7 +1233,7 @@ class usu extends base
     /**
      * Issue a 301 redirect to the browser.
      */
-    protected function redirect()
+    protected function redirect(): void
     {
         if (USU_REDIRECT === 'true') {
             $new_url = $this->redirect_uri['path'] . (array_key_exists('query', $this->redirect_uri) ? '?' . str_replace('&amp;', '&', $this->redirect_uri['query']) : '');
@@ -1240,7 +1241,7 @@ class usu extends base
             $this->log('REDIRECT: Issued a redirect to: ' . $new_url);
             header('HTTP/1.1 301 Moved Permanently');
             header('Location: ' . $new_url);
-            exit;
+            zen_exit();
         }
     }
 
@@ -1250,7 +1251,7 @@ class usu extends base
      * @param $uri the requested URI.
      * @return true if a physical file (or directory), false otherwise.
      */
-    protected function is_physical_file($uri)
+    protected function is_physical_file(string $uri): bool
     {
         // Search for the first appearance of ? or #
         $real_file = strpos($uri, '?');
@@ -1266,7 +1267,7 @@ class usu extends base
         }
 
         // Do not count the front controller (index.php) as a real file
-        return ($real_file !== 'index.php' && file_exists(DIR_FS_CATALOG . $real_file));
+        return ($real_file !== 'index.php' && is_file(DIR_FS_CATALOG . $real_file));
     }
 
     /**
@@ -1276,7 +1277,7 @@ class usu extends base
      * @param bool $eol true to add an End Of Line character to the string,
      *         false otherwise.
      */
-    protected function log($message)
+    protected function log(string $message): void
     {
         if ($this->debug === true) {
             error_log(((string)$message) . PHP_EOL, 3, $this->logfile);
