@@ -2,7 +2,9 @@
 /**
  * Part of Ultimate URLs, v3.1.0+, for Zen Cart.
  *
- * @copyright Copyright 2019-2021   Cindy Merkin (vinosdefrutastropicales.com)
+ * Last updated: v4.0.1
+ *
+ * @copyright Copyright 2019-2026 Cindy Merkin (vinosdefrutastropicales.com)
  * @copyright Copyright 2012 - 2015 Andrew Ballanger
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  */
@@ -11,7 +13,23 @@ if (!defined('IS_ADMIN_FLAG')) {
 }
 
 // sessions are started at 70
-$autoLoadConfig[71][] = [
+//
+// Re-load (or initially load) the languages' initialization script to
+// prevent PHP warnings for missing language elements coming from the
+// Product class.  The 'base' load point was changed to 75 for zc222; versions
+// prior loaded at 110.
+//
+// USU will load (or reload for zc222) prior to its first use and earlier
+// ZC versions will reload at 110 with no harm done.
+//
+// This load can be removed from this file once Zen Cart versions prior to 2.2.2
+// are no longer supported.
+//
+$autoLoadConfig[75][] = [
+    'autoType'=>'init_script',
+    'loadFile'=> 'init_languages.php'
+];
+$autoLoadConfig[75][] = [
     'autoType' => 'init_script',
     'loadFile' => 'init_usu.php'
 ];
@@ -24,16 +42,6 @@ $autoLoadConfig[71][] = [
 // The zen_href_link observation needs to be present if that condition exists to
 // prevent a redirect-loop.
 //
-// Unfortunately, the session-based language initialization isn't loaded until CP 110
-// (by default), so we'll need to bring that in prior to the observer's load so
-// that those values are available for the possible redirect prior to the current
-// main page's header processing.  Note that the init_languages.php file will be
-// re-loaded at CP 110, but will do no 'harm'.
-//
-$autoLoadConfig[99][] = [
-    'autoType'=>'init_script',
-    'loadFile'=> 'init_languages.php'
-];
 $autoLoadConfig[99][] = [
     'autoType' => 'class',
     'loadFile' => 'observers/UsuObserver.php'
