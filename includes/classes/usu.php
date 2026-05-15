@@ -570,16 +570,7 @@ class usu extends base
      */
     protected function make_url($page, $link, $anchor_type, $id, $extension = USU_END): string
     {
-        // In the future there may be additional methods here in the switch
-        switch (USU_ENGINE){
-            case 'rewrite':
-                return $link . $this->reg_anchors[$anchor_type] . $id . $extension;
-                break;
-            default:
-                break;
-        }
-
-        $this->log("USU_ENGINE value (" . USU_ENGINE . ") unexpected; should be 'rewrite'.");
+        return $link . $this->reg_anchors[$anchor_type] . $id . $extension;
     }
 
     /**

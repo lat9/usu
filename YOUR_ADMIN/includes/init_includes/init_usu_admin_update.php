@@ -49,6 +49,15 @@ switch (true) {
                 SET set_function = 'zen_cfg_textarea('
               WHERE configuration_key = 'USU_FILTER_PAGES'"
         );
+    // -----
+    // v4.0.1:
+    // - Remove the no-longer-used USU_ENGINE setting.
+    //
+    case version_compare(USU_VERSION, '4.0.1', '<'):               //-Fall through from above processing
+        $db->Execute(
+            "DELETE FROM " . TABLE_CONFIGURATION . "
+              WHERE configuration_key = 'USU_ENGINE'"
+        );
 
     default:                                                        //-Fall through from above processing
         break;

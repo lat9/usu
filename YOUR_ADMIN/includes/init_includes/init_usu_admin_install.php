@@ -31,7 +31,6 @@ $usu_install_config = [
     'FILTER_PCRE' => ['configuration_value' => ''],
     'FILTER_SHORT_WORDS' => ['configuration_value' => '0'],
     'FILTER_PAGES' => ['configuration_value' => 'index, product_info, product_music_info, document_general_info, document_product_info, product_free_shipping_info, products_new, products_all, shopping_cart, featured_products, specials, contact_us, conditions, privacy, reviews, shippinginfo, faqs_all, site_map, gv_faq, discount_coupon, page, page_2, page_3, page_4'],
-    'ENGINE' => ['configuration_value' => 'rewrite', 'values' => ['rewrite']],
     'REDIRECT' => ['configuration_value' => 'false', 'values' => ['false', 'true']],
 ];
 
@@ -134,9 +133,6 @@ $titles_descriptions = [
 
     'USU_FILTER_PAGES_TITLE' => 'Limit alternate URLS to the following pages',
     'USU_FILTER_PAGES_DESCRIPTION' => 'You can limit the pages which will be rewritten by specifying them here. If no pages are specified all pages will be rewritten.<br><br>The format is a comma-delimited list (intervening spaces are OK) and <b>must</b> be in the form: <b>page1,page2,page3</b> or <b>page1, page2, page3</b>',
-
-    'USU_ENGINE_TITLE' => 'Choose URL Engine',
-    'USU_ENGINE_DESCRIPTION' => 'Choose which URL Engine to use.',
 
     'USU_REDIRECT_TITLE' => 'Enable automatic redirects?',
     'USU_REDIRECT_DESCRIPTION' => 'This will activate the automatic redirect code and send 301 headers for old to new URLs.',
