@@ -10,7 +10,7 @@
  * @copyright Portions Copyright 2005 Bobby Easland
  * @license http://www.gnu.org/licenses/gpl.txt GNU GPL V3.0
  *
- * Last updated: v4.0.1
+ * Last updated: v4.0.2
  */
 
 /**
@@ -31,7 +31,7 @@ class usu extends base
     protected array $reg_anchors;
     protected string $uri;
     protected string $real_uri;
-    protected ?string $redirect_uri;
+    protected mixed $redirect_uri;  //- null|string|array
     protected bool $first_access;
     protected bool $debug;
     protected string $logfile;
